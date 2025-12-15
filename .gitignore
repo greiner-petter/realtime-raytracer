@@ -1,0 +1,28 @@
+# Project ide-Folders
+.vs
+.vscode
+.idea
+build/
+
+/data/*
+!/data/README.txt
+!/data/fireplace
+!/data/subdiv
+!/data/parallax
+!/data/fractal.obj
+/result*
+
+# Latex stuff
+*.aux
+*.fdb_latexmk
+*.fls
+*.log
+*.out
+*.pdf
+*.synctex.gz
+*.json
+*__latexindent_temp.tex
+
+# Mac Stuff
+.DS_Store
+
