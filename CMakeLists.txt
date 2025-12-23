@@ -3,6 +3,10 @@ project(CG1_Tracer LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+# Set output dirs
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE "${CMAKE_SOURCE_DIR}/bin")
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG "${CMAKE_SOURCE_DIR}/bin")
+
 if(NOT WIN32)
   find_package(Threads REQUIRED)
   find_package(X11 REQUIRED)
@@ -11,7 +15,8 @@ endif()
 # This directory
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 if(APPLE)
-   include_directories(AFTER "/opt/X11/include")
+   # Assuming Homebrew installation path on Apple Silicon
+   include_directories(AFTER "/opt/homebrew/include")
 endif()
 
 # which source files to use

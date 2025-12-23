@@ -1,7 +1,8 @@
 # Project ide-Folders
-.vs
-.vscode
-.idea
+.vs/
+.vscode/
+.idea/
+bin/
 build/
 
 /data/*
@@ -11,6 +12,7 @@ build/
 !/data/parallax
 !/data/fractal.obj
 /result*
+*.png
 
 # Latex stuff
 *.aux
