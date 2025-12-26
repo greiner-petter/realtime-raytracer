@@ -4,6 +4,7 @@
 .idea/
 bin/
 build/
+Intermediate/
 
 /data/*
 !/data/README.txt
