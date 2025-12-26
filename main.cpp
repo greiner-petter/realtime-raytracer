@@ -42,6 +42,7 @@ void MainLoop() {
         CameraUpdate();
 
         glfwPollEvents();
+        glfwSwapInterval(0);
         Input::Tick();
     }
 }
