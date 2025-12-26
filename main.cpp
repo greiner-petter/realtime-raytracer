@@ -20,6 +20,7 @@ void MainLoop() {
     auto timer = std::chrono::steady_clock::now();
     while (!glfwWindowShouldClose(Window::GetGLFWwindow())) {
         VulkanAPI::UpdateUniformData();
+        VulkanAPI::UpdateSceneData();
         VulkanAPI::Draw();
         frameCount++;
 

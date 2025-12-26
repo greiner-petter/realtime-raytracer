@@ -23,19 +23,23 @@ struct Ray {
 };
 
 struct Sphere {
-    vec3 center;
-    float radius;
+    vec4 center_radius; // xyz = center, w = radius
 };
 
-bool intersectSphere(inout Ray ray, Sphere sphere)
-{
+layout(binding = 1, std430) buffer Scene {
+    uint sphereCount;
+    Sphere spheres[];
+};
+
+
+bool intersectSphere(inout Ray ray, Sphere sphere) {
     // Ray-sphere difference vector
-    vec3 difference = ray.origin - sphere.center;
+    vec3 difference = ray.origin - sphere.center_radius.xyz;
 
     // Quadratic coefficients (a = 1 because direction is normalized)
     float a = 1.0;
     float b = 2.0 * dot(ray.direction, difference);
-    float c = dot(difference, difference) - sphere.radius * sphere.radius;
+    float c = dot(difference, difference) - sphere.center_radius.w * sphere.center_radius.w;
 
     float discriminant = b * b - 4.0 * a * c;
 
@@ -62,7 +66,7 @@ bool intersectSphere(inout Ray ray, Sphere sphere)
     vec3 hitPoint = ray.origin + t * ray.direction;
 
     // Surface normal
-    ray.normal = normalize(hitPoint - sphere.center);
+    ray.normal = normalize(hitPoint - sphere.center_radius.xyz);
 
     // Spherical UV coordinates
     float phi = acos(ray.normal.y);
@@ -94,24 +98,32 @@ Ray createRay(vec2 ndc, vec3 cameraPosition, vec3 cameraForward, vec3 cameraRigh
         focus * cameraForward
     );
 
+    ray.rayLength = 1e30; // Large initial value
+
     return ray;
 }
 
 void main()
 {
-    vec2 uv = v_UV;
-    vec2 ndc = uv * 2.0 - 1.0;
+    vec2 ndc = v_UV;
     ndc.y *= -1.0;
     //ndc.y *= u_aspectRatio;
 
-    Ray ray = createRay(ndc, vec3(0, 0, 0), vec3(0, 0, -1), vec3(1, 0, 0), vec3(0, 1, 0), 75.0);
-    Sphere sphere;
-    sphere.center = vec3(0, 0, -80);
-    sphere.radius = 0.20;
-
-    if (intersectSphere(ray, sphere))
+    Ray ray = createRay(ndc, vec3(0, 0, 0), vec3(0, 0, -1), vec3(1, 0, 0), vec3(0, 1, 0), 1.0);
+    
+    bool hit = false;
+    for (uint i = 0; i < sphereCount; ++i)
     {
-        outColor = vec4(1.0, 1.0, 0.0, 1.0);//vec4(normal * 0.5 + 0.5, 1.0);
+        Sphere sphere = spheres[i];
+        if (intersectSphere(ray, sphere)) {
+            hit = true;
+        }
+    }
+
+
+    if (hit)
+    {
+        outColor = vec4(1.0, 0.0, 0.0, 1.0);
     }
     else
     {

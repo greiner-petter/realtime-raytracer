@@ -15,6 +15,7 @@ public:
     static void CreateCommandPool();
     static void CreateVertexBuffer();
     static void CreateUniformBuffer();
+    static void CreateSceneStorageBuffer();
     static void CreateSwapChain();
     static void CreateRenderPass();
     static void CreateImageViews();
@@ -25,6 +26,7 @@ public:
     static void CreateCommandBuffers();
 
     static void UpdateUniformData();
+    static void UpdateSceneData();
 
     static void CleanUp(bool fullClean);
 
