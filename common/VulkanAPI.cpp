@@ -759,7 +759,7 @@ void VulkanAPI::UpdateSceneData() {
 
 void VulkanAPI::UpdateUniformData() {
     uniformBufferData.u_resolution = glm::vec2(Window::GetInstance()->GetWidth(), Window::GetInstance()->GetHeight());
-    uniformBufferData.u_aspectRatio = uniformBufferData.u_resolution.x / uniformBufferData.u_resolution.y;
+    uniformBufferData.u_aspectRatio = float(Window::GetInstance()->GetHeight()) / float(Window::GetInstance()->GetWidth());
 
     void* data;
     vkMapMemory(device, uniformBufferMemory, 0, sizeof(uniformBufferData), 0, &data);
