@@ -6,6 +6,11 @@ layout(location = 1) in vec2 v_UV;
 layout(binding = 0) uniform UBO {
     vec2 u_resolution;
     float u_aspectRatio;
+    float u_FocusDistance;
+    vec3 u_CameraPosition;
+    vec3 u_CameraForward;
+    vec3 u_CameraRight;
+    vec3 u_CameraUp;
 };
 
 const float EPSILON = 1e-4;
@@ -109,7 +114,7 @@ void main()
     ndc.y *= -1.0;
     ndc.y *= u_aspectRatio;
 
-    Ray ray = createRay(ndc, vec3(0, 0, 0), vec3(0, 0, -1), vec3(1, 0, 0), vec3(0, 1, 0), 1.0);
+    Ray ray = createRay(ndc, u_CameraPosition, u_CameraForward, u_CameraRight, u_CameraUp, u_FocusDistance);
     
     bool hit = false;
     for (uint i = 0; i < sphereCount; ++i)

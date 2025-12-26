@@ -1,5 +1,18 @@
 #pragma once
 
+#define GLM_FORCE_DEPTH_ZERO_TO_ONE
+#include <glm/glm.hpp>
+
+struct UBO {
+    glm::vec2 u_resolution;
+    float u_aspectRatio;
+    float u_FocusDistance = 1.0f;
+    glm::vec4 u_CameraPosition = glm::vec4(0.0f, 0.0f, 0.0f, 0.0f);
+    glm::vec4 u_CameraForward = glm::vec4(0.0f, 0.0f, -1.0f, 0.0f);
+    glm::vec4 u_CameraRight = glm::vec4(1.0f, 0.0f, 0.0f, 0.0f);
+    glm::vec4 u_CameraUp = glm::vec4(0.0f, 1.0f, 0.0f, 0.0f);
+};
+
 class VulkanAPI {
 public:
     static void SetupVulkan();

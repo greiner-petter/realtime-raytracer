@@ -1,5 +1,7 @@
 #include "common/Window.h"
 #include "common/VulkanAPI.h"
+#include "camera/RT_Camera.h"
+#include "common/Input.h"
 #include "common/Log.h"
 #include <GLFW/glfw3.h>
 
@@ -37,9 +39,10 @@ void MainLoop() {
             frameCount = 0;
             timer = currentTime;
         }
+        CameraUpdate();
 
         glfwPollEvents();
-        glfwSwapInterval(0);
+        Input::Tick();
     }
 }
 

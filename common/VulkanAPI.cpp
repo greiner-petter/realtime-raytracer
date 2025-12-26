@@ -70,10 +70,7 @@ static VkDeviceMemory indexBufferMemory;
 static VkVertexInputBindingDescription vertexBindingDescription;
 static std::vector<VkVertexInputAttributeDescription> vertexAttributeDescriptions;
 
-struct {
-    glm::vec2 u_resolution;
-    float u_aspectRatio;
-} uniformBufferData;
+UBO uniformBufferData;
 static VkBuffer uniformBuffer;
 static VkDeviceMemory uniformBufferMemory;
 static VkDescriptorSetLayout descriptorSetLayout;
