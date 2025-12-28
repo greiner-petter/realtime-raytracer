@@ -39,7 +39,7 @@ void MainLoop() {
             frameCount = 0;
             timer = currentTime;
         }
-        CameraUpdate();
+        CameraUpdate(m_DeltaTime);
 
         glfwPollEvents();
         glfwSwapInterval(0);

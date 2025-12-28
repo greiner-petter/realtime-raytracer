@@ -5,7 +5,6 @@
 #include <glm/glm.hpp>
 
 extern UBO uniformBufferData;
-extern double m_DeltaTime;
 
 float yaw = 3.1415f;   // rotation around Y axis
 float pitch = 0.0f; // rotation around X axis (camera right)
@@ -40,7 +39,7 @@ void UpdateCameraDirection(float deltaX, float deltaY) {
     uniformBufferData.u_CameraUp = glm::vec4(cameraUp, 0.0f);
 }
 
-void UpdateCameraPosition() {
+void UpdateCameraPosition(float deltaTime) {
     glm::vec3 direction = glm::vec3(0.0f);
 
     if (Input::IsKeyPressed(Key::W) || Input::IsKeyPressed(Key::Up))
@@ -58,19 +57,19 @@ void UpdateCameraPosition() {
 
     const float CAMERA_SPEED = 5.0f;
     if (glm::length(direction) > 0.0f)
-        direction = glm::normalize(direction) * float(m_DeltaTime) * CAMERA_SPEED;
+        direction = glm::normalize(direction) * deltaTime * CAMERA_SPEED;
 
     glm::vec3 cameraPosition = glm::vec3(uniformBufferData.u_CameraPosition);
     cameraPosition += direction;
     uniformBufferData.u_CameraPosition = glm::vec4(cameraPosition, 0.0f);
 }
 
-void CameraUpdate() {
+void CameraUpdate(float deltaTime) {
     if (Input::IsMouseButtonPressed(Mouse::ButtonRight)) {
         // default FPS camera behavior
         Input::SetCursorLocked(true);
         UpdateCameraDirection(Input::GetMouseDelta().x, Input::GetMouseDelta().y);
-        UpdateCameraPosition();
+        UpdateCameraPosition(deltaTime);
     } else {
         Input::SetCursorLocked(false);
     }
