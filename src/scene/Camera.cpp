@@ -1,4 +1,4 @@
-#include "scene/RT_Camera.h"
+#include "scene/Camera.h"
 #include "common/Input.h"
 #include "common/Log.h"
 #include "vulkan/VulkanAPI.h"

@@ -1,5 +1,5 @@
-#ifndef RT_CAMERA_H
-#define RT_CAMERA_H
+#ifndef CAMERA_H
+#define CAMERA_H
 
 void CameraUpdate(float deltaTime);
 

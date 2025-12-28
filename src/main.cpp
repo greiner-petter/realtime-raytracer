@@ -1,6 +1,6 @@
 #include "common/Window.h"
 #include "vulkan/VulkanAPI.h"
-#include "scene/RT_Camera.h"
+#include "scene/Camera.h"
 #include "scene/Scene.h"
 #include "common/Input.h"
 #include "common/Log.h"
