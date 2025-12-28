@@ -80,6 +80,6 @@ Color Texture::color(float u, float v, bool interpolate) const {
   return color;
 }
 
-Color Texture::color(Vector2d const &surfacePosition, bool interpolate) const {
-  return color(surfacePosition.u, surfacePosition.v, interpolate);
+Color Texture::color(Vec2 const &surfacePosition, bool interpolate) const {
+  return color(surfacePosition.x, surfacePosition.y, interpolate);
 }

@@ -1,10 +1,12 @@
 #include "common/Window.h"
-#include "common/VulkanAPI.h"
-#include "camera/RT_Camera.h"
+#include "vulkan/VulkanAPI.h"
+#include "scene/RT_Camera.h"
+#include "scene/Scene.h"
 #include "common/Input.h"
 #include "common/Log.h"
 #include <GLFW/glfw3.h>
 
+std::shared_ptr<Scene> m_Scene;
 std::shared_ptr<Window> m_Window;
 std::chrono::time_point<std::chrono::steady_clock> m_PreviousTime;
 double m_DeltaTime = 0.0;
@@ -22,7 +24,7 @@ void MainLoop() {
     auto timer = std::chrono::steady_clock::now();
     while (!glfwWindowShouldClose(Window::GetGLFWwindow())) {
         VulkanAPI::UpdateUniformData();
-        VulkanAPI::UpdateSceneData();
+        VulkanAPI::UpdateSceneData(*m_Scene);
         VulkanAPI::Draw();
         frameCount++;
 
@@ -56,6 +58,9 @@ int main() {
     m_PreviousTime = std::chrono::steady_clock::now();
     InitWindow();
     InitVulkan();
+    m_Scene = std::make_shared<Scene>();
+    m_Scene->spheres.push_back({ glm::vec4(0.0f, 0.0f, -9.0f, 0.33f) });
+    m_Scene->spheres.push_back({ glm::vec4(2.0f, 0.0f, -3.0f, 0.2f) });
     MainLoop();
     Cleanup();
 

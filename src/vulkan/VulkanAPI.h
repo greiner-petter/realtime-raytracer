@@ -39,7 +39,7 @@ public:
     static void CreateCommandBuffers();
 
     static void UpdateUniformData();
-    static void UpdateSceneData();
+    static void UpdateSceneData(class Scene& scene);
 
     static void CleanUp(bool fullClean);
 

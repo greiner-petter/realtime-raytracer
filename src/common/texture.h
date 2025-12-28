@@ -3,7 +3,7 @@
 
 #include "common/CImg.h"
 #include "common/color.h"
-#include "common/vector2d.h"
+#include "common/Types.h"
 
 using namespace cimg_library;
 
@@ -29,7 +29,7 @@ public:
 
   // Color functions
   Color color(float u, float v, bool interpolate = true) const;
-  Color color(Vector2d const &surfacePosition, bool interpolate = true) const;
+  Color color(Vec2 const &surfacePosition, bool interpolate = true) const;
 
 private:
   CImg<float> image_;

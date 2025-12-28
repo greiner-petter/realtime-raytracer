@@ -1,7 +1,7 @@
-#include "camera/RT_Camera.h"
+#include "scene/RT_Camera.h"
 #include "common/Input.h"
 #include "common/Log.h"
-#include "common/VulkanAPI.h"
+#include "vulkan/VulkanAPI.h"
 #include <glm/glm.hpp>
 
 extern UBO uniformBufferData;
@@ -19,7 +19,6 @@ void UpdateCameraDirection(float deltaX, float deltaY) {
     if (pitch > pitchLimit) pitch = pitchLimit;
     if (pitch < -pitchLimit) pitch = -pitchLimit;
 
-    // Calculate forward vector
     glm::vec3 forward;
     forward.x = cos(pitch) * sin(yaw);
     forward.y = sin(pitch);
@@ -29,7 +28,6 @@ void UpdateCameraDirection(float deltaX, float deltaY) {
     glm::vec3 cameraForward = forward;
     RT_INFO("Camera Forward: ({0}, {1}, {2})", cameraForward.x, cameraForward.y, cameraForward.z);
 
-    // Recalculate right and up vectors
     glm::vec3 worldUp = glm::vec3(0.0f, 1.0f, 0.0f);
     glm::vec3 cameraRight = glm::normalize(glm::cross(cameraForward, worldUp));
     glm::vec3 cameraUp = glm::normalize(glm::cross(cameraRight, cameraForward));

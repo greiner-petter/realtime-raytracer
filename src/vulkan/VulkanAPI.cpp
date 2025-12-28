@@ -18,11 +18,11 @@
 
 #include "common/Log.h"
 #include "common/common.h"
-#include "common/vector3d.h"
+#include "common/Types.h"
 
 struct Vertex {
-    Vector3d Position;
-    Vector3d Color;
+    Vec3 Position;
+    Vec3 Color;
 };
 
 #include "Shader_Vert.h"
@@ -77,17 +77,8 @@ static VkDescriptorSetLayout descriptorSetLayout;
 static VkDescriptorPool descriptorPool;
 static VkDescriptorSet descriptorSet;
 
-struct SphereCPU {
-    glm::vec4 center_radius; // xyz = center, w = radius
-};
-
-struct SceneGPU {
-    uint32_t sphereCount;
-    uint32_t padding[3]; // pad 12 bytes to make offset 16
-    SphereCPU spheres[2];
-};
-struct SceneGPU sceneData;
-
+#include "scene/Sphere.h"
+#include "scene/Scene.h"
 static VkBuffer sceneBuffer;
 static VkDeviceMemory sceneBufferMemory;
  
@@ -559,10 +550,10 @@ void VulkanAPI::CreateCommandPool() {
 void VulkanAPI::CreateVertexBuffer() {
     // Setup vertices
     std::vector<Vertex> vertices = {
-        { Vector3d{ -1.0f, -1.0f,  0.0f }, {} },
-        { Vector3d{ -1.0f,  1.0f,  0.0f }, {} },
-        { Vector3d{  1.0f,  1.0f,  0.0f }, {} },
-        { Vector3d{  1.0f, -1.0f,  0.0f }, {} },
+        { Vec3{ -1.0f, -1.0f,  0.0f }, {} },
+        { Vec3{ -1.0f,  1.0f,  0.0f }, {} },
+        { Vec3{  1.0f,  1.0f,  0.0f }, {} },
+        { Vec3{  1.0f, -1.0f,  0.0f }, {} },
     };
     uint32_t verticesSize = (uint32_t)(vertices.size() * sizeof(vertices[0]));
 
@@ -723,7 +714,7 @@ void VulkanAPI::CreateUniformBuffer() {
 void VulkanAPI::CreateSceneStorageBuffer() {
     VkBufferCreateInfo bufferInfo = {};
     bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-    bufferInfo.size = sizeof(sceneData);
+    bufferInfo.size = 16 * 1024 * 1024; // 16 MB
     bufferInfo.usage = VK_BUFFER_USAGE_STORAGE_BUFFER_BIT;
     vkCreateBuffer(device, &bufferInfo, nullptr, &sceneBuffer);
     VkMemoryRequirements memReqs;
@@ -737,25 +728,15 @@ void VulkanAPI::CreateSceneStorageBuffer() {
     vkAllocateMemory(device, &allocInfo, nullptr, &sceneBufferMemory);
     vkBindBufferMemory(device, sceneBuffer, sceneBufferMemory, 0);
 
-    VulkanAPI::UpdateSceneData();
+    Scene emptyScene;
+    VulkanAPI::UpdateSceneData(emptyScene);
 }
 
-void VulkanAPI::UpdateSceneData() {
-    sceneData.sphereCount = 2;
-    sceneData.spheres[0] = { glm::vec4(0.0f, 0.0f, -9.0f, 0.33f) };
-    sceneData.spheres[1] = { glm::vec4(2.0f, 0.0f, -3.0f, 0.2f) };
-
+void VulkanAPI::UpdateSceneData(Scene& scene) {
+    scene.ConvertSceneToGPUData();
     void* data;
-    vkMapMemory(device, sceneBufferMemory, 0, sizeof(sceneData), 0, &data);
-    memcpy(data, &sceneData, sizeof(sceneData));
-
-    VkMappedMemoryRange range{};
-    range.sType = VK_STRUCTURE_TYPE_MAPPED_MEMORY_RANGE;
-    range.memory = sceneBufferMemory;
-    range.offset = 0;
-    range.size   = VK_WHOLE_SIZE;
-    vkFlushMappedMemoryRanges(device, 1, &range);
-
+    vkMapMemory(device, sceneBufferMemory, 0, scene.GetGPUDataSize(), 0, &data);
+    memcpy(data, scene.GetGPUData(), scene.GetGPUDataSize());
     vkUnmapMemory(device, sceneBufferMemory);
 }
 
