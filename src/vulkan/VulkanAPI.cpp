@@ -6,6 +6,7 @@
 #include <algorithm>
 #include <chrono>
 #include <functional>
+#include <cassert>
 
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
 #include <glm/gtc/matrix_transform.hpp>
@@ -20,7 +21,7 @@
 #include "common/common.h"
 #include "common/Types.h"
 
-#include "vulkan/SSBO.h"
+#include "vulkan/Buffer.h"
 
 struct Vertex {
     Vec3 Position;
@@ -73,8 +74,7 @@ static VkVertexInputBindingDescription vertexBindingDescription;
 static std::vector<VkVertexInputAttributeDescription> vertexAttributeDescriptions;
 
 UBO uniformBufferData;
-static VkBuffer uniformBuffer;
-static VkDeviceMemory uniformBufferMemory;
+std::shared_ptr<UniformBuffer> uniformBuffer;
 static VkDescriptorSetLayout descriptorSetLayout;
 static VkDescriptorPool descriptorPool;
 static VkDescriptorSet descriptorSet;
@@ -211,13 +211,7 @@ void VulkanAPI::CleanUp(bool fullClean) {
 
         // Clean up uniform buffer related objects
         vkDestroyDescriptorPool(device, descriptorPool, nullptr);
-        vkDestroyBuffer(device, uniformBuffer, nullptr);
-        vkFreeMemory(device, uniformBufferMemory, nullptr);
-        extern std::vector<std::shared_ptr<SSBO>> g_SSBOs;
-        for (auto& ssbo : g_SSBOs) {
-            ssbo->Destroy();
-        }
-        g_SSBOs.clear();
+        Buffer::DestroyAllBuffers();
 
         // Buffers must be destroyed after no command buffers are referring to them anymore
         vkDestroyBuffer(device, vertexBuffer, nullptr);
@@ -695,24 +689,7 @@ void VulkanAPI::CreateVertexBuffer() {
 }
 
 void VulkanAPI::CreateUniformBuffer() {
-    VkBufferCreateInfo bufferInfo = {};
-    bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-    bufferInfo.size = sizeof(uniformBufferData);
-    bufferInfo.usage = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
-
-    vkCreateBuffer(device, &bufferInfo, nullptr, &uniformBuffer);
-
-    VkMemoryRequirements memReqs;
-    vkGetBufferMemoryRequirements(device, uniformBuffer, &memReqs);
-
-    VkMemoryAllocateInfo allocInfo = {};
-    allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-    allocInfo.allocationSize = memReqs.size;
-    GetMemoryType(memReqs.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, &allocInfo.memoryTypeIndex);
-
-    vkAllocateMemory(device, &allocInfo, nullptr, &uniformBufferMemory);
-    vkBindBufferMemory(device, uniformBuffer, uniformBufferMemory, 0);
-
+    uniformBuffer = UniformBuffer::Create(0, sizeof(uniformBufferData));
     VulkanAPI::UpdateUniformData();
 }
 
@@ -725,11 +702,7 @@ void VulkanAPI::UpdateUniformData() {
     uniformBufferData.u_resolution = glm::vec2(Window::GetInstance()->GetWidth(), Window::GetInstance()->GetHeight());
     uniformBufferData.u_aspectRatio = float(Window::GetInstance()->GetHeight()) / float(Window::GetInstance()->GetWidth());
 
-    void* data;
-    vkMapMemory(device, uniformBufferMemory, 0, sizeof(uniformBufferData), 0, &data);
-    memcpy(data, &uniformBufferData, sizeof(uniformBufferData));
-    vkUnmapMemory(device, uniformBufferMemory);
-
+    uniformBuffer->UploadData(&uniformBufferData, sizeof(uniformBufferData));
 }
 
 void VulkanAPI::CreateSwapChain() {
@@ -1064,24 +1037,20 @@ void VulkanAPI::CreateGraphicsPipeline() {
     // Describe pipeline layout
     // Note: this describes the mapping between memory and shader resources (descriptor sets)
     // This is for uniform buffers and samplers
-    extern std::vector<std::shared_ptr<SSBO>> g_SSBOs;
-    VkDescriptorSetLayoutBinding bindings[1 + g_SSBOs.size()];
-    bindings[0].binding = 0;
-    bindings[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-    bindings[0].descriptorCount = 1;
-    bindings[0].stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
-
-    for (size_t i = 0; i < g_SSBOs.size(); i++) {
-        bindings[i + 1].binding = static_cast<uint32_t>(i + 1);
-        bindings[i + 1].descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
-        bindings[i + 1].descriptorCount = 1;
-        bindings[i + 1].stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
+    auto buffers = Buffer::GetAllBuffers();
+    std::vector<VkDescriptorSetLayoutBinding> bindings(buffers.size());
+    for (size_t i = 0; i < buffers.size(); i++) {
+        bindings[i] = {};
+        bindings[i].binding = buffers[i]->GetBindingPoint();
+        bindings[i].descriptorType = buffers[i]->GetDescriptorType();
+        bindings[i].descriptorCount = 1;
+        bindings[i].stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
     }
 
     VkDescriptorSetLayoutCreateInfo descriptorLayoutCreateInfo = {};
     descriptorLayoutCreateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-    descriptorLayoutCreateInfo.bindingCount = 1 + g_SSBOs.size();
-    descriptorLayoutCreateInfo.pBindings = bindings;
+    descriptorLayoutCreateInfo.bindingCount = buffers.size();
+    descriptorLayoutCreateInfo.pBindings = bindings.data();
 
     if (vkCreateDescriptorSetLayout(device, &descriptorLayoutCreateInfo, nullptr, &descriptorSetLayout) != VK_SUCCESS) {
         RT_ERROR("failed to create descriptor layout");
@@ -1174,43 +1143,30 @@ void VulkanAPI::CreateDescriptorSet() {
     if (vkAllocateDescriptorSets(device, &allocInfo, &descriptorSet) != VK_SUCCESS) {
         RT_ERROR("failed to create descriptor set");
         exit(1);
-    }
-    else {
+    } else {
         RT_INFO("created descriptor set");
     }
+    
+    auto buffers = Buffer::GetAllBuffers();
+    std::vector<VkWriteDescriptorSet> writes(buffers.size());
 
-    VkDescriptorBufferInfo uboInfo{};
-    uboInfo.buffer = uniformBuffer;
-    uboInfo.offset = 0;
-    uboInfo.range  = sizeof(uniformBufferData);
-
-
-    extern std::vector<std::shared_ptr<SSBO>> g_SSBOs;
-    VkWriteDescriptorSet* writes = new VkWriteDescriptorSet[1 + g_SSBOs.size()];
-
-    // UBO — binding 0
-    writes[0] = {};
-    writes[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-    writes[0].dstSet = descriptorSet;
-    writes[0].dstBinding = 0;
-    writes[0].descriptorCount = 1;
-    writes[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-    writes[0].pBufferInfo = &uboInfo;
-
-    // SSBO — bindings
-    for (size_t i = 0; i < g_SSBOs.size(); i++) {
-        writes[i + 1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-        writes[i + 1].dstSet = descriptorSet;
-        writes[i + 1].dstBinding = static_cast<uint32_t>(i + 1);
-        writes[i + 1].descriptorCount = 1;
-        writes[i + 1].descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
-        writes[i + 1].pBufferInfo = g_SSBOs[i]->GetBufferInfo();
-        assert(g_SSBOs[i]->GetBuffer() != VK_NULL_HANDLE);
+    for (size_t i = 0; i < buffers.size(); i++) {
+        writes[i] = {};
+        writes[i].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+        writes[i].dstSet = descriptorSet;
+        writes[i].dstBinding = buffers[i]->GetBindingPoint();
+        writes[i].descriptorCount = 1;
+        writes[i].descriptorType = buffers[i]->GetDescriptorType();
+        writes[i].pBufferInfo = buffers[i]->GetBufferInfo();
+        RT_ASSERT(buffers[i]->GetBufferInfo() != nullptr, "Buffer info for buffer at binding point {0} is null!", buffers[i]->GetBindingPoint());
+        RT_ASSERT(buffers[i]->GetBufferInfo()->buffer != VK_NULL_HANDLE, "Buffer for buffer at binding point {0} is null!", buffers[i]->GetBindingPoint());
+        RT_ASSERT(buffers[i]->GetBufferInfo()->range > 0, "Buffer range for buffer at binding point {0} is zero!", buffers[i]->GetBindingPoint());
+        RT_ASSERT(buffers[i]->GetBufferInfo()->offset >= 0, "Buffer offset for buffer at binding point {0} is negative!", buffers[i]->GetBindingPoint());
+        writes[i].dstArrayElement = 0;
+        assert(buffers[i]->GetBuffer() != VK_NULL_HANDLE);
     }
 
-    assert(uniformBuffer != VK_NULL_HANDLE);
-    vkUpdateDescriptorSets(device, 1 + g_SSBOs.size(), writes, 0, nullptr);
-    delete[] writes;
+    vkUpdateDescriptorSets(device, buffers.size(), writes.data(), 0, nullptr);
 }
 
 void VulkanAPI::CreateCommandBuffers() {
