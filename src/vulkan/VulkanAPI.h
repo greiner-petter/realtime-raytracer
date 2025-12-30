@@ -28,7 +28,6 @@ public:
     static void CreateCommandPool();
     static void CreateVertexBuffer();
     static void CreateUniformBuffer();
-    static void CreateSceneStorageBuffer();
     static void CreateSwapChain();
     static void CreateRenderPass();
     static void CreateImageViews();

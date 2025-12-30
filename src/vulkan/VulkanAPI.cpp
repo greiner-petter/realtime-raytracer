@@ -20,6 +20,8 @@
 #include "common/common.h"
 #include "common/Types.h"
 
+#include "vulkan/SSBO.h"
+
 struct Vertex {
     Vec3 Position;
     Vec3 Color;
@@ -55,7 +57,7 @@ VkBool32 debugCallback(VkDebugReportFlagsEXT flags, VkDebugReportObjectTypeEXT o
 static VkInstance instance;
 static VkSurfaceKHR windowSurface;
 static VkPhysicalDevice physicalDevice;
-static VkDevice device;
+VkDevice device;
 static VkDebugReportCallbackEXT callback;
 static VkQueue graphicsQueue;
 static VkQueue presentQueue;
@@ -79,8 +81,6 @@ static VkDescriptorSet descriptorSet;
 
 #include "scene/Sphere.h"
 #include "scene/Scene.h"
-static VkBuffer sceneBuffer;
-static VkDeviceMemory sceneBufferMemory;
  
 static VkExtent2D swapChainExtent = {1280, 720};
 static VkFormat swapChainFormat;
@@ -161,6 +161,8 @@ VkPresentModeKHR ChoosePresentMode(const std::vector<VkPresentModeKHR> presentMo
     return VK_PRESENT_MODE_FIFO_KHR;
 }
 
+std::shared_ptr<SSBO> sceneSSBO;
+
 void VulkanAPI::SetupVulkan() {
     oldSwapChain = VK_NULL_HANDLE;
 
@@ -175,7 +177,7 @@ void VulkanAPI::SetupVulkan() {
     VulkanAPI::CreateCommandPool();
     VulkanAPI::CreateVertexBuffer();
     VulkanAPI::CreateUniformBuffer();
-    VulkanAPI::CreateSceneStorageBuffer();
+    sceneSSBO = SSBO::Create(1);
     VulkanAPI::CreateSwapChain();
     VulkanAPI::CreateRenderPass();
     VulkanAPI::CreateImageViews();
@@ -211,8 +213,11 @@ void VulkanAPI::CleanUp(bool fullClean) {
         vkDestroyDescriptorPool(device, descriptorPool, nullptr);
         vkDestroyBuffer(device, uniformBuffer, nullptr);
         vkFreeMemory(device, uniformBufferMemory, nullptr);
-        vkDestroyBuffer(device, sceneBuffer, nullptr);
-        vkFreeMemory(device, sceneBufferMemory, nullptr);
+        extern std::vector<std::shared_ptr<SSBO>> g_SSBOs;
+        for (auto& ssbo : g_SSBOs) {
+            ssbo->Destroy();
+        }
+        g_SSBOs.clear();
 
         // Buffers must be destroyed after no command buffers are referring to them anymore
         vkDestroyBuffer(device, vertexBuffer, nullptr);
@@ -711,33 +716,9 @@ void VulkanAPI::CreateUniformBuffer() {
     VulkanAPI::UpdateUniformData();
 }
 
-void VulkanAPI::CreateSceneStorageBuffer() {
-    VkBufferCreateInfo bufferInfo = {};
-    bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-    bufferInfo.size = 16 * 1024 * 1024; // 16 MB
-    bufferInfo.usage = VK_BUFFER_USAGE_STORAGE_BUFFER_BIT;
-    vkCreateBuffer(device, &bufferInfo, nullptr, &sceneBuffer);
-    VkMemoryRequirements memReqs;
-    vkGetBufferMemoryRequirements(device, sceneBuffer, &memReqs);
-
-    VkMemoryAllocateInfo allocInfo = {};
-    allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-    allocInfo.allocationSize = memReqs.size;
-    GetMemoryType(memReqs.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, &allocInfo.memoryTypeIndex);
-
-    vkAllocateMemory(device, &allocInfo, nullptr, &sceneBufferMemory);
-    vkBindBufferMemory(device, sceneBuffer, sceneBufferMemory, 0);
-
-    Scene emptyScene;
-    VulkanAPI::UpdateSceneData(emptyScene);
-}
-
 void VulkanAPI::UpdateSceneData(Scene& scene) {
     scene.ConvertSceneToGPUData();
-    void* data;
-    vkMapMemory(device, sceneBufferMemory, 0, scene.GetGPUDataSize(), 0, &data);
-    memcpy(data, scene.GetGPUData(), scene.GetGPUDataSize());
-    vkUnmapMemory(device, sceneBufferMemory);
+    sceneSSBO->UploadData(scene.GetGPUData(), scene.GetGPUDataSize());
 }
 
 void VulkanAPI::UpdateUniformData() {
@@ -1083,20 +1064,23 @@ void VulkanAPI::CreateGraphicsPipeline() {
     // Describe pipeline layout
     // Note: this describes the mapping between memory and shader resources (descriptor sets)
     // This is for uniform buffers and samplers
-    VkDescriptorSetLayoutBinding bindings[2]{};
+    extern std::vector<std::shared_ptr<SSBO>> g_SSBOs;
+    VkDescriptorSetLayoutBinding bindings[1 + g_SSBOs.size()];
     bindings[0].binding = 0;
     bindings[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
     bindings[0].descriptorCount = 1;
     bindings[0].stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
 
-    bindings[1].binding = 1;
-    bindings[1].descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
-    bindings[1].descriptorCount = 1;
-    bindings[1].stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
+    for (size_t i = 0; i < g_SSBOs.size(); i++) {
+        bindings[i + 1].binding = static_cast<uint32_t>(i + 1);
+        bindings[i + 1].descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+        bindings[i + 1].descriptorCount = 1;
+        bindings[i + 1].stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
+    }
 
     VkDescriptorSetLayoutCreateInfo descriptorLayoutCreateInfo = {};
     descriptorLayoutCreateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-    descriptorLayoutCreateInfo.bindingCount = 2;
+    descriptorLayoutCreateInfo.bindingCount = 1 + g_SSBOs.size();
     descriptorLayoutCreateInfo.pBindings = bindings;
 
     if (vkCreateDescriptorSetLayout(device, &descriptorLayoutCreateInfo, nullptr, &descriptorSetLayout) != VK_SUCCESS) {
@@ -1183,6 +1167,10 @@ void VulkanAPI::CreateDescriptorSet() {
     allocInfo.descriptorSetCount = 1;
     allocInfo.pSetLayouts = &descriptorSetLayout;
 
+    if (descriptorSet != VK_NULL_HANDLE) {
+        vkFreeDescriptorSets(device, descriptorPool, 1, &descriptorSet);
+    }
+
     if (vkAllocateDescriptorSets(device, &allocInfo, &descriptorSet) != VK_SUCCESS) {
         RT_ERROR("failed to create descriptor set");
         exit(1);
@@ -1196,14 +1184,12 @@ void VulkanAPI::CreateDescriptorSet() {
     uboInfo.offset = 0;
     uboInfo.range  = sizeof(uniformBufferData);
 
-    VkDescriptorBufferInfo sceneInfo{};
-    sceneInfo.buffer = sceneBuffer;
-    sceneInfo.offset = 0;
-    sceneInfo.range  = VK_WHOLE_SIZE;
 
-    VkWriteDescriptorSet writes[2]{};
+    extern std::vector<std::shared_ptr<SSBO>> g_SSBOs;
+    VkWriteDescriptorSet* writes = new VkWriteDescriptorSet[1 + g_SSBOs.size()];
 
     // UBO — binding 0
+    writes[0] = {};
     writes[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
     writes[0].dstSet = descriptorSet;
     writes[0].dstBinding = 0;
@@ -1211,17 +1197,20 @@ void VulkanAPI::CreateDescriptorSet() {
     writes[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
     writes[0].pBufferInfo = &uboInfo;
 
-    // SSBO — binding 1
-    writes[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-    writes[1].dstSet = descriptorSet;
-    writes[1].dstBinding = 1;
-    writes[1].descriptorCount = 1;
-    writes[1].descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
-    writes[1].pBufferInfo = &sceneInfo;
+    // SSBO — bindings
+    for (size_t i = 0; i < g_SSBOs.size(); i++) {
+        writes[i + 1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+        writes[i + 1].dstSet = descriptorSet;
+        writes[i + 1].dstBinding = static_cast<uint32_t>(i + 1);
+        writes[i + 1].descriptorCount = 1;
+        writes[i + 1].descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+        writes[i + 1].pBufferInfo = g_SSBOs[i]->GetBufferInfo();
+        assert(g_SSBOs[i]->GetBuffer() != VK_NULL_HANDLE);
+    }
 
-    assert(sceneBuffer != VK_NULL_HANDLE);
     assert(uniformBuffer != VK_NULL_HANDLE);
-    vkUpdateDescriptorSets(device, 2, writes, 0, nullptr);
+    vkUpdateDescriptorSets(device, 1 + g_SSBOs.size(), writes, 0, nullptr);
+    delete[] writes;
 }
 
 void VulkanAPI::CreateCommandBuffers() {
@@ -1349,6 +1338,7 @@ void VulkanAPI::OnWindowSizeChanged() {
     VulkanAPI::CreateRenderPass();
     VulkanAPI::CreateImageViews();
     VulkanAPI::CreateFramebuffers();
+    VulkanAPI::CreateDescriptorSet(); // TODO: buffer info may have changed
     VulkanAPI::CreateGraphicsPipeline();
     VulkanAPI::CreateCommandBuffers();
 }
