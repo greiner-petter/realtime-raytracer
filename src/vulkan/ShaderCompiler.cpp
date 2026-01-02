@@ -110,10 +110,15 @@ void ShaderCompiler::CompileShader(const std::string& shaderPath, const std::str
 }
 
 void ShaderCompiler::CompileAllShaders() {
+    static bool stopLogSpam = false;
     if (GetCompiledShaderModificationTime() >= GetShaderSourceModificationTime()) {
-        RT_INFO("All shaders are up to date. No compilation needed.");
+        if (!stopLogSpam) {
+            RT_INFO("All shaders are up to date. No compilation needed.");
+        }
+        stopLogSpam = true;
         return;
     }
+    stopLogSpam = false;
 
     for (const auto& entry : std::filesystem::directory_iterator("ShaderCode")) {
         if (entry.is_regular_file() && entry.path().extension() == ".glsl") {
