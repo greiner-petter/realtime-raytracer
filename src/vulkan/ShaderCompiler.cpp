@@ -60,7 +60,7 @@ std::filesystem::file_time_type GetCompiledShaderModificationTime() {
 
 void PreprocessShader(std::string& src) {
     // Simple include handling (no nested includes for simplicity)
-    std::string includeDirective = "//include \"";
+    std::string includeDirective = "#include \"";
     size_t pos = 0;
     while ((pos = src.find(includeDirective, pos)) != std::string::npos) {
         size_t start = pos + includeDirective.length();

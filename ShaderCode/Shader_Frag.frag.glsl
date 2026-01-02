@@ -13,8 +13,8 @@ layout(binding = 0) uniform UBO {
     vec3 u_CameraUp;
 };
 
-//include "Constants.glsl"
-//include "Ray.glsl"
+#include "Constants.glsl"
+#include "Ray.glsl"
 
 struct Primitive {
     uint type;
@@ -36,7 +36,7 @@ layout(binding = 2, std430) buffer Spheres {
     Sphere spheres[];
 };
 
-//include "intersect/Sphere.glsl"
+#include "intersect/Sphere.glsl"
 
 bool TraceRay(Ray ray, out Hit hit) {
     hit.rayLength = INFINITY;
