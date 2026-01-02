@@ -9,14 +9,14 @@ class GraphicsPipeline {
 public:
     static std::shared_ptr<GraphicsPipeline> Create();
     void Refresh();
-    void PartialCleanUp();
+    void ClearPipeline();
+    void ClearSwapChain();
+    void ClearCommandBuffers();
 
     void CreateSwapChain();
-    void CreateRenderPass();
     void CreateGraphicsPipeline();
     void CreateCommandBuffers();
     void CreateImageViews();
-    void CreateFramebuffers();
     
 public:
     VkExtent2D swapChainExtent = {1280, 720};
@@ -27,8 +27,8 @@ public:
     std::vector<VkImageView> swapChainImageViews;
     std::vector<VkFramebuffer> swapChainFramebuffers;
     VkRenderPass renderPass;
-    VkPipeline graphicsPipeline;
-    VkPipelineLayout pipelineLayout;
+    VkPipeline m_Pipeline = VK_NULL_HANDLE;
+    VkPipelineLayout m_PipelineLayout = VK_NULL_HANDLE;
     std::vector<VkCommandBuffer> graphicsCommandBuffers;
 };
 

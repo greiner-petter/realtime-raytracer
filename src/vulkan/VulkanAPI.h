@@ -10,13 +10,8 @@ public:
     static std::shared_ptr<class Scene> SetupVulkan();
     
     static void CreateInstance();
-    static void CreateDebugCallback();
     static void CreateWindowSurface();
-    static void FindPhysicalDevice();
-    static void CheckSwapChainSupport();
-    static void FindQueueFamilies();
     static void CreateLogicalDevice();
-    static void CreateSemaphores();
     static void CreateCommandPool();
     static void CreateVertexBuffer();
     static void CreateDescriptorPool();
