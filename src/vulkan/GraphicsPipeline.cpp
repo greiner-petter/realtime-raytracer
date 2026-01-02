@@ -3,8 +3,7 @@
 #include "common/Window.h"
 #include "vulkan/Buffer.h"
 #include "vulkan/VulkanAPI.h"
-#include "Shader_Vert.h"
-#include "Shader_Frag.h"
+#include "ShaderCompiler.h"
 #include <algorithm>
 
 extern VkDevice device;
@@ -20,10 +19,10 @@ extern VkDescriptorSet descriptorSet;
 
 const VkFormat SWAPCHAIN_FORMAT = VK_FORMAT_B8G8R8A8_SRGB;
 
-VkShaderModule CreateShaderModule(const Resource& InShaderResource) {
+VkShaderModule CreateShaderModule(const ShaderBinary& InShaderResource) {
     VkShaderModuleCreateInfo createInfo = { VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO };
-    createInfo.codeSize = InShaderResource.m_SizeInBytes;
-    createInfo.pCode = (uint32_t*)InShaderResource.m_Data;
+    createInfo.codeSize = InShaderResource.GetSizeInBytes();
+    createInfo.pCode = (uint32_t*)InShaderResource.GetData();
 
     VkShaderModule shaderModule;
     if (vkCreateShaderModule(device, &createInfo, nullptr, &shaderModule) != VK_SUCCESS) {
@@ -76,6 +75,7 @@ void GraphicsPipeline::Refresh() {
     ClearCommandBuffers();
     CreateSwapChain();
     CreateImageViews();
+    CreateGraphicsPipeline();
     CreateCommandBuffers(); 
 }
 
@@ -148,8 +148,10 @@ void GraphicsPipeline::CreateGraphicsPipeline() {
     dynamicState.dynamicStateCount = (uint32_t)dynamicStates.size();
     dynamicState.pDynamicStates = dynamicStates.data();
 
-    VkShaderModule vert = CreateShaderModule(Resources::SHADER_VERT);
-    VkShaderModule frag = CreateShaderModule(Resources::SHADER_FRAG);
+    ShaderBinary vertBin("ShaderCache/Shader_Vert.vert.glsl.spv");
+    ShaderBinary fragBin("ShaderCache/Shader_Frag.frag.glsl.spv");
+    VkShaderModule vert = CreateShaderModule(vertBin);
+    VkShaderModule frag = CreateShaderModule(fragBin);
 
     VkPipelineShaderStageCreateInfo shaderStages[2] = {};
     shaderStages[0].sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;

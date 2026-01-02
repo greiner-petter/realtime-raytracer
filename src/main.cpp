@@ -6,16 +6,20 @@
 #include "common/Log.h"
 #include <GLFW/glfw3.h>
 
+#include "vulkan/ShaderCompiler.h"
+
 std::shared_ptr<Scene> s_Scene;
 std::shared_ptr<Window> s_Window;
 std::chrono::time_point<std::chrono::steady_clock> s_PreviousTime;
 double s_DeltaTime = 0.0;
+constexpr bool ENABLE_SHADER_HOT_RELOAD = true;
 
 void InitWindow() {
     s_Window = Window::Create(WindowParams{ "Vulkan Raytracer", 1280, 720, false });
 }
 
 std::shared_ptr<Scene> InitVulkan() {
+    ShaderCompiler::CompileAllShaders();
     return VulkanAPI::SetupVulkan();
 }
 
@@ -26,6 +30,10 @@ void MainLoop() {
         s_Scene->UpdateGPUBuffers();
         VulkanAPI::Draw();
         frameCount++;
+
+        if (ENABLE_SHADER_HOT_RELOAD) {
+            ShaderCompiler::CompileAllShaders();
+        }
 
         auto currentTime = std::chrono::steady_clock::now();
 		auto elapsed = currentTime.time_since_epoch() - s_PreviousTime.time_since_epoch();
