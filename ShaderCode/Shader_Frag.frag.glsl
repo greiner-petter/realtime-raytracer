@@ -16,13 +16,22 @@ layout(binding = 0) uniform UBO {
 //include "Constants.glsl"
 //include "Ray.glsl"
 
-
+struct Primitive {
+    uint type;
+    int index;
+    int materialID;
+};
 
 struct Sphere {
     vec4 center_radius; // xyz = center, w = radius
 };
 
-layout(binding = 1, std430) buffer Scene {
+layout(binding = 1, std430) buffer Primitives {
+    uint primitiveCount;
+    Primitive primitives[];
+};
+
+layout(binding = 2, std430) buffer Spheres {
     uint sphereCount;
     Sphere spheres[];
 };
@@ -30,15 +39,17 @@ layout(binding = 1, std430) buffer Scene {
 //include "intersect/Sphere.glsl"
 
 bool TraceRay(Ray ray, out Hit hit) {
-    hit.rayLength = 1e30;
-    hit.sphereIndex = -1;
+    hit.rayLength = INFINITY;
+    hit.primitiveIndex = -1;
     bool found = false;
-    for (uint i = 0; i < sphereCount; ++i) {
-        Sphere sphere = spheres[i];
-        if (intersectSphere(ray, sphere, hit)) {
-            found = true;
-            hit.materialID = 0; // Placeholder
-            hit.sphereIndex = int(i);
+    for (uint i = 0; i < primitiveCount; ++i) {
+        if (primitives[int(i)].type == 1) {
+            Sphere sphere = spheres[primitives[int(i)].index];
+            if (intersectSphere(ray, sphere, hit)) {
+                found = true;
+                hit.materialID = primitives[int(i)].materialID;
+                hit.primitiveIndex = int(i);
+            }
         }
     }
     return found;
@@ -83,13 +94,13 @@ void main() {
         }
 
         // Unlit / emissive
-        if (hit.sphereIndex == 0) {
+        if (hit.materialID == 0) {
             radiance += throughput * vec3(1, 0.2, 0);
             break;
         }
 
         // Mirror
-        if (hit.sphereIndex == 1) {
+        if (hit.materialID == 1) {
             ray.origin = hit.point + hit.normal * EPSILON;
             ray.direction = reflect(ray.direction, hit.normal);
             throughput *= vec3(0.8);

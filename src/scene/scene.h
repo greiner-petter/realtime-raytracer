@@ -23,8 +23,6 @@ public:
   virtual ~Scene();
 
   void ConvertSceneToGPUData();
-  byte* GetGPUData() const { return GPUData; }
-  size_t GetGPUDataSize() const { return GPUDataSize; }
   void UpdateGPUBuffers();
   bool IsBufferDirty() const { return m_IsBufferDirty; }
   void SetBufferDirty(bool dirty) { m_IsBufferDirty = dirty; }
@@ -33,9 +31,8 @@ public:
 
 private:
   std::shared_ptr<UniformBuffer> uniformBuffer;
-  std::shared_ptr<SSBO> sceneSSBO;
-  byte* GPUData = nullptr;
-  size_t GPUDataSize = 0;
+  std::shared_ptr<SSBO> primitiveSSBO;
+  std::shared_ptr<SSBO> sphereSSBO;
 
   bool m_IsBufferDirty = true;
 };

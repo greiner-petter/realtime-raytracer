@@ -17,6 +17,16 @@ void Buffer::UploadData(void* InDataPointer, size_t InSize) {
     vkUnmapMemory(device, m_DeviceMemory);
 }
 
+void* Buffer::MapData(size_t InSize) {
+    void* data;
+    vkMapMemory(device, m_DeviceMemory, 0, InSize, 0, &data);
+    return data;
+}
+
+void Buffer::UnmapData() {
+    vkUnmapMemory(device, m_DeviceMemory);
+}
+
 void Buffer::Destroy() {
     RT_ASSERT(device != VK_NULL_HANDLE, "Vulkan device is not valid");
 

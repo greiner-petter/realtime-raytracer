@@ -16,6 +16,8 @@ class Buffer {
 public:
     virtual ~Buffer();
     void UploadData(void* InDataPointer, size_t InSize);
+    void* MapData(size_t InSize);
+    void UnmapData();
     virtual void Destroy();
     static void DestroyAllBuffers();
     static std::vector<std::shared_ptr<Buffer>> GetAllBuffers() { return g_Buffers; }

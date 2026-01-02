@@ -10,5 +10,5 @@ struct Hit {
     vec3 tangent;
     vec3 bitangent;
     int materialID;
-    int sphereIndex; // -1 if no hit
+    int primitiveIndex; // -1 if no hit
 };

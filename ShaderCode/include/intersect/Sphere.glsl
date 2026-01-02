@@ -1,4 +1,3 @@
-
 bool intersectSphere(Ray ray, Sphere sphere, inout Hit hit) {
     // Ray-sphere difference vector
     vec3 difference = ray.origin - sphere.center_radius.xyz;
