@@ -7,6 +7,13 @@
 #include <sstream>
 #include <string>
 
+UBO uniformBufferData;
+
+Scene::Scene() {
+  uniformBuffer = UniformBuffer::Create(0, sizeof(uniformBufferData));
+  sceneSSBO = SSBO::Create(1);
+}
+
 Scene::~Scene() {
   if (GPUData) {
     delete[] GPUData;
@@ -32,4 +39,13 @@ void Scene::ConvertSceneToGPUData() {
 
   // Copy sphere data
   std::memcpy(GPUData + sizeof(uint32_t) * 4, spheres.data(), sizeof(Sphere) * spheres.size());
+}
+
+void Scene::UpdateGPUBuffers() {
+    ConvertSceneToGPUData();
+    uniformBufferData.u_resolution = glm::vec2(Window::GetInstance()->GetWidth(), Window::GetInstance()->GetHeight());
+    uniformBufferData.u_aspectRatio = float(Window::GetInstance()->GetHeight()) / float(Window::GetInstance()->GetWidth());
+
+    uniformBuffer->UploadData(&uniformBufferData, sizeof(uniformBufferData));
+    sceneSSBO->UploadData(GetGPUData(), GetGPUDataSize());
 }

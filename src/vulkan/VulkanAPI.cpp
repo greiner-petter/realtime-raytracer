@@ -74,8 +74,6 @@ static VkDeviceMemory indexBufferMemory;
 VkVertexInputBindingDescription vertexBindingDescription;
 std::vector<VkVertexInputAttributeDescription> vertexAttributeDescriptions;
 
-UBO uniformBufferData;
-std::shared_ptr<UniformBuffer> uniformBuffer;
 VkDescriptorSetLayout descriptorSetLayout;
 static VkDescriptorPool descriptorPool;
 VkDescriptorSet descriptorSet;
@@ -83,7 +81,6 @@ VkDescriptorSet descriptorSet;
 #include "scene/Sphere.h"
 #include "scene/Scene.h"
  
-
 
 VkCommandPool commandPool;
 uint32_t graphicsQueueFamily;
@@ -103,11 +100,7 @@ VkBool32 GetMemoryType(uint32_t typeBits, VkFlags properties, uint32_t* typeInde
     return false;
 }
 
-
-
-std::shared_ptr<SSBO> sceneSSBO;
-
-void VulkanAPI::SetupVulkan() {
+std::shared_ptr<Scene> VulkanAPI::SetupVulkan() {
     VulkanAPI::CreateInstance();
     VulkanAPI::CreateDebugCallback();
     VulkanAPI::CreateWindowSurface();
@@ -122,14 +115,14 @@ void VulkanAPI::SetupVulkan() {
     graphicsPipeline->CreateSwapChain();
     graphicsPipeline->CreateRenderPass();
     VulkanAPI::CreateVertexBuffer();
-    VulkanAPI::CreateUniformBuffer();
-    sceneSSBO = SSBO::Create(1);
+    auto scene = std::make_shared<Scene>();
     graphicsPipeline->CreateImageViews();
     graphicsPipeline->CreateFramebuffers();
     graphicsPipeline->CreateGraphicsPipeline();
     VulkanAPI::CreateDescriptorPool();
     VulkanAPI::CreateDescriptorSet();
     graphicsPipeline->CreateCommandBuffers();
+    return scene;
 }
 
 void VulkanAPI::CleanUp(bool fullClean) {
@@ -620,24 +613,6 @@ void VulkanAPI::CreateVertexBuffer() {
     vertexAttributeDescriptions[1].offset = sizeof(float) * 3;
 }
 
-void VulkanAPI::CreateUniformBuffer() {
-    uniformBuffer = UniformBuffer::Create(0, sizeof(uniformBufferData));
-    VulkanAPI::UpdateUniformData();
-}
-
-void VulkanAPI::UpdateSceneData(Scene& scene) {
-    scene.ConvertSceneToGPUData();
-    sceneSSBO->UploadData(scene.GetGPUData(), scene.GetGPUDataSize());
-}
-
-void VulkanAPI::UpdateUniformData() {
-    uniformBufferData.u_resolution = glm::vec2(Window::GetInstance()->GetWidth(), Window::GetInstance()->GetHeight());
-    uniformBufferData.u_aspectRatio = float(Window::GetInstance()->GetHeight()) / float(Window::GetInstance()->GetWidth());
-
-    uniformBuffer->UploadData(&uniformBufferData, sizeof(uniformBufferData));
-}
-
-
 void VulkanAPI::CreateDescriptorPool() {
     VkDescriptorPoolSize poolSizes[2]{};
 
@@ -705,22 +680,8 @@ void VulkanAPI::CreateDescriptorSet() {
 }
 
 void VulkanAPI::OnWindowSizeChanged() {
-    //windowResized = false;
     Window::GetInstance()->SetResizedFlag(false);
-
     graphicsPipeline->Refresh();
-    /*
-    // Only recreate objects that are affected by framebuffer size changes
-    VulkanAPI::CleanUp(false);
-
-    VulkanAPI::CreateSwapChain();
-    VulkanAPI::CreateRenderPass();
-    VulkanAPI::CreateImageViews();
-    VulkanAPI::CreateFramebuffers();
-    VulkanAPI::CreateDescriptorSet(); // TODO: buffer info may have changed
-    VulkanAPI::CreateGraphicsPipeline();
-    VulkanAPI::CreateCommandBuffers();
-    */
 }
 
 void VulkanAPI::Draw() {
