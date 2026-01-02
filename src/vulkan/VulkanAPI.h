@@ -28,15 +28,9 @@ public:
     static void CreateCommandPool();
     static void CreateVertexBuffer();
     static void CreateUniformBuffer();
-    static void CreateSwapChain();
-    static void CreateRenderPass();
-    static void CreateImageViews();
-    static void CreateFramebuffers();
-    static void CreateGraphicsPipeline();
     static void CreateDescriptorPool();
     static void CreateDescriptorSet();
-    static void CreateCommandBuffers();
-
+    
     static void UpdateUniformData();
     static void UpdateSceneData(class Scene& scene);
 
