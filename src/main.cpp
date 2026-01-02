@@ -27,7 +27,9 @@ void MainLoop() {
     uint32_t frameCount = 0;
     auto timer = std::chrono::steady_clock::now();
     while (!glfwWindowShouldClose(Window::GetGLFWwindow())) {
-        s_Scene->UpdateGPUBuffers();
+        if (s_Scene->IsBufferDirty()) {
+            s_Scene->UpdateGPUBuffers();
+        }
         VulkanAPI::Draw();
         frameCount++;
 
@@ -48,7 +50,7 @@ void MainLoop() {
             frameCount = 0;
             timer = currentTime;
         }
-        CameraUpdate(s_DeltaTime);
+        CameraUpdate(*s_Scene, s_DeltaTime);
 
         glfwPollEvents();
         glfwSwapInterval(0);

@@ -48,4 +48,6 @@ void Scene::UpdateGPUBuffers() {
 
     uniformBuffer->UploadData(&uniformBufferData, sizeof(uniformBufferData));
     sceneSSBO->UploadData(GetGPUData(), GetGPUDataSize());
+
+    SetBufferDirty(false);
 }

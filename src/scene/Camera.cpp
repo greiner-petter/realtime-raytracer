@@ -63,12 +63,13 @@ void UpdateCameraPosition(float deltaTime) {
     uniformBufferData.u_CameraPosition = glm::vec4(cameraPosition, 0.0f);
 }
 
-void CameraUpdate(float deltaTime) {
+void CameraUpdate(Scene& scene, float deltaTime) {
     if (Input::IsMouseButtonPressed(Mouse::ButtonRight)) {
         // default FPS camera behavior
         Input::SetCursorLocked(true);
         UpdateCameraDirection(Input::GetMouseDelta().x, Input::GetMouseDelta().y);
         UpdateCameraPosition(deltaTime);
+        scene.SetBufferDirty(true);
     } else {
         Input::SetCursorLocked(false);
     }

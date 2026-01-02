@@ -26,6 +26,8 @@ public:
   byte* GetGPUData() const { return GPUData; }
   size_t GetGPUDataSize() const { return GPUDataSize; }
   void UpdateGPUBuffers();
+  bool IsBufferDirty() const { return m_IsBufferDirty; }
+  void SetBufferDirty(bool dirty) { m_IsBufferDirty = dirty; }
 public:
   std::vector<Sphere> spheres;
 
@@ -34,6 +36,8 @@ private:
   std::shared_ptr<SSBO> sceneSSBO;
   byte* GPUData = nullptr;
   size_t GPUDataSize = 0;
+
+  bool m_IsBufferDirty = true;
 };
 
 #endif
