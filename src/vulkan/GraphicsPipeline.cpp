@@ -17,7 +17,7 @@ extern VkBuffer vertexBuffer;
 extern VkBuffer indexBuffer;
 extern VkDescriptorSet descriptorSet;
 
-const VkFormat SWAPCHAIN_FORMAT = VK_FORMAT_B8G8R8A8_SRGB;
+const VkFormat SWAPCHAIN_FORMAT = VK_FORMAT_B8G8R8A8_UNORM;
 
 VkShaderModule CreateShaderModule(const ShaderBinary& InShaderResource) {
     VkShaderModuleCreateInfo createInfo = { VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO };
@@ -187,8 +187,18 @@ void GraphicsPipeline::CreateGraphicsPipeline() {
     multisampling.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
 
     VkPipelineColorBlendAttachmentState colorBlendAttachment = {};
-    colorBlendAttachment.colorWriteMask = 0xF;
-    colorBlendAttachment.blendEnable = VK_FALSE;
+    colorBlendAttachment.blendEnable = VK_TRUE; // Enable blending
+    colorBlendAttachment.srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;               // Src color * src alpha
+    colorBlendAttachment.dstColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;     // Dst color * (1 - src alpha)
+    colorBlendAttachment.colorBlendOp = VK_BLEND_OP_ADD;                               // Add the results
+    colorBlendAttachment.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;                    // Src alpha * 1
+    colorBlendAttachment.dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;                   // Dst alpha * 0
+    colorBlendAttachment.alphaBlendOp = VK_BLEND_OP_ADD;                              // Add the results
+    colorBlendAttachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT 
+                                       | VK_COLOR_COMPONENT_G_BIT 
+                                       | VK_COLOR_COMPONENT_B_BIT 
+                                       | VK_COLOR_COMPONENT_A_BIT;  // Write all channels
+
 
     VkPipelineColorBlendStateCreateInfo colorBlending = { VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO };
     colorBlending.attachmentCount = 1;
@@ -277,7 +287,7 @@ void GraphicsPipeline::CreateCommandBuffers() {
         VkRenderingAttachmentInfo colorAttachment = { VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO };
         colorAttachment.imageView = swapChainImageViews[i];
         colorAttachment.imageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-        colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+        colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
         colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
         colorAttachment.clearValue = clearValue;
 
