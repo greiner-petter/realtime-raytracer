@@ -5,7 +5,7 @@
 
 class VulkanAPI {
 public:
-    static std::shared_ptr<class Scene> SetupVulkan();
+    static void SetupVulkan();
     
     static void CreateInstance();
     static void CreateWindowSurface();

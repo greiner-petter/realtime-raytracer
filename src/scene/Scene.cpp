@@ -9,7 +9,7 @@
 
 UBO uniformBufferData;
 
-Scene::Scene() {
+void Scene::CreateGPUBuffers() {
   uniformBuffer = UniformBuffer::Create(0, sizeof(uniformBufferData));
   primitiveSSBO = SSBO::Create(1);
   sphereSSBO = SSBO::Create(2);

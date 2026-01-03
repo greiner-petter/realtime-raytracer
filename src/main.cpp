@@ -19,6 +19,7 @@ void InitWindow() {
 }
 
 void InitScene() {
+    s_Scene = std::make_shared<Scene>();
     s_Scene->spheres.push_back({ glm::vec4(0.0f, 0.0f, -9.0f, 0.33f) });
     s_Scene->spheres.push_back({ glm::vec4(2.0f, 0.0f, -3.0f, 0.2f) });
     s_Scene->triangles.push_back({
@@ -28,9 +29,9 @@ void InitScene() {
     });
 }
 
-std::shared_ptr<Scene> InitVulkan() {
+void InitVulkan() {
     ShaderCompiler::CompileAllShaders();
-    return VulkanAPI::SetupVulkan();
+    VulkanAPI::SetupVulkan();
 }
 
 void MainLoop() {
@@ -76,7 +77,7 @@ int main() {
     Log::Init();
     s_PreviousTime = std::chrono::steady_clock::now();
     InitWindow();
-    s_Scene = InitVulkan();
+    InitVulkan();
     InitScene();
     MainLoop();
     Cleanup();

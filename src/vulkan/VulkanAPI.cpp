@@ -134,7 +134,7 @@ void CreateAndUploadBuffer(VkDeviceSize size, VkBufferUsageFlags usage, const vo
     vkFreeMemory(device, stagingMemory, nullptr);
 }
 
-std::shared_ptr<Scene> VulkanAPI::SetupVulkan() {
+void VulkanAPI::SetupVulkan() {
     VulkanAPI::CreateInstance();
     VulkanAPI::CreateWindowSurface();
     VulkanAPI::CreateLogicalDevice();
@@ -142,13 +142,11 @@ std::shared_ptr<Scene> VulkanAPI::SetupVulkan() {
     VulkanAPI::CreateSwapChain();
     VulkanAPI::CreateImageViews();
     VulkanAPI::CreateVertexBuffer();
-    auto scene = std::make_shared<Scene>();
+    Scene::CreateGPUBuffers();
     VulkanAPI::CreateDescriptorPool();
     VulkanAPI::CreateDescriptorSet();
     VulkanAPI::CreateGraphicsPipeline();
     VulkanAPI::CreateCommandBuffers();
-
-    return scene;
 }
 
 void VulkanAPI::CreateInstance() {

@@ -20,8 +20,9 @@ struct UBO {
 
 class Scene {
 public:
-  Scene();
+  Scene() = default;
   virtual ~Scene();
+  static void CreateGPUBuffers();
 
   void ConvertSceneToGPUData();
   void UpdateGPUBuffers();
@@ -32,10 +33,10 @@ public:
   std::vector<Triangle> triangles;
 
 private:
-  std::shared_ptr<UniformBuffer> uniformBuffer;
-  std::shared_ptr<SSBO> primitiveSSBO;
-  std::shared_ptr<SSBO> sphereSSBO;
-  std::shared_ptr<SSBO> triangleSSBO;
+  inline static std::shared_ptr<UniformBuffer> uniformBuffer;
+  inline static std::shared_ptr<SSBO> primitiveSSBO;
+  inline static std::shared_ptr<SSBO> sphereSSBO;
+  inline static std::shared_ptr<SSBO> triangleSSBO;
 
   bool m_IsBufferDirty = true;
 };
