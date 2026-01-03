@@ -8,6 +8,8 @@
 
 #include "vulkan/ShaderCompiler.h"
 
+extern VkImage offscreenImage;
+
 std::shared_ptr<Scene> s_Scene;
 std::shared_ptr<Window> s_Window;
 std::chrono::time_point<std::chrono::steady_clock> s_PreviousTime;
@@ -60,6 +62,10 @@ void MainLoop() {
             timer = currentTime;
         }
         CameraUpdate(*s_Scene, s_DeltaTime);
+
+        if (Input::IsKeyPressed(Key::LeftControl) && Input::IsKeyPressed(Key::S)) {
+            VulkanAPI::SaveImageToDisk(offscreenImage, "result.png");
+        }
 
         glfwPollEvents();
         glfwSwapInterval(0);

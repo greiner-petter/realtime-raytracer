@@ -2,6 +2,7 @@
 #define VULKAN_API_H
 
 #include <memory>
+#include <vulkan/vulkan.h>
 
 class VulkanAPI {
 public:
@@ -28,6 +29,8 @@ public:
     static void FullCleanUp();
 
     static void Refresh();
+
+    static void SaveImageToDisk(VkImage img, const std::string& filePath);
 };
 
 #endif

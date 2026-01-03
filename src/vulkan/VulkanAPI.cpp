@@ -636,3 +636,115 @@ void VulkanAPI::Refresh() {
     CreateComputePipeline();
     CreateCommandBuffers(); 
 }
+
+#define STB_IMAGE_WRITE_IMPLEMENTATION
+#include "third-party/stb_image_write.h"
+
+void VulkanAPI::SaveImageToDisk(VkImage img, const std::string& filePath)
+{
+    const uint32_t width  = swapChainExtent.width;
+    const uint32_t height = swapChainExtent.height;
+    const VkFormat format = VK_FORMAT_R8G8B8A8_UNORM;
+
+    VkDeviceSize imageSize = width * height * 4;
+
+    // Create staging buffer
+    VkBuffer stagingBuffer;
+    VkDeviceMemory stagingMemory;
+
+    VkBufferCreateInfo bufferInfo{ VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO };
+    bufferInfo.size  = imageSize;
+    bufferInfo.usage = VK_BUFFER_USAGE_TRANSFER_DST_BIT;
+
+    vkCreateBuffer(device, &bufferInfo, nullptr, &stagingBuffer);
+
+    VkMemoryRequirements memReqs;
+    vkGetBufferMemoryRequirements(device, stagingBuffer, &memReqs);
+
+    VkMemoryAllocateInfo allocInfo{ VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO };
+    allocInfo.allocationSize  = memReqs.size;
+    allocInfo.memoryTypeIndex = FindMemoryType(
+        memReqs.memoryTypeBits,
+        VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT
+    );
+
+    vkAllocateMemory(device, &allocInfo, nullptr, &stagingMemory);
+    vkBindBufferMemory(device, stagingBuffer, stagingMemory, 0);
+
+    // Command buffer
+    VkCommandBufferAllocateInfo cmdAlloc{ VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO };
+    cmdAlloc.commandPool = commandPool;
+    cmdAlloc.level       = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+    cmdAlloc.commandBufferCount = 1;
+
+    VkCommandBuffer cmd;
+    vkAllocateCommandBuffers(device, &cmdAlloc, &cmd);
+
+    VkCommandBufferBeginInfo begin{ VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO };
+    begin.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+    vkBeginCommandBuffer(cmd, &begin);
+
+    // Transition image -> TRANSFER_SRC
+    VkImageMemoryBarrier barrier{ VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER };
+    barrier.oldLayout = VK_IMAGE_LAYOUT_GENERAL;
+    barrier.newLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
+    barrier.srcAccessMask = VK_ACCESS_SHADER_WRITE_BIT;
+    barrier.dstAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
+    barrier.image = img;
+    barrier.subresourceRange = {
+        VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1
+    };
+
+    vkCmdPipelineBarrier(
+        cmd,
+        VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
+        VK_PIPELINE_STAGE_TRANSFER_BIT,
+        0, 0, nullptr, 0, nullptr, 1, &barrier
+    );
+
+    // Copy image -> buffer
+    VkBufferImageCopy copy{};
+    copy.imageSubresource = { VK_IMAGE_ASPECT_COLOR_BIT, 0, 0, 1 };
+    copy.imageExtent = { width, height, 1 };
+
+    vkCmdCopyImageToBuffer(
+        cmd,
+        img,
+        VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+        stagingBuffer,
+        1,
+        &copy
+    );
+
+    vkEndCommandBuffer(cmd);
+
+    VkSubmitInfo submit{ VK_STRUCTURE_TYPE_SUBMIT_INFO };
+    submit.commandBufferCount = 1;
+    submit.pCommandBuffers = &cmd;
+
+    vkQueueSubmit(graphicsQueue, 1, &submit, VK_NULL_HANDLE);
+    vkQueueWaitIdle(graphicsQueue);
+
+    vkFreeCommandBuffers(device, commandPool, 1, &cmd);
+
+    // Map + write PNG
+    void* mapped;
+    vkMapMemory(device, stagingMemory, 0, imageSize, 0, &mapped);
+
+    stbi_write_png(
+        filePath.c_str(),
+        width,
+        height,
+        4,
+        mapped,
+        width * 4
+    );
+
+    vkUnmapMemory(device, stagingMemory);
+
+    // Cleanup
+    vkDestroyBuffer(device, stagingBuffer, nullptr);
+    vkFreeMemory(device, stagingMemory, nullptr);
+
+    RT_INFO("Saved image to {}", filePath);
+}
