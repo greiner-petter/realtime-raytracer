@@ -159,9 +159,7 @@ void VulkanAPI::CreateInstance() {
     extensions.push_back("VK_KHR_get_physical_device_properties2");
     #endif
 
-    VkApplicationInfo appInfo = { VK_STRUCTURE_TYPE_APPLICATION_INFO };
-    appInfo.pApplicationName = "TraceyRT";
-    appInfo.apiVersion = VK_API_VERSION_1_3; 
+    VkApplicationInfo appInfo = { VK_STRUCTURE_TYPE_APPLICATION_INFO, .pApplicationName = "TraceyRT", .apiVersion = VK_API_VERSION_1_3 };
 
     VkInstanceCreateInfo createInfo = { VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO };
     createInfo.pApplicationInfo = &appInfo;
