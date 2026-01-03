@@ -1,7 +1,4 @@
 #version 450
-layout(location = 0) out vec4 outColor;
-
-layout(location = 1) in vec2 v_UV;
 
 layout(binding = 0) uniform UBO {
     vec2 u_resolution;
@@ -89,10 +86,7 @@ Ray createRay(vec2 ndc, vec3 cameraPosition, vec3 cameraForward, vec3 cameraRigh
     return ray;
 }
 
-void main() {
-    vec2 ndc = v_UV;
-    ndc.y *= -1.0;
-    ndc.y *= u_aspectRatio;
+vec3 main_frag(vec2 ndc) {
 
     // Primary ray
     Ray ray = createRay(ndc, u_CameraPosition, u_CameraForward, u_CameraRight, u_CameraUp, u_FocusDistance);
@@ -132,5 +126,38 @@ void main() {
         break;
     }
 
-    outColor = vec4(radiance, 1.0);
+    return radiance;
+}
+
+
+layout(local_size_x = 16, local_size_y = 16, local_size_z = 1) in;
+layout(binding = 255, rgba8) uniform writeonly image2D resultImage;
+
+
+void main() {
+    ivec2 pixelCoords = ivec2(gl_GlobalInvocationID.xy);
+    ivec2 screenDims = imageSize(resultImage);
+
+    // Because workgroups are fixed size (e.g., 16x16), the total threads might 
+    // slightly exceed the image size. We must return early to avoid writing out of bounds.
+    if (pixelCoords.x >= screenDims.x || pixelCoords.y >= screenDims.y) {
+        return;
+    }
+
+    // center the ray in the pixel.
+    vec2 uv = (vec2(pixelCoords) + 0.5) / vec2(screenDims);
+
+    // conversion from [0,1] UV to [-1,1] Clip Space for ray direction
+    vec2 ndc = uv * 2.0 - 1.0; 
+    
+    // Correct for Aspect Ratio
+    ndc.y *= -1.0;
+    ndc.y *= u_aspectRatio;
+
+    // Raytrace
+    vec3 pixelColor = main_frag(ndc);
+
+    // Write Output
+    // Format must match the image layout (rgba8 -> vec4)
+    imageStore(resultImage, pixelCoords, vec4(pixelColor, 1.0));
 }

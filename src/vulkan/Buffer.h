@@ -9,7 +9,7 @@
 
 #define SSBO_DEFAULT_SIZE (16 * 1024 * 1024) // 16 MB
 
-extern VkBool32 GetMemoryType(uint32_t typeBits, VkFlags properties, uint32_t* typeIndex);
+extern uint32_t FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
 extern VkDevice device;
 
 class Buffer {
@@ -29,7 +29,7 @@ public:
 
 protected:
     template <typename T>
-    static std::shared_ptr<T> Create(uint32_t binding, VkDeviceSize size, VkBufferUsageFlagBits usageFlags) {
+    static std::shared_ptr<T> Create(uint32_t binding, VkDeviceSize size, VkBufferUsageFlags usageFlags) {
         auto buffer = std::make_shared<T>();
         g_Buffers.push_back(buffer);
 
@@ -54,12 +54,10 @@ protected:
         VkMemoryAllocateInfo allocInfo = {};
         allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
         allocInfo.allocationSize = memReqs.size;
-        GetMemoryType(memReqs.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, &allocInfo.memoryTypeIndex);
+        allocInfo.memoryTypeIndex = FindMemoryType(memReqs.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
 
         vkAllocateMemory(device, &allocInfo, nullptr, &buffer->m_DeviceMemory);
         vkBindBufferMemory(device, buffer->m_Buffer, buffer->m_DeviceMemory, 0);
-        
-        buffer->UploadData(nullptr, 0); // Initialize with empty data
 
         return buffer;
     }

@@ -11,6 +11,9 @@ Buffer::~Buffer() {
 }
 
 void Buffer::UploadData(void* InDataPointer, size_t InSize) {
+    if (InSize == 0 || InDataPointer == nullptr)
+        return;
+    
     void* data;
     vkMapMemory(device, m_DeviceMemory, 0, InSize, 0, &data);
     memcpy(data, InDataPointer, InSize);
