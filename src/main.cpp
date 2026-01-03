@@ -38,9 +38,7 @@ void MainLoop() {
     uint32_t frameCount = 0;
     auto timer = std::chrono::steady_clock::now();
     while (!glfwWindowShouldClose(Window::GetGLFWwindow())) {
-        if (s_Scene->IsBufferDirty()) {
-            s_Scene->UpdateGPUBuffers();
-        }
+        s_Scene->UpdateGPUBuffers();
         VulkanAPI::Draw();
         frameCount++;
 

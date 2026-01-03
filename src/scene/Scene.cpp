@@ -92,11 +92,14 @@ void Scene::ConvertSceneToGPUData() {
 }
 
 void Scene::UpdateGPUBuffers() {
+  // Always update uniform buffer
+  uniformBufferData.u_resolution = glm::vec2(Window::GetInstance()->GetWidth(), Window::GetInstance()->GetHeight());
+  uniformBufferData.u_aspectRatio = float(Window::GetInstance()->GetHeight()) / float(Window::GetInstance()->GetWidth());
+  uniformBuffer->UploadData(&uniformBufferData, sizeof(uniformBufferData));
+  
+  // update scene buffers only if dirty
+  if (IsBufferDirty()) {
     ConvertSceneToGPUData();
-    uniformBufferData.u_resolution = glm::vec2(Window::GetInstance()->GetWidth(), Window::GetInstance()->GetHeight());
-    uniformBufferData.u_aspectRatio = float(Window::GetInstance()->GetHeight()) / float(Window::GetInstance()->GetWidth());
-
-    uniformBuffer->UploadData(&uniformBufferData, sizeof(uniformBufferData));
-
     SetBufferDirty(false);
+  }
 }
