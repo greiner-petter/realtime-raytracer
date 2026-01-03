@@ -18,6 +18,16 @@ void InitWindow() {
     s_Window = Window::Create(WindowParams{ "Vulkan Raytracer", 1280, 720, false });
 }
 
+void InitScene() {
+    s_Scene->spheres.push_back({ glm::vec4(0.0f, 0.0f, -9.0f, 0.33f) });
+    s_Scene->spheres.push_back({ glm::vec4(2.0f, 0.0f, -3.0f, 0.2f) });
+    s_Scene->triangles.push_back({
+        glm::vec4(-1.0f, -1.0f, -5.0f, 0.0f), 
+        glm::vec4(1.0f, -1.0f, -5.0f, 0.0f), 
+        glm::vec4(0.0f, 1.0f, -5.0f, 0.0f)
+    });
+}
+
 std::shared_ptr<Scene> InitVulkan() {
     ShaderCompiler::CompileAllShaders();
     return VulkanAPI::SetupVulkan();
@@ -59,7 +69,7 @@ void MainLoop() {
 }
 
 void Cleanup() {
-    VulkanAPI::CleanUp(true);
+    VulkanAPI::FullCleanUp();
 }
 
 int main() {
@@ -67,13 +77,7 @@ int main() {
     s_PreviousTime = std::chrono::steady_clock::now();
     InitWindow();
     s_Scene = InitVulkan();
-    s_Scene->spheres.push_back({ glm::vec4(0.0f, 0.0f, -9.0f, 0.33f) });
-    s_Scene->spheres.push_back({ glm::vec4(2.0f, 0.0f, -3.0f, 0.2f) });
-    s_Scene->triangles.push_back({
-        glm::vec4(-1.0f, -1.0f, -5.0f, 0.0f), 
-        glm::vec4(1.0f, -1.0f, -5.0f, 0.0f), 
-        glm::vec4(0.0f, 1.0f, -5.0f, 0.0f)
-    });
+    InitScene();
     MainLoop();
     Cleanup();
 
