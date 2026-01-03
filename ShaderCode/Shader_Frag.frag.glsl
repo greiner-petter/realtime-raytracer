@@ -26,6 +26,14 @@ struct Sphere {
     vec4 center_radius; // xyz = center, w = radius
 };
 
+struct Triangle {
+    vec4 vertex[3];
+    vec4 normal[3];
+    vec4 tangent[3];
+    vec4 bitangent[3];
+    vec4 surface[3];
+};
+
 layout(binding = 1, std430) buffer Primitives {
     uint primitiveCount;
     Primitive primitives[];
@@ -36,7 +44,13 @@ layout(binding = 2, std430) buffer Spheres {
     Sphere spheres[];
 };
 
+layout(binding = 3, std430) buffer Triangles {
+    uint triangleCount;
+    Triangle triangles[];
+};
+
 #include "intersect/Sphere.glsl"
+#include "intersect/Triangle.glsl"
 
 bool TraceRay(Ray ray, out Hit hit) {
     hit.rayLength = INFINITY;
@@ -46,6 +60,13 @@ bool TraceRay(Ray ray, out Hit hit) {
         if (primitives[int(i)].type == 1) {
             Sphere sphere = spheres[primitives[int(i)].index];
             if (intersectSphere(ray, sphere, hit)) {
+                found = true;
+                hit.materialID = primitives[int(i)].materialID;
+                hit.primitiveIndex = int(i);
+            }
+        } else if (primitives[int(i)].type == 2) {
+            Triangle triangle = triangles[primitives[int(i)].index];
+            if (intersectTriangle(ray, triangle, hit)) {
                 found = true;
                 hit.materialID = primitives[int(i)].materialID;
                 hit.primitiveIndex = int(i);

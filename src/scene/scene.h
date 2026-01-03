@@ -4,6 +4,7 @@
 #include "common/color.h"
 #include "common/Types.h"
 #include "scene/Sphere.h"
+#include "scene/Triangle.h"
 
 #include "vulkan/Buffer.h"
 
@@ -28,11 +29,13 @@ public:
   void SetBufferDirty(bool dirty) { m_IsBufferDirty = dirty; }
 public:
   std::vector<Sphere> spheres;
+  std::vector<Triangle> triangles;
 
 private:
   std::shared_ptr<UniformBuffer> uniformBuffer;
   std::shared_ptr<SSBO> primitiveSSBO;
   std::shared_ptr<SSBO> sphereSSBO;
+  std::shared_ptr<SSBO> triangleSSBO;
 
   bool m_IsBufferDirty = true;
 };
