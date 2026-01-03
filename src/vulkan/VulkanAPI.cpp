@@ -9,42 +9,38 @@
 #include <GLFW/glfw3.h>
 #include <vulkan/vulkan.h>
 
-VkInstance instance;
-VkSurfaceKHR windowSurface;
-VkPhysicalDevice physicalDevice;
-VkDevice device;
-VkQueue graphicsQueue; 
-VkCommandPool commandPool;
-uint32_t graphicsQueueFamily;
-uint32_t presentQueueFamily; 
+VkInstance instance = VK_NULL_HANDLE;
+VkSurfaceKHR windowSurface = VK_NULL_HANDLE;
+VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;
+VkDevice device = VK_NULL_HANDLE;
+VkQueue graphicsQueue = VK_NULL_HANDLE; 
+VkCommandPool commandPool = VK_NULL_HANDLE;
+uint32_t graphicsQueueFamily = 0;
+uint32_t presentQueueFamily = 0; 
 
-VkBuffer vertexBuffer;
-VkDeviceMemory vertexBufferMemory;
-VkBuffer indexBuffer;
-VkDeviceMemory indexBufferMemory;
-VkDescriptorSetLayout descriptorSetLayout;
-VkDescriptorPool descriptorPool;
-VkDescriptorSet descriptorSet;
-VkVertexInputBindingDescription vertexBindingDescription;
+VkBuffer vertexBuffer = VK_NULL_HANDLE;
+VkDeviceMemory vertexBufferMemory = VK_NULL_HANDLE;
+VkBuffer indexBuffer = VK_NULL_HANDLE;
+VkDeviceMemory indexBufferMemory = VK_NULL_HANDLE;
+VkDescriptorSetLayout descriptorSetLayout = VK_NULL_HANDLE;
+VkDescriptorPool descriptorPool = VK_NULL_HANDLE;
+VkDescriptorSet descriptorSet = VK_NULL_HANDLE;
+VkVertexInputBindingDescription vertexBindingDescription = {};
 std::vector<VkVertexInputAttributeDescription> vertexAttributeDescriptions;
 
-VkSemaphore imageAvailableSemaphore;
-VkSemaphore renderingFinishedSemaphore;
-VkFence inFlightFence; 
+VkSemaphore imageAvailableSemaphore = VK_NULL_HANDLE;
+VkSemaphore renderingFinishedSemaphore = VK_NULL_HANDLE;
+VkFence inFlightFence = VK_NULL_HANDLE; 
 
 VkExtent2D swapChainExtent = {1280, 720};
-VkFormat swapChainFormat;
-VkSwapchainKHR oldSwapChain;
-VkSwapchainKHR swapChain;
+const VkFormat SWAPCHAIN_FORMAT = VK_FORMAT_B8G8R8A8_UNORM;
+VkSwapchainKHR oldSwapChain = VK_NULL_HANDLE;
+VkSwapchainKHR swapChain = VK_NULL_HANDLE;
 std::vector<VkImage> swapChainImages;
 std::vector<VkImageView> swapChainImageViews;
-std::vector<VkFramebuffer> swapChainFramebuffers;
-VkRenderPass renderPass;
-VkPipeline m_Pipeline = VK_NULL_HANDLE;
-VkPipelineLayout m_PipelineLayout = VK_NULL_HANDLE;
+VkPipeline pipeline = VK_NULL_HANDLE;
+VkPipelineLayout pipelineLayout = VK_NULL_HANDLE;
 std::vector<VkCommandBuffer> graphicsCommandBuffers;
-
-const VkFormat SWAPCHAIN_FORMAT = VK_FORMAT_B8G8R8A8_UNORM;
 
 
 VkShaderModule CreateShaderModule(const ShaderBinary& InShaderResource) {
@@ -477,7 +473,7 @@ void VulkanAPI::CreateGraphicsPipeline() {
     layoutInfo.setLayoutCount = 1;
     layoutInfo.pSetLayouts = &descriptorSetLayout;
 
-    if (vkCreatePipelineLayout(device, &layoutInfo, nullptr, &m_PipelineLayout) != VK_SUCCESS) {
+    if (vkCreatePipelineLayout(device, &layoutInfo, nullptr, &pipelineLayout) != VK_SUCCESS) {
         RT_ERROR("failed to create pipeline layout"); exit(1);
     }
 
@@ -492,11 +488,11 @@ void VulkanAPI::CreateGraphicsPipeline() {
     pipelineInfo.pMultisampleState = &multisampling;
     pipelineInfo.pColorBlendState = &colorBlending;
     pipelineInfo.pDynamicState = &dynamicState;
-    pipelineInfo.layout = m_PipelineLayout;
+    pipelineInfo.layout = pipelineLayout;
     pipelineInfo.renderPass = VK_NULL_HANDLE;
     pipelineInfo.pTessellationState = nullptr; 
 
-    if (vkCreateGraphicsPipelines(device, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &m_Pipeline) != VK_SUCCESS) {
+    if (vkCreateGraphicsPipelines(device, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &pipeline) != VK_SUCCESS) {
         RT_ERROR("failed to create pipeline"); exit(1);
     }
 
@@ -554,8 +550,8 @@ void VulkanAPI::CreateCommandBuffers() {
         VkRect2D scissor = { {0, 0}, swapChainExtent };
         vkCmdSetScissor(cmd, 0, 1, &scissor);
 
-        vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, m_PipelineLayout, 0, 1, &descriptorSet, 0, nullptr);
-        vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, m_Pipeline);
+        vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &descriptorSet, 0, nullptr);
+        vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
         
         VkDeviceSize offset = 0;
         vkCmdBindVertexBuffers(cmd, 0, 1, &vertexBuffer, &offset);
@@ -641,13 +637,13 @@ void VulkanAPI::ClearCommandBuffers() {
 }
 
 void VulkanAPI::ClearPipeline() {
-    if (m_Pipeline != VK_NULL_HANDLE) {
-        vkDestroyPipeline(device, m_Pipeline, nullptr);
-        m_Pipeline = VK_NULL_HANDLE;
+    if (pipeline != VK_NULL_HANDLE) {
+        vkDestroyPipeline(device, pipeline, nullptr);
+        pipeline = VK_NULL_HANDLE;
     }
-    if (m_PipelineLayout != VK_NULL_HANDLE) {
-        vkDestroyPipelineLayout(device, m_PipelineLayout, nullptr);
-        m_PipelineLayout = VK_NULL_HANDLE;
+    if (pipelineLayout != VK_NULL_HANDLE) {
+        vkDestroyPipelineLayout(device, pipelineLayout, nullptr);
+        pipelineLayout = VK_NULL_HANDLE;
     }
     if (descriptorSetLayout != VK_NULL_HANDLE) {
         vkDestroyDescriptorSetLayout(device, descriptorSetLayout, nullptr);
