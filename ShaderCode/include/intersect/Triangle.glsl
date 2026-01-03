@@ -46,6 +46,7 @@ bool intersectTriangle(Ray ray, Triangle triangle, inout Hit hit) {
   hit.surface = u * triangle.surface[1].xy + v * triangle.surface[2].xy + (1 - u - v) * triangle.surface[0].xy;
   // Set the new length and the current primitive
   hit.rayLength = t;
+  hit.point = ray.origin + t * ray.direction;
 
   // True, because the primitive was hit
   return true;
