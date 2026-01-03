@@ -1,7 +1,6 @@
 #ifndef SCENE_H
 #define SCENE_H
 
-#include "common/color.h"
 #include "common/Types.h"
 #include "scene/Sphere.h"
 #include "scene/Triangle.h"
