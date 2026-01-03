@@ -8,7 +8,7 @@ if(APPLE AND EXISTS "/opt/homebrew")
     list(APPEND CMAKE_PREFIX_PATH "/opt/homebrew")
 endif()
 
-# Set output dirs
+# --- Set output dirs ---
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE "${CMAKE_SOURCE_DIR}/bin")
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG "${CMAKE_SOURCE_DIR}/bin")
 
@@ -29,7 +29,6 @@ file(GLOB intermediate_src "Intermediate/Resources/*.cpp")
 # --- Executable ---
 add_executable(tracey_rt ${cpp_src} ${intermediate_src})
 target_include_directories(tracey_rt PUBLIC src Intermediate/Resources)
-target_compile_definitions(tracey_rt PUBLIC cimg_display=0)
 
 # --- Linking ---
 target_link_libraries(tracey_rt PRIVATE glfw glm::glm spdlog::spdlog Vulkan::Vulkan)
