@@ -5,7 +5,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # --- Configuration for Homebrew ---
 if(APPLE AND EXISTS "/opt/homebrew")
-  list(APPEND CMAKE_PREFIX_PATH "/opt/homebrew")
+    list(APPEND CMAKE_PREFIX_PATH "/opt/homebrew")
 endif()
 
 # Set output dirs
@@ -14,8 +14,7 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG "${CMAKE_SOURCE_DIR}/bin")
 
 # --- Find System Packages ---
 if(NOT WIN32)
-  find_package(Threads REQUIRED)
-  find_package(X11 REQUIRED)
+    find_package(Threads REQUIRED)
 endif()
 find_package(glfw3 REQUIRED)
 find_package(glm REQUIRED)
@@ -55,5 +54,6 @@ if (APPLE)
     )
 elseif (UNIX)
     # Linux specific settings
+    find_package(X11 REQUIRED)
     target_link_libraries(tracey_rt PRIVATE ${X11_LIBRARIES} dl pthread)
 endif()
