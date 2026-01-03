@@ -34,10 +34,16 @@ bool intersectTriangle(Ray ray, Triangle triangle, inout Hit hit) {
     return false;
 
   // Calculate the normal
+  vec3 norm = vec3(0.0);
   if (length(triangle.normal[0].xyz) * length(triangle.normal[1].xyz) * length(triangle.normal[2].xyz) > EPSILON)
-    hit.normal = normalize(u * triangle.normal[1].xyz + v * triangle.normal[2].xyz + (1 - u - v) * triangle.normal[0].xyz);
+    norm = normalize(u * triangle.normal[1].xyz + v * triangle.normal[2].xyz + (1 - u - v) * triangle.normal[0].xyz);
   else
-    hit.normal = normalize(cross(edge1, edge2));
+    norm = normalize(cross(edge1, edge2));
+
+  if (dot(norm, ray.direction) > 0.0)
+    norm = -norm; // TODO: maybe handle backface culling here
+  hit.normal = norm;
+
   // calculate the tangent and bitangent vectors as well
   hit.tangent = normalize(u * triangle.tangent[1].xyz + v * triangle.tangent[2].xyz + (1 - u - v) * triangle.tangent[0].xyz);
   hit.bitangent = normalize(u * triangle.bitangent[1].xyz + v * triangle.bitangent[2].xyz + (1 - u - v) * triangle.bitangent[0].xyz);
