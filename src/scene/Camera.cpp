@@ -69,7 +69,6 @@ void CameraUpdate(Scene& scene, float deltaTime) {
         Input::SetCursorLocked(true);
         UpdateCameraDirection(Input::GetMouseDelta().x, Input::GetMouseDelta().y);
         UpdateCameraPosition(deltaTime);
-        scene.SetBufferDirty(true);
     } else {
         Input::SetCursorLocked(false);
     }
