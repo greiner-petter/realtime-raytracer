@@ -2,6 +2,8 @@
 #include "vulkan/VulkanAPI.h"
 #include "scene/Camera.h"
 #include "scene/Scene.h"
+#include "scene/Sphere.h"
+#include "scene/Triangle.h"
 #include "common/Input.h"
 #include "common/Log.h"
 #include <GLFW/glfw3.h>
@@ -22,9 +24,9 @@ void InitWindow() {
 
 void InitScene() {
     s_Scene = std::make_shared<Scene>();
-    s_Scene->spheres.push_back({ glm::vec4(0.0f, 0.0f, -9.0f, 0.33f) });
-    s_Scene->spheres.push_back({ glm::vec4(2.0f, 0.0f, -3.0f, 0.2f) });
-    s_Scene->triangles.push_back({
+    s_Scene->AddPrimitive(Sphere{ glm::vec4(0.0f, 0.0f, -9.0f, 0.33f) });
+    s_Scene->AddPrimitive(Sphere{ glm::vec4(2.0f, 0.0f, -3.0f, 1.2f) });
+    s_Scene->AddPrimitive(Triangle{
         glm::vec4(-1.0f, -1.0f, -5.0f, 0.0f), 
         glm::vec4(1.0f, -1.0f, -5.0f, 0.0f), 
         glm::vec4(0.0f, 1.0f, -5.0f, 0.0f)

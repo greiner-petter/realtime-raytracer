@@ -8,19 +8,19 @@ struct Triangle : public Primitive {
 public:
     // Constructor
     Triangle(Vec3 const &a, Vec3 const &b, Vec3 const &c) 
-    : vertex{ Vec4(a, 0), Vec4(b, 0), Vec4(c, 0) } {}
+    : vertex{ Vec4(a, 0), Vec4(b, 0), Vec4(c, 0) } { type = PrimitiveType::Triangle; }
 
     Triangle(Vec3 const &a, Vec3 const &b, Vec3 const &c,
              Vec3 const &na, Vec3 const &nb, Vec3 const &nc)
     : vertex{ Vec4(a, 0), Vec4(b, 0), Vec4(c, 0) },
-      normal{ Vec4(na, 0), Vec4(nb, 0), Vec4(nc, 0) } {}
+      normal{ Vec4(na, 0), Vec4(nb, 0), Vec4(nc, 0) } { type = PrimitiveType::Triangle; }
 
     Triangle(Vec3 const &a, Vec3 const &b, Vec3 const &c,
              Vec3 const &na, Vec3 const &nb, Vec3 const &nc,
              Vec2 const &ta, Vec2 const &tb, Vec2 const &tc)
     : vertex{ Vec4(a, 0), Vec4(b, 0), Vec4(c, 0) },
       normal{ Vec4(na, 0), Vec4(nb, 0), Vec4(nc, 0) },
-      surface{ Vec4(ta, 0, 0), Vec4(tb, 0, 0), Vec4(tc, 0, 0) } {}
+      surface{ Vec4(ta, 0, 0), Vec4(tb, 0, 0), Vec4(tc, 0, 0) } { type = PrimitiveType::Triangle; }
 
 
     Triangle(Vec3 const &a, Vec3 const &b, Vec3 const &c,
@@ -32,7 +32,7 @@ public:
       normal{ Vec4(na, 0), Vec4(nb, 0), Vec4(nc, 0) },
       tangent{ Vec4(tana, 0), Vec4(tanb, 0), Vec4(tanc, 0) },
       bitangent{ Vec4(ba, 0), Vec4(bb, 0), Vec4(bc, 0) },
-      surface{ Vec4(ta, 0, 0), Vec4(tb, 0, 0), Vec4(tc, 0, 0) } {}
+      surface{ Vec4(ta, 0, 0), Vec4(tb, 0, 0), Vec4(tc, 0, 0) } { type = PrimitiveType::Triangle; }
 
     // Set
     void setVertex(int index, Vec3 const &vertex) { this->vertex[index] = Vec4(vertex, 0); }
@@ -51,7 +51,8 @@ public:
     float minimumBounds(int dimension) const override;
     float maximumBounds(int dimension) const override;
 
-    void* GetTriangleData() { return &vertex[0]; }
+    virtual void* GetDataLayoutBeginPtr() override { return &vertex[0]; }
+    virtual size_t GetDataSize() const override { return sizeof(Vec4) * 3 * 5; }
 protected:
     Vec4 vertex[3];     // XYZ + padding
     Vec4 normal[3];     // XYZ + padding

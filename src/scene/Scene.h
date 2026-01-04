@@ -2,8 +2,7 @@
 #define SCENE_H
 
 #include "common/Types.h"
-#include "scene/Sphere.h"
-#include "scene/Triangle.h"
+#include "scene/Primitive.h"
 
 #include "vulkan/Buffer.h"
 
@@ -23,13 +22,19 @@ public:
   virtual ~Scene();
   static void CreateGPUBuffers();
 
+  void WriteBufferForPrimitiveType(PrimitiveType type, SSBO& ssbo);
   void ConvertSceneToGPUData();
   void UpdateGPUBuffers();
   bool IsBufferDirty() const { return m_IsBufferDirty; }
   void SetBufferDirty(bool dirty) { m_IsBufferDirty = dirty; }
 public:
-  std::vector<Sphere> spheres;
-  std::vector<Triangle> triangles;
+  std::vector<std::shared_ptr<Primitive>> m_Primitives;
+
+  template<typename T>
+  void AddPrimitive(const T& primitive) {
+      m_Primitives.push_back(std::make_shared<T>(primitive));
+      m_IsBufferDirty = true;
+  }
 
 private:
   inline static std::shared_ptr<UniformBuffer> uniformBuffer;
