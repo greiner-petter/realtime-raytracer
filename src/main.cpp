@@ -31,6 +31,12 @@ void InitScene() {
         glm::vec4(1.0f, -1.0f, -5.0f, 0.0f), 
         glm::vec4(0.0f, 1.0f, -5.0f, 0.0f)
     });
+
+    for (float x = -100.0f; x <= 100.0f; x += 2.0f) {
+        for (float z = -100.0f; z <= 100.0f; z += 2.0f) {
+            s_Scene->AddPrimitive(Sphere{ glm::vec4(x, -3.0f, z, 0.5f) });
+        }
+    }
 }
 
 void InitVulkan() {

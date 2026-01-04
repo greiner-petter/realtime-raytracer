@@ -7,3 +7,4 @@ const float REFR_EPS = 1e-4f;
 const float NORM_EPS = 1E-12f;
 const float INFINITY = 1e500;
 const float PI = 3.1415926535897932384;
+const int MAX_STACK = 128;
