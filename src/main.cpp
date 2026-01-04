@@ -5,6 +5,7 @@
 #include "scene/Sphere.h"
 #include "scene/Mesh.h"
 #include "scene/Triangle.h"
+#include "scene/InfinitePlane.h"
 #include "common/Input.h"
 #include "common/Log.h"
 #include <GLFW/glfw3.h>
@@ -39,6 +40,8 @@ void InitScene() {
         glm::vec4(1.0f, -1.0f, -5.0f, 0.0f), 
         glm::vec4(0.0f, 1.0f, -5.0f, 0.0f)
     });
+
+    s_Scene->AddPrimitive(InfinitePlane{ glm::vec4(0,0,5,0), glm::vec4(0,0,-1,0)});
 }
 
 void InitVulkan() {

@@ -1,3 +1,16 @@
+struct Triangle {
+    vec4 vertex[3];
+    vec4 normal[3];
+    vec4 tangent[3];
+    vec4 bitangent[3];
+    vec4 surface[3];
+};
+
+layout(binding = 4, std430) buffer Triangles {
+    uint triangleCount;
+    Triangle triangles[];
+};
+
 bool intersectTriangle(Ray ray, Triangle triangle, inout Hit hit) {
   // We use the Möller–Trumbore intersection algorithm
 

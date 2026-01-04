@@ -2,6 +2,7 @@ struct Ray {
     vec3 origin;
     vec3 direction;
 };
+
 struct Hit {
     float rayLength;
     vec3 point;

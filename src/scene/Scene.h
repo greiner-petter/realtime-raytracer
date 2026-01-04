@@ -73,6 +73,7 @@ private:
   inline static std::shared_ptr<SSBO> primitiveSSBO;
   inline static std::shared_ptr<SSBO> sphereSSBO;
   inline static std::shared_ptr<SSBO> triangleSSBO;
+  inline static std::shared_ptr<SSBO> planeSSBO;
 
   std::unique_ptr<Node> root;
   int maximumDepth;

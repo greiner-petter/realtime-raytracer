@@ -1,4 +1,5 @@
 #version 450
+#extension GL_GOOGLE_include_directive : enable
 
 layout(binding = 0) uniform UBO {
     vec2 u_resolution;
@@ -10,46 +11,9 @@ layout(binding = 0) uniform UBO {
     vec3 u_CameraUp;
 };
 
-#include "Constants.glsl"
+#include "KDTree.glsl"
 #include "Ray.glsl"
 #include "Primitives.glsl"
-
-struct KDNode {
-    int   left;        // index of left child (or -1)
-    int   right;       // index of right child (or -1)
-
-    int   axis;        // 0=x, 1=y, 2=z
-    float split;       // split plane
-
-    int   firstPrim;   // leaf only
-    int   primCount;   // leaf only
-};
-
-layout(binding = 4, std430) buffer kdTree {
-    vec4 minBounds; // x,y,z = min, w = padding
-    vec4 maxBounds; // x,y,z = max, w = padding
-    KDNode nodes[];
-};
-
-
-layout(binding = 1, std430) buffer Primitives {
-    uint primitiveCount;
-    Primitive primitives[];
-};
-
-layout(binding = 2, std430) buffer Spheres {
-    uint sphereCount;
-    Sphere spheres[];
-};
-
-layout(binding = 3, std430) buffer Triangles {
-    uint triangleCount;
-    Triangle triangles[];
-};
-
-#include "intersect/Sphere.glsl"
-#include "intersect/Triangle.glsl"
-#include "intersect/Primitive.glsl"
 
 struct StackItem {
     int nodeIndex;
@@ -122,8 +86,6 @@ bool TraceRay(Ray ray, out Hit hit) {
         StackItem current = stack[--sp];
         
         // OPTIMIZATION: Occlusion Culling
-        // If we found a hit in a previously visited 'Near' node that is closer 
-        // than the start of this 'Far' node, we can skip it entirely.
         if (hit.rayLength < current.tMin) {
             continue;
         }
@@ -131,9 +93,7 @@ bool TraceRay(Ray ray, out Hit hit) {
         // Load node data
         KDNode node = nodes[current.nodeIndex];
 
-        // ---------------------------------------------------------
         // CASE: Leaf Node
-        // ---------------------------------------------------------
         if (node.left < 0) { // Assuming negative index means leaf
             for (int i = node.firstPrim; i < node.firstPrim + node.primCount; ++i) {
                 // intersectPrimitive should update 'hit' only if the new t is closer
@@ -142,25 +102,19 @@ bool TraceRay(Ray ray, out Hit hit) {
             continue;
         }
 
-        // ---------------------------------------------------------
         // CASE: Internal Node
-        // ---------------------------------------------------------
         int axis = node.axis;
         float t0 = current.tMin;
         float t1 = current.tMax;
         
         // Calculate distance to split plane
-        // d = (split - rayOrigin) / rayDir
         float d = (node.split - ray.origin[axis]) / ray.direction[axis];
 
         // Determine Near (front) and Far (back) children relative to ray direction
-        // If ray.direction is positive, Near is Left child, Far is Right child.
-        // If ray.direction is negative, Near is Right child, Far is Left child.
         int frontChild = (ray.direction[axis] < 0.0) ? node.right : node.left;
         int backChild  = (ray.direction[axis] < 0.0) ? node.left  : node.right;
 
         // Apply the traversal logic similar to your findIntersection snippet.
-        // We use SPLT_EPS to prevent cracks at the split plane.
         float d_near = d + SPLT_EPS;
         float d_far  = d - SPLT_EPS;
 
@@ -184,8 +138,6 @@ bool TraceRay(Ray ray, out Hit hit) {
         } 
         else {
             // Split cuts the interval -> Traverse BOTH.
-            // PUSH ORDER: We want to visit Front THEN Back.
-            // Since it's a LIFO stack, we push BACK first, then FRONT.
 
             // 1. Push Back (Far) Child: interval [d, t1]
             if (backChild != -1) {

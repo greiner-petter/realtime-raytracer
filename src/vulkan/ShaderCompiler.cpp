@@ -84,23 +84,8 @@ void PreprocessShader(std::string& src) {
 void ShaderCompiler::CompileShader(const std::string& shaderPath, const std::string& outputPath) {
     RT_INFO("Compiling shader: {0}", shaderPath);
     CheckGlslangValidatorExists();
-
-    std::string tempShaderPath = std::filesystem::path(outputPath).parent_path().string() + "/" + std::filesystem::path(shaderPath).filename().string();
-    std::filesystem::create_directories(std::filesystem::path(tempShaderPath).parent_path());
-    {
-        std::ifstream srcFile(shaderPath);
-        std::ofstream tempFile(tempShaderPath);
-        if (!srcFile.is_open() || !tempFile.is_open()) {
-            RT_ERROR("Failed to open shader file for preprocessing: {0}", shaderPath);
-            exit(1);
-        }
-        std::string src((std::istreambuf_iterator<char>(srcFile)), std::istreambuf_iterator<char>());
-        PreprocessShader(src);
-        tempFile << src;
-    }
-
-    std::string command = "glslangValidator -V " + tempShaderPath + " -o " + outputPath;
-    SubprocessResult result = RunCommand(command);
+    std::filesystem::create_directories(std::filesystem::path(outputPath).parent_path());
+    SubprocessResult result = RunCommand("glslangValidator -V -IShaderCode/include " + shaderPath + " -o " + outputPath);
     if (result.exitCode != 0) {
         RT_ERROR("Failed to compile shader {0}: {1}", shaderPath, result.output);
         exit(1);

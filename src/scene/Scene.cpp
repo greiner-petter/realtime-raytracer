@@ -49,10 +49,11 @@ UBO uniformBufferData;
 
 void Scene::CreateGPUBuffers() {
   uniformBuffer = UniformBuffer::Create(0, sizeof(uniformBufferData));
-  kdTreeSSBO = SSBO::Create(4);
-  primitiveSSBO = SSBO::Create(1);
-  sphereSSBO = SSBO::Create(2);
-  triangleSSBO = SSBO::Create(3);
+  kdTreeSSBO = SSBO::Create(1);
+  primitiveSSBO = SSBO::Create(2);
+  sphereSSBO = SSBO::Create(3);
+  triangleSSBO = SSBO::Create(4);
+  planeSSBO = SSBO::Create(5);
 }
 
 Scene::~Scene() {
@@ -99,6 +100,7 @@ void Scene::WriteBufferForPrimitiveType(PrimitiveType type, SSBO& ssbo) {
 void Scene::ConvertSceneToGPUData() {
   WriteBufferForPrimitiveType(PrimitiveType::Sphere, *sphereSSBO);
   WriteBufferForPrimitiveType(PrimitiveType::Triangle, *triangleSSBO);
+  WriteBufferForPrimitiveType(PrimitiveType::InfinitePlane, *planeSSBO);
 
   // PRIMITIVES BUFFER
   struct GPUPrimitive {

@@ -1,3 +1,14 @@
+#include "Constants.glsl"
+
+struct Sphere {
+    vec4 center_radius; // xyz = center, w = radius
+};
+
+layout(binding = 3, std430) buffer Spheres {
+    uint sphereCount;
+    Sphere spheres[];
+};
+
 bool intersectSphere(Ray ray, Sphere sphere, inout Hit hit) {
     // Ray-sphere difference vector
     vec3 difference = ray.origin - sphere.center_radius.xyz;
