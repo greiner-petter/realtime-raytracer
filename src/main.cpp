@@ -3,6 +3,7 @@
 #include "scene/Camera.h"
 #include "scene/Scene.h"
 #include "scene/Sphere.h"
+#include "scene/Mesh.h"
 #include "scene/Triangle.h"
 #include "common/Input.h"
 #include "common/Log.h"
@@ -26,17 +27,18 @@ void InitScene() {
     s_Scene = std::make_shared<Scene>();
     s_Scene->AddPrimitive(Sphere{ glm::vec4(0.0f, 0.0f, -9.0f, 0.33f) });
     s_Scene->AddPrimitive(Sphere{ glm::vec4(2.0f, 0.0f, -3.0f, 1.2f) });
+    
+
+    auto loadedPrimitives = Mesh::LoadObj("data/teapot.obj", Vec3(1.0f), Vec3(-3.0f, 0.0f, -8.0f), false, false);
+    for (const auto& prim : loadedPrimitives) {
+        s_Scene->m_Primitives.push_back(prim);
+    }
+
     s_Scene->AddPrimitive(Triangle{
         glm::vec4(-1.0f, -1.0f, -5.0f, 0.0f), 
         glm::vec4(1.0f, -1.0f, -5.0f, 0.0f), 
         glm::vec4(0.0f, 1.0f, -5.0f, 0.0f)
     });
-
-    for (float x = -100.0f; x <= 100.0f; x += 2.0f) {
-        for (float z = -100.0f; z <= 100.0f; z += 2.0f) {
-            s_Scene->AddPrimitive(Sphere{ glm::vec4(x, -3.0f, z, 0.5f) });
-        }
-    }
 }
 
 void InitVulkan() {

@@ -7,6 +7,8 @@
 struct Triangle : public Primitive {
 public:
     // Constructor
+    Triangle() { type = PrimitiveType::Triangle; }
+
     Triangle(Vec3 const &a, Vec3 const &b, Vec3 const &c) 
     : vertex{ Vec4(a, 0), Vec4(b, 0), Vec4(c, 0) } { type = PrimitiveType::Triangle; }
 

@@ -63,7 +63,6 @@ public:
       m_IsBufferDirty = true;
   }
 
-
   std::unique_ptr<Node> Build(const Vec3& minimumBounds, const Vec3& maximumBounds, int start, int end /* [start, end) */, int depth);
   std::vector<GPUKDNode> FlattenKDTree() const;
   void UploadTreeToGPU();
