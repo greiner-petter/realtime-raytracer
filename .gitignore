@@ -29,3 +29,5 @@ ShaderCache/
 # Mac Stuff
 .DS_Store
 
+# Windows
+vcpkg

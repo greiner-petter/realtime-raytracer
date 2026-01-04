@@ -2,6 +2,7 @@
 #define VULKAN_API_H
 
 #include <memory>
+#include <string>
 #include <vulkan/vulkan.h>
 
 class VulkanAPI {
