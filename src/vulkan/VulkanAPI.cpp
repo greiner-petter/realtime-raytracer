@@ -314,14 +314,15 @@ void VulkanAPI::CreateDescriptorSet() {
             RT_ERROR("failed to create descriptor set layout"); exit(1);
         }
     }
+    if (descriptorSet == VK_NULL_HANDLE) {
+        VkDescriptorSetAllocateInfo allocInfo = { VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO };
+        allocInfo.descriptorPool = descriptorPool;
+        allocInfo.descriptorSetCount = 1;
+        allocInfo.pSetLayouts = &descriptorSetLayout;
 
-    VkDescriptorSetAllocateInfo allocInfo = { VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO };
-    allocInfo.descriptorPool = descriptorPool;
-    allocInfo.descriptorSetCount = 1;
-    allocInfo.pSetLayouts = &descriptorSetLayout;
-
-    if (vkAllocateDescriptorSets(device, &allocInfo, &descriptorSet) != VK_SUCCESS) {
-        RT_ERROR("failed to allocate descriptor set"); exit(1);
+        if (vkAllocateDescriptorSets(device, &allocInfo, &descriptorSet) != VK_SUCCESS) {
+            RT_ERROR("failed to allocate descriptor set"); exit(1);
+        }
     }
 
     VkDescriptorImageInfo imageInfo = { .imageLayout = VK_IMAGE_LAYOUT_GENERAL, .imageView = offscreenImageView };
