@@ -66,7 +66,9 @@ uint32_t FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties) {
 
 void CreateAndUploadBuffer(VkDeviceSize size, VkBufferUsageFlags usage, const void* data, VkBuffer& buffer, VkDeviceMemory& memory) {
     VkBuffer stagingBuffer; VkDeviceMemory stagingMemory;
-    VkBufferCreateInfo bufferInfo = { VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO, .size = size, .usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT };
+    VkBufferCreateInfo bufferInfo = { VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO };
+    bufferInfo.size = size;
+    bufferInfo.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
     if (vkCreateBuffer(device, &bufferInfo, nullptr, &stagingBuffer) != VK_SUCCESS) {
         RT_ERROR("Failed to create staging buffer"); exit(1);
     }
@@ -106,14 +108,17 @@ void CreateAndUploadBuffer(VkDeviceSize size, VkBufferUsageFlags usage, const vo
     VkCommandBuffer cmd; 
     vkAllocateCommandBuffers(device, &allocCmd, &cmd);
     
-    VkCommandBufferBeginInfo begin = { VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO, .flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT };
+    VkCommandBufferBeginInfo begin = { VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO };
+    begin.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
     
     vkBeginCommandBuffer(cmd, &begin);
     VkBufferCopy copyRegion = { 0, 0, size };
     vkCmdCopyBuffer(cmd, stagingBuffer, buffer, 1, &copyRegion);
     vkEndCommandBuffer(cmd);
     
-    VkSubmitInfo submit = { VK_STRUCTURE_TYPE_SUBMIT_INFO, .commandBufferCount = 1, .pCommandBuffers = &cmd };
+    VkSubmitInfo submit = { VK_STRUCTURE_TYPE_SUBMIT_INFO };
+    submit.commandBufferCount = 1;
+    submit.pCommandBuffers = &cmd;
     
     vkQueueSubmit(graphicsQueue, 1, &submit, VK_NULL_HANDLE);
     vkQueueWaitIdle(graphicsQueue);
@@ -147,7 +152,9 @@ void VulkanAPI::CreateInstance() {
     extensions.push_back("VK_KHR_get_physical_device_properties2");
     #endif
 
-    VkApplicationInfo appInfo = { VK_STRUCTURE_TYPE_APPLICATION_INFO, .pApplicationName = "TraceyRT", .apiVersion = VK_API_VERSION_1_3 };
+    VkApplicationInfo appInfo = { VK_STRUCTURE_TYPE_APPLICATION_INFO };
+    appInfo.pApplicationName = "TraceyRT";
+    appInfo.apiVersion = VK_API_VERSION_1_3;
 
     VkInstanceCreateInfo createInfo = { VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO };
     createInfo.pApplicationInfo = &appInfo;
@@ -199,12 +206,13 @@ void VulkanAPI::CreateLogicalDevice() {
     graphicsQueueFamily = presentQueueFamily = found;
 
     float priority = 1.0f;
-    VkDeviceQueueCreateInfo queueInfo = { VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO };
+    VkDeviceQueueCreateInfo queueInfo = { VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO };
     queueInfo.queueFamilyIndex = graphicsQueueFamily;
     queueInfo.queueCount = 1;
     queueInfo.pQueuePriorities = &priority;
 
-    VkPhysicalDeviceVulkan13Features features13 = { VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES, .dynamicRendering = VK_TRUE };
+    VkPhysicalDeviceVulkan13Features features13 = { VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES };
+    features13.dynamicRendering = VK_TRUE;
 
     const char* ext = VK_KHR_SWAPCHAIN_EXTENSION_NAME;
     VkDeviceCreateInfo deviceCreateInfo = { VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO };
@@ -221,8 +229,7 @@ void VulkanAPI::CreateLogicalDevice() {
 }
 
 void VulkanAPI::CreateCommandPool() {
-    VkCommandPoolCreateInfo info = { VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO, .flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT, .queueFamilyIndex = graphicsQueueFamily };
-    
+    VkCommandPoolCreateInfo info = { VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO, nullptr, VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT, graphicsQueueFamily };
     if (vkCreateCommandPool(device, &info, nullptr, &commandPool) != VK_SUCCESS) {
         RT_ERROR("failed to create command pool"); exit(1);
     }
@@ -231,7 +238,7 @@ void VulkanAPI::CreateCommandPool() {
     vkCreateSemaphore(device, &semInfo, nullptr, &imageAvailableSemaphore);
     vkCreateSemaphore(device, &semInfo, nullptr, &renderingFinishedSemaphore);
     
-    VkFenceCreateInfo fenceInfo = { VK_STRUCTURE_TYPE_FENCE_CREATE_INFO, .flags = VK_FENCE_CREATE_SIGNALED_BIT };
+    VkFenceCreateInfo fenceInfo = { VK_STRUCTURE_TYPE_FENCE_CREATE_INFO, nullptr, VK_FENCE_CREATE_SIGNALED_BIT };
     vkCreateFence(device, &fenceInfo, nullptr, &inFlightFence);
 }
 
@@ -279,7 +286,10 @@ void VulkanAPI::CreateSwapChain() {
 
 void VulkanAPI::CreateDescriptorPool() {
     VkDescriptorPoolSize sizes[] = { { VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 10 }, { VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 10 } };
-    VkDescriptorPoolCreateInfo info = { VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO, .maxSets = 10, .poolSizeCount = 2, .pPoolSizes = sizes };
+    VkDescriptorPoolCreateInfo info = { VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO };
+    info.maxSets = 10;
+    info.poolSizeCount = 2;
+    info.pPoolSizes = sizes;
     if (vkCreateDescriptorPool(device, &info, nullptr, &descriptorPool) != VK_SUCCESS) {
         RT_ERROR("failed to create descriptor pool"); exit(1);
     }
@@ -325,7 +335,10 @@ void VulkanAPI::CreateDescriptorSet() {
         }
     }
 
-    VkDescriptorImageInfo imageInfo = { .imageLayout = VK_IMAGE_LAYOUT_GENERAL, .imageView = offscreenImageView };
+    VkDescriptorImageInfo imageInfo = {};
+    imageInfo.imageLayout = VK_IMAGE_LAYOUT_GENERAL;
+    imageInfo.imageView = offscreenImageView;
+
     VkWriteDescriptorSet imageWrite = { VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET };
     imageWrite.dstSet = descriptorSet;
     imageWrite.dstBinding = 255;
