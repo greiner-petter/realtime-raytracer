@@ -41,6 +41,7 @@ VkPipeline pipeline = VK_NULL_HANDLE;
 VkPipelineLayout pipelineLayout = VK_NULL_HANDLE;
 std::vector<VkCommandBuffer> graphicsCommandBuffers;
 
+extern UBO uniformBufferData;
 
 VkShaderModule CreateShaderModule(const ShaderBinary& InShaderResource) {
     VkShaderModuleCreateInfo createInfo = { VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO };
@@ -649,6 +650,7 @@ void VulkanAPI::Refresh() {
     CreateDescriptorSet();
     CreateComputePipeline();
     CreateCommandBuffers(); 
+    uniformBufferData.u_SampleIndex = 0;
 }
 
 #define STB_IMAGE_WRITE_IMPLEMENTATION
