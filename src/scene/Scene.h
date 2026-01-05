@@ -5,10 +5,13 @@
 #include "scene/Primitive.h"
 #include "vulkan/Buffer.h"
 
-struct UBO {
+struct alignas(16) UBO {
     glm::vec2 u_resolution;
     float u_aspectRatio;
     float u_FocusDistance = 1.0f;
+    uint32_t u_SampleIndex = 0;
+    float u_Seed = 0.0f;
+    uint32_t _padding[2];
     glm::vec4 u_CameraPosition = glm::vec4(0.0f, 0.0f, 0.0f, 0.0f);
     glm::vec4 u_CameraForward = glm::vec4(0.0f, 0.0f, -1.0f, 0.0f);
     glm::vec4 u_CameraRight = glm::vec4(1.0f, 0.0f, 0.0f, 0.0f);

@@ -1,7 +1,9 @@
-layout(binding = 0) uniform UBO {
+layout(std140, binding = 0) uniform UBO {
     vec2 u_resolution;
     float u_aspectRatio;
     float u_FocusDistance;
+    uint u_SampleIndex;
+    float u_Seed;
     vec3 u_CameraPosition;
     vec3 u_CameraForward;
     vec3 u_CameraRight;

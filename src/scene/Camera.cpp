@@ -69,6 +69,7 @@ void CameraUpdate(Scene& scene, float deltaTime) {
         Input::SetCursorLocked(true);
         UpdateCameraDirection(Input::GetMouseDelta().x, Input::GetMouseDelta().y);
         UpdateCameraPosition(deltaTime);
+        uniformBufferData.u_SampleIndex = 0; // reset accumulation on camera move
     } else {
         Input::SetCursorLocked(false);
     }

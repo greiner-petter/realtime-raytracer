@@ -152,8 +152,9 @@ void Scene::UpdateGPUBuffers() {
   // Always update uniform buffer
   uniformBufferData.u_resolution = glm::vec2(Window::GetInstance()->GetWidth(), Window::GetInstance()->GetHeight());
   uniformBufferData.u_aspectRatio = float(Window::GetInstance()->GetHeight()) / float(Window::GetInstance()->GetWidth());
+  uniformBufferData.u_Seed = static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
   uniformBuffer->UploadData(&uniformBufferData, sizeof(uniformBufferData));
-  
+  uniformBufferData.u_SampleIndex++;
   // update scene buffers only if dirty
 
   if (IsBufferDirty()) {

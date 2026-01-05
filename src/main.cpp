@@ -19,6 +19,7 @@ std::shared_ptr<Window> s_Window;
 std::chrono::time_point<std::chrono::steady_clock> s_PreviousTime;
 double s_DeltaTime = 0.0;
 constexpr bool ENABLE_SHADER_HOT_RELOAD = true;
+extern UBO uniformBufferData;
 
 void InitWindow() {
     s_Window = Window::Create(WindowParams{ "Vulkan Raytracer", 1280, 720, false });
@@ -70,7 +71,7 @@ void MainLoop() {
         //update
         if (std::chrono::duration_cast<std::chrono::seconds>(currentTime - timer).count() >= 1.0) {
             glfwSetWindowTitle(Window::GetGLFWwindow(), 
-                (std::string("Vulkan Raytracer - FPS: ") + std::to_string(frameCount)).c_str());
+                (std::string("Vulkan Raytracer - FPS: ") + std::to_string(frameCount) + " - Samples: " + std::to_string(uniformBufferData.u_SampleIndex)).c_str());
             frameCount = 0;
             timer = currentTime;
         }

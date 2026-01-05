@@ -61,8 +61,7 @@ vec3 main_frag(vec2 ndc) {
 
 
 layout(local_size_x = 16, local_size_y = 16, local_size_z = 1) in;
-layout(binding = 255, rgba8) uniform writeonly image2D resultImage;
-
+layout(binding = 255, rgba8) uniform image2D resultImage;
 
 void main() {
     ivec2 pixelCoords = ivec2(gl_GlobalInvocationID.xy);
@@ -87,7 +86,9 @@ void main() {
     // Raytrace
     vec3 pixelColor = main_frag(ndc);
 
-    // Write Output
+    // Write Output over multiple samples
     // Format must match the image layout (rgba8 -> vec4)
-    imageStore(resultImage, pixelCoords, vec4(pixelColor, 1.0));
+    vec4 currentColor = imageLoad(resultImage, pixelCoords) * min(u_SampleIndex, 1.0);
+    vec4 to_write = (vec4(pixelColor, 1.0) + currentColor * (u_SampleIndex)) / (u_SampleIndex + 1.0);
+    imageStore(resultImage, pixelCoords, to_write);
 }
