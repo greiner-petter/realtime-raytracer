@@ -1,5 +1,3 @@
-#include "Constants.glsl"
-
 struct Sphere {
     vec4 center_radius; // xyz = center, w = radius
 };

@@ -1,3 +1,7 @@
+#include "Sphere.glsl"
+#include "Triangle.glsl"
+#include "InfinitePlane.glsl"
+
 struct Primitive {
     uint type;
     int index;
@@ -9,23 +13,23 @@ layout(binding = 2, std430) buffer Primitives {
     Primitive primitives[];
 };
 
-void intersectPrimitive(Ray ray, Primitive prim, int primIndex, inout Hit hit) {
-    if (prim.type == 1) {
-        Sphere sphere = spheres[prim.index];
+void intersectPrimitive(Ray ray, int primIndex, inout Hit hit) {
+    if (primitives[primIndex].type == 1) {
+        Sphere sphere = spheres[primitives[primIndex].index];
         if (intersectSphere(ray, sphere, hit)) {
-            hit.materialID = prim.materialID;
+            hit.materialID = primitives[primIndex].materialID;
             hit.primitiveIndex = primIndex;
         }
-    } else if (prim.type == 2) {
-        Triangle triangle = triangles[prim.index];
+    } else if (primitives[primIndex].type == 2) {
+        Triangle triangle = triangles[primitives[primIndex].index];
         if (intersectTriangle(ray, triangle, hit)) {
-            hit.materialID = prim.materialID;
+            hit.materialID = primitives[primIndex].materialID;
             hit.primitiveIndex = primIndex;
         }
-    } else if (prim.type == 3) {
-        InfinitePlane plane = infinitePlanes[prim.index];
+    } else if (primitives[primIndex].type == 3) {
+        InfinitePlane plane = infinitePlanes[primitives[primIndex].index];
         if (intersectInfinitePlane(ray, plane, hit)) {
-            hit.materialID = prim.materialID;
+            hit.materialID = primitives[primIndex].materialID;
             hit.primitiveIndex = primIndex;
         }
     }
