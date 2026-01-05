@@ -2,7 +2,7 @@
 #define SCENE_H
 
 #include "common/Types.h"
-#include "scene/Primitive.h"
+#include "primitives/Primitive.h"
 #include "vulkan/Buffer.h"
 
 struct alignas(16) UBO {

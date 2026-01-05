@@ -2,7 +2,7 @@
 #define MESH_H
 
 #include "common/Types.h"
-#include "scene/Primitive.h"
+#include "primitives/Primitive.h"
 
 class Mesh {
 public:
