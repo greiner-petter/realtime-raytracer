@@ -1,18 +1,16 @@
-#include "common/Window.h"
-#include "vulkan/VulkanAPI.h"
+#include "vulkan/Renderer.h"
+#include "vulkan/ShaderCompiler.h"
 #include "scene/Camera.h"
 #include "scene/Scene.h"
 #include "primitives/Sphere.h"
 #include "primitives/Mesh.h"
 #include "primitives/Triangle.h"
 #include "primitives/InfinitePlane.h"
+#include "common/Window.h"
 #include "common/Input.h"
 #include "common/Log.h"
 #include <GLFW/glfw3.h>
 
-#include "vulkan/ShaderCompiler.h"
-
-extern VkImage offscreenImage;
 
 std::shared_ptr<Scene> s_Scene;
 std::shared_ptr<Window> s_Window;
@@ -47,7 +45,7 @@ void InitScene() {
 
 void InitVulkan() {
     ShaderCompiler::CompileAllShaders();
-    VulkanAPI::SetupVulkan();
+    Renderer::Init();
 }
 
 void MainLoop() {
@@ -55,7 +53,7 @@ void MainLoop() {
     auto timer = std::chrono::steady_clock::now();
     while (!glfwWindowShouldClose(Window::GetGLFWwindow())) {
         s_Scene->UpdateGPUBuffers();
-        VulkanAPI::Draw();
+        Renderer::Draw();
         frameCount++;
 
         if (ENABLE_SHADER_HOT_RELOAD) {
@@ -78,7 +76,7 @@ void MainLoop() {
         CameraUpdate(*s_Scene, s_DeltaTime);
 
         if (Input::IsKeyPressed(Key::LeftControl) && Input::IsKeyPressed(Key::S)) {
-            VulkanAPI::SaveImageToDisk(offscreenImage, "result.png");
+            Renderer::SaveCurrentFrameToDisk("result.png");
         }
 
         glfwPollEvents();
@@ -88,7 +86,7 @@ void MainLoop() {
 }
 
 void Cleanup() {
-    VulkanAPI::FullCleanUp();
+    Renderer::Cleanup();
 }
 
 int main() {

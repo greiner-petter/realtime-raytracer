@@ -1,5 +1,6 @@
 #include "scene/Scene.h"
 #include "common/Log.h"
+#include "common/Window.h"
 #include <array>
 #include <cassert>
 #include <fstream>

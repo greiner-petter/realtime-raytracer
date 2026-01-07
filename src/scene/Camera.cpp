@@ -1,7 +1,6 @@
 #include "scene/Camera.h"
 #include "common/Input.h"
 #include "common/Log.h"
-#include "vulkan/VulkanAPI.h"
 #include "scene/Scene.h"
 #include <glm/glm.hpp>
 

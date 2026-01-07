@@ -5,20 +5,18 @@
 #include <memory>
 #include <vector>
 #include "common/Types.h"
-#include "common/Window.h"
+#include "VulkanContext.h"
 
 #define SSBO_DEFAULT_SIZE (16 * 1024 * 1024) // 16 MB
 
-extern uint32_t FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
-extern VkDevice device;
-
 class Buffer {
 public:
-    virtual ~Buffer();
     void UploadData(void* InDataPointer, size_t InSize);
     void* MapData(size_t InSize);
     void UnmapData();
-    virtual void Destroy();
+    void Destroy();
+
+    static void Create(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory);
     static void DestroyAllBuffers();
     static std::vector<std::shared_ptr<Buffer>> GetAllBuffers() { return g_Buffers; }
 
@@ -34,30 +32,12 @@ protected:
         g_Buffers.push_back(buffer);
 
         buffer->m_Binding = binding;
-        Window::GetInstance()->SetResizedFlag(true);
 
-        VkBufferCreateInfo bufferInfo = {};
-        bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-        bufferInfo.size = size;
-        bufferInfo.usage = usageFlags;
-        vkCreateBuffer(device, &bufferInfo, nullptr, &buffer->m_Buffer);
+        Buffer::Create(size, usageFlags, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, buffer->m_Buffer, buffer->m_DeviceMemory);
 
-        VkDescriptorBufferInfo info{};
-        info.buffer = buffer->m_Buffer;
-        info.offset = 0;
-        info.range  = VK_WHOLE_SIZE;
-        buffer->m_BufferInfo = info;
-
-        VkMemoryRequirements memReqs;
-        vkGetBufferMemoryRequirements(device, buffer->m_Buffer, &memReqs);
-
-        VkMemoryAllocateInfo allocInfo = {};
-        allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-        allocInfo.allocationSize = memReqs.size;
-        allocInfo.memoryTypeIndex = FindMemoryType(memReqs.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
-
-        vkAllocateMemory(device, &allocInfo, nullptr, &buffer->m_DeviceMemory);
-        vkBindBufferMemory(device, buffer->m_Buffer, buffer->m_DeviceMemory, 0);
+        buffer->m_BufferInfo.buffer = buffer->m_Buffer;
+        buffer->m_BufferInfo.offset = 0;
+        buffer->m_BufferInfo.range  = VK_WHOLE_SIZE;
 
         return buffer;
     }
