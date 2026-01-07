@@ -11,7 +11,7 @@ bool TraceRay(Ray ray, out Hit hit) {
     hit.rayLength = INFINITY;
     hit.primitiveIndex = -1;
     for (int i = 0; i < primitiveCount; ++i) {
-        intersectPrimitive(ray, i, hit); 
+        intersectPrimitive(ray, primitives[i], hit); 
     }
     return hit.primitiveIndex != -1;
 }

@@ -13,24 +13,24 @@ layout(binding = 2, std430) buffer Primitives {
     Primitive primitives[];
 };
 
-void intersectPrimitive(Ray ray, int primIndex, inout Hit hit) {
-    if (primitives[primIndex].type == 1) {
-        Sphere sphere = spheres[primitives[primIndex].index];
+void intersectPrimitive(Ray ray, Primitive primitive, inout Hit hit) {
+    if (primitive.type == 1) {
+        Sphere sphere = spheres[primitive.index];
         if (intersectSphere(ray, sphere, hit)) {
-            hit.materialID = primitives[primIndex].materialID;
-            hit.primitiveIndex = primIndex;
+            hit.materialID = primitive.materialID;
+            hit.primitiveIndex = primitive.index;
         }
-    } else if (primitives[primIndex].type == 2) {
-        Triangle triangle = triangles[primitives[primIndex].index];
+    } else if (primitive.type == 2) {
+        Triangle triangle = triangles[primitive.index];
         if (intersectTriangle(ray, triangle, hit)) {
-            hit.materialID = primitives[primIndex].materialID;
-            hit.primitiveIndex = primIndex;
+            hit.materialID = primitive.materialID;
+            hit.primitiveIndex = primitive.index;
         }
-    } else if (primitives[primIndex].type == 3) {
-        InfinitePlane plane = infinitePlanes[primitives[primIndex].index];
+    } else if (primitive.type == 3) {
+        InfinitePlane plane = infinitePlanes[primitive.index];
         if (intersectInfinitePlane(ray, plane, hit)) {
-            hit.materialID = primitives[primIndex].materialID;
-            hit.primitiveIndex = primIndex;
+            hit.materialID = primitive.materialID;
+            hit.primitiveIndex = primitive.index;
         }
     }
 }

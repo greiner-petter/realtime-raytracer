@@ -97,7 +97,7 @@ bool TraceKDTree(Ray ray, out Hit hit) {
         if (node.left < 0) { // Assuming negative index means leaf
             for (int i = node.firstPrim; i < node.firstPrim + node.primCount; ++i) {
                 // intersectPrimitive should update 'hit' only if the new t is closer
-                intersectPrimitive(ray, i, hit); 
+                intersectPrimitive(ray, primitives[i], hit); 
             }
             continue;
         }
