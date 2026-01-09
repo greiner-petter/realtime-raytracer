@@ -5,6 +5,7 @@
 #include "primitives/Sphere.h"
 #include "primitives/Triangle.h"
 #include "primitives/InfinitePlane.h"
+#include "primitives/Box.h"
 #include "shaders/FlatShader.h"
 
 #include <fstream>
@@ -92,6 +93,15 @@ bool LoadPrimitive(class Scene& scene, const json& primitiveData) {
             s_Shaders[shaderName]
         );
         scene.AddPrimitive(plane);
+    } else if (type == "box") {
+        LOAD_ASSERT(primitiveData.contains("center"), "Box must have a 'center' field");
+        LOAD_ASSERT(primitiveData.contains("size"), "Box must have a 'size' field");
+        std::shared_ptr<Box> box = std::make_shared<Box>(
+            Vec3(primitiveData["center"][0], primitiveData["center"][1], primitiveData["center"][2]),
+            Vec3(primitiveData["size"][0], primitiveData["size"][1], primitiveData["size"][2]),
+            s_Shaders[shaderName]
+        );
+        scene.AddPrimitive(box);
     } else {
         RT_ERROR("Unknown primitive type: {0}", type);
         return false;
