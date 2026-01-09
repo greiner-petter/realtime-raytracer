@@ -9,32 +9,32 @@ public:
     // Constructor
     Triangle() { type = PrimitiveType::Triangle; }
 
-    Triangle(Vec3 const &a, Vec3 const &b, Vec3 const &c) 
-    : vertex{ Vec4(a, 0), Vec4(b, 0), Vec4(c, 0) } { type = PrimitiveType::Triangle; }
+    Triangle(Vec3 const &a, Vec3 const &b, Vec3 const &c):
+    vertex{ Vec4(a, 0), Vec4(b, 0), Vec4(c, 0) } { type = PrimitiveType::Triangle; }
 
     Triangle(Vec3 const &a, Vec3 const &b, Vec3 const &c,
-             Vec3 const &na, Vec3 const &nb, Vec3 const &nc)
-    : vertex{ Vec4(a, 0), Vec4(b, 0), Vec4(c, 0) },
-      normal{ Vec4(na, 0), Vec4(nb, 0), Vec4(nc, 0) } { type = PrimitiveType::Triangle; }
+             Vec3 const &na, Vec3 const &nb, Vec3 const &nc):
+    vertex{ Vec4(a, 0), Vec4(b, 0), Vec4(c, 0) },
+    normal{ Vec4(na, 0), Vec4(nb, 0), Vec4(nc, 0) } { type = PrimitiveType::Triangle; }
 
     Triangle(Vec3 const &a, Vec3 const &b, Vec3 const &c,
              Vec3 const &na, Vec3 const &nb, Vec3 const &nc,
-             Vec2 const &ta, Vec2 const &tb, Vec2 const &tc)
-    : vertex{ Vec4(a, 0), Vec4(b, 0), Vec4(c, 0) },
-      normal{ Vec4(na, 0), Vec4(nb, 0), Vec4(nc, 0) },
-      surface{ Vec4(ta, 0, 0), Vec4(tb, 0, 0), Vec4(tc, 0, 0) } { type = PrimitiveType::Triangle; }
+             Vec2 const &ta, Vec2 const &tb, Vec2 const &tc):
+    vertex{ Vec4(a, 0), Vec4(b, 0), Vec4(c, 0) },
+    normal{ Vec4(na, 0), Vec4(nb, 0), Vec4(nc, 0) },
+    surface{ Vec4(ta, 0, 0), Vec4(tb, 0, 0), Vec4(tc, 0, 0) } { type = PrimitiveType::Triangle; }
 
 
     Triangle(Vec3 const &a, Vec3 const &b, Vec3 const &c,
              Vec3 const &na, Vec3 const &nb, Vec3 const &nc,
              Vec3 const &tana, Vec3 const &tanb, Vec3 const &tanc,
              Vec3 const &ba, Vec3 const &bb, Vec3 const &bc,
-             Vec2 const &ta, Vec2 const &tb, Vec2 const &tc)
-    : vertex{ Vec4(a, 0), Vec4(b, 0), Vec4(c, 0) },
-      normal{ Vec4(na, 0), Vec4(nb, 0), Vec4(nc, 0) },
-      tangent{ Vec4(tana, 0), Vec4(tanb, 0), Vec4(tanc, 0) },
-      bitangent{ Vec4(ba, 0), Vec4(bb, 0), Vec4(bc, 0) },
-      surface{ Vec4(ta, 0, 0), Vec4(tb, 0, 0), Vec4(tc, 0, 0) } { type = PrimitiveType::Triangle; }
+             Vec2 const &ta, Vec2 const &tb, Vec2 const &tc):
+    vertex{ Vec4(a, 0), Vec4(b, 0), Vec4(c, 0) },
+    normal{ Vec4(na, 0), Vec4(nb, 0), Vec4(nc, 0) },
+    tangent{ Vec4(tana, 0), Vec4(tanb, 0), Vec4(tanc, 0) },
+    bitangent{ Vec4(ba, 0), Vec4(bb, 0), Vec4(bc, 0) },
+    surface{ Vec4(ta, 0, 0), Vec4(tb, 0, 0), Vec4(tc, 0, 0) } { type = PrimitiveType::Triangle; }
 
     // Set
     void setVertex(int index, Vec3 const &vertex) { this->vertex[index] = Vec4(vertex, 0); }
@@ -50,8 +50,9 @@ public:
     Vec3 getBitangent(size_t index) { return this->bitangent[index]; }
     Vec2 getTexCoord(size_t index) { return this->surface[index]; }
     
-    float minimumBounds(int dimension) const override;
-    float maximumBounds(int dimension) const override;
+    float minimumBounds(int dimension) const { return std::min(this->vertex[0][dimension], std::min(this->vertex[1][dimension], this->vertex[2][dimension])); }
+    float maximumBounds(int dimension) const { return std::max(this->vertex[0][dimension], std::max(this->vertex[1][dimension], this->vertex[2][dimension])); }
+
 
     virtual void* GetDataLayoutBeginPtr() override { return &vertex[0]; }
     virtual size_t GetDataSize() const override { return sizeof(Vec4) * 3 * 5; }
