@@ -26,7 +26,7 @@ void UpdateCameraDirection(float deltaX, float deltaY) {
     forward = glm::normalize(forward);
 
     glm::vec3 cameraForward = forward;
-    RT_INFO("Camera Forward: ({0}, {1}, {2})", cameraForward.x, cameraForward.y, cameraForward.z);
+    RT_INFO("Forward: ({0}, {1}, {2})", cameraForward.x, cameraForward.y, cameraForward.z);
 
     glm::vec3 worldUp = glm::vec3(0.0f, 1.0f, 0.0f);
     glm::vec3 cameraRight = glm::normalize(glm::cross(cameraForward, worldUp));

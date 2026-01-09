@@ -1,6 +1,7 @@
 #pragma once
 #include <memory>
 #include <filesystem>
+#include <string>
 // This ignores all warnings raised inside External headers
 #pragma warning(push, 0)
 #include <spdlog/spdlog.h>
@@ -9,12 +10,13 @@
 class Log {
 public:
     static void Init();
+    static void CreateLoggerIfNotExists(const std::string& name);
 
-    static std::shared_ptr<spdlog::logger>& GetLogger();
+    static std::shared_ptr<spdlog::logger>& GetLogger(const std::string& _file_);
 };
 
 // Main Logging Macro
-#define RT_LOG(_LogLevel, ...) ::Log::GetLogger()->log((::spdlog::level::level_enum)_LogLevel, __VA_ARGS__)
+#define RT_LOG(_LogLevel, ...) ::Log::GetLogger(__FILE__)->log((::spdlog::level::level_enum)_LogLevel, __VA_ARGS__)
 
 #define RT_TRACE(...)    RT_LOG(::spdlog::level::trace, __VA_ARGS__)
 #define RT_INFO(...)     RT_LOG(::spdlog::level::info, __VA_ARGS__)

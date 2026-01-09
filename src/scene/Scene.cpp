@@ -158,7 +158,7 @@ void Scene::BuildTree(int maximumDepth, int minimumNumberOfPrimitives) {
 
   // Recursively build the kD-Tree
   root = this->Build(this->absoluteMinimum, this->absoluteMaximum, 0, m_Primitives.size(), 0);
-  std::cout << "(FastScene): " << m_Primitives.size() << " primitives organized into tree" << std::endl;
+  RT_INFO("{0} primitives organized into tree", m_Primitives.size());
 }
 
 std::unique_ptr<Node> Scene::Build(const Vec3& minimumBounds, const Vec3& maximumBounds, int start, int end /* [start, end) */, int depth) {

@@ -14,6 +14,7 @@
 #include "common/Input.h"
 #include "common/Log.h"
 #include "common/Params.h"
+#include "common/ProgressBar.h"
 #include <GLFW/glfw3.h>
 
 std::shared_ptr<Scene> s_Scene;
@@ -99,7 +100,7 @@ void MainLoop() {
             if (Params::IsInteractiveMode()) {
                 Window::UpdateTitleInfo(frameCount, uniformBufferData.u_SampleIndex);
             } else {
-                RT_INFO("FPS: {0}  Samples: {1}", frameCount, uniformBufferData.u_SampleIndex);
+                ProgressBar::Update(frameCount, uniformBufferData.u_SampleIndex);
             }
             frameCount = 0;
             timer = currentTime;
@@ -121,6 +122,7 @@ void MainLoop() {
     }
 
     if (!Params::IsInteractiveMode()) {
+        ProgressBar::Update(frameCount, uniformBufferData.u_SampleIndex);
         Renderer::SaveCurrentFrameToDisk(Params::GetResultImageName());
     }
 }
