@@ -115,6 +115,7 @@ private:
     inline static std::shared_ptr<SSBO> sphereSSBO;
     inline static std::shared_ptr<SSBO> triangleSSBO;
     inline static std::shared_ptr<SSBO> planeSSBO;
+    inline static std::shared_ptr<SSBO> boxSSBO;
 
     inline static std::shared_ptr<SSBO> shaderSSBO;
     inline static std::shared_ptr<SSBO> flatSSBO;

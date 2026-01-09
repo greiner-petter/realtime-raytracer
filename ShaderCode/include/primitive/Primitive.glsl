@@ -1,6 +1,7 @@
 #include "Sphere.glsl"
 #include "Triangle.glsl"
 #include "InfinitePlane.glsl"
+#include "Box.glsl"
 
 struct Primitive {
     uint primitiveType;
@@ -32,6 +33,13 @@ void intersectPrimitive(Ray ray, Primitive primitive, inout Hit hit) {
     } else if (primitive.primitiveType == 3) {
         InfinitePlane plane = infinitePlanes[primitive.primitiveIndex];
         if (intersectInfinitePlane(ray, plane, hit)) {
+            hit.primitiveIndex = primitive.primitiveIndex;
+            hit.shaderType = primitive.shaderType;
+            hit.shaderIndex = primitive.shaderIndex;
+        }
+    } else if (primitive.primitiveType == 4) {
+        Box box = boxes[primitive.primitiveIndex];
+        if (intersectBox(ray, box, hit)) {
             hit.primitiveIndex = primitive.primitiveIndex;
             hit.shaderType = primitive.shaderType;
             hit.shaderIndex = primitive.shaderIndex;

@@ -56,6 +56,7 @@ void Scene::CreateGPUBuffers() {
   sphereSSBO = SSBO::Create(11);
   triangleSSBO = SSBO::Create(12);
   planeSSBO = SSBO::Create(13);
+  boxSSBO = SSBO::Create(14);
 
   shaderSSBO = SSBO::Create(20);
   flatSSBO = SSBO::Create(21);
@@ -66,6 +67,7 @@ void Scene::ConvertSceneToGPUData() {
   WriteBufferForType(m_Primitives, PrimitiveType::Sphere, *sphereSSBO);
   WriteBufferForType(m_Primitives, PrimitiveType::Triangle, *triangleSSBO);
   WriteBufferForType(m_Primitives, PrimitiveType::InfinitePlane, *planeSSBO);
+  WriteBufferForType(m_Primitives, PrimitiveType::Box, *boxSSBO);
 
   WriteBufferForType(m_Shaders, ShaderType::FlatShader, *flatSSBO);
   WriteBufferForType(m_Shaders, ShaderType::MirrorShader, *mirrorSSBO);
