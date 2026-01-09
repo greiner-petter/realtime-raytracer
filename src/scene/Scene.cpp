@@ -235,3 +235,12 @@ std::unique_ptr<Node> Scene::Build(const Vec3& minimumBounds, const Vec3& maximu
 
     return node;
 }
+
+void Scene::ClearScene() {
+  uniformBufferData.u_SampleIndex = 0;
+  m_Primitives.clear();
+  m_Shaders.clear();
+  //m_Lights.clear();
+  root.reset(nullptr);
+  m_IsBufferDirty = true;
+}

@@ -23,7 +23,6 @@ ShaderCache/
 *.out
 *.pdf
 *.synctex.gz
-*.json
 *__latexindent_temp.tex
 
 # Mac Stuff

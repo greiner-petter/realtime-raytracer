@@ -103,13 +103,7 @@ public:
         m_IsBufferDirty = true;
     }
 
-    void ClearScene() {
-        m_Primitives.clear();
-        m_Shaders.clear();
-        m_Lights.clear();
-        root.reset(nullptr);
-        m_IsBufferDirty = true;
-    }
+    void ClearScene();
 
     std::unique_ptr<Node> Build(const Vec3& minimumBounds, const Vec3& maximumBounds, int start, int end /* [start, end) */, int depth);
     std::vector<GPUKDNode> FlattenKDTree() const;

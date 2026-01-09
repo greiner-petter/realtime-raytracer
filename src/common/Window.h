@@ -3,6 +3,7 @@
 #include <cstdint>
 #include <string>
 #include <memory>
+#include <functional>
 
 struct WindowParams {
     std::string Title;
@@ -28,7 +29,7 @@ public:
     static Window* GetInstance();
     static struct GLFWwindow* GetGLFWwindow();
 
-    inline static std::function<const std::string&> OnDropFileCallback;
+    inline static std::function<void(const std::string&)> OnDropFileCallback = nullptr;
 
 private:
     WindowParams m_Params;

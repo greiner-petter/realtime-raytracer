@@ -2,6 +2,7 @@
 #include "vulkan/ShaderCompiler.h"
 #include "scene/Camera.h"
 #include "scene/Scene.h"
+#include "scene/SceneLoader.h"
 #include "primitives/Sphere.h"
 #include "primitives/Mesh.h"
 #include "primitives/Triangle.h"
@@ -22,9 +23,19 @@ double s_DeltaTime = 0.0;
 constexpr bool ENABLE_SHADER_HOT_RELOAD = true;
 extern UBO uniformBufferData;
 
+static bool ends_with(std::string_view str, std::string_view suffix) {
+    return str.size() >= suffix.size() && str.compare(str.size()-suffix.size(), suffix.size(), suffix) == 0;
+}
+
 void InitWindow() {
     s_PreviousTime = std::chrono::steady_clock::now();
     s_Window = Window::Create(WindowParams{ "Vulkan Raytracer", 1280, 720, false });
+    Window::OnDropFileCallback = [](const std::string& filepath) {
+        if (ends_with(filepath, ".json")) {
+            RT_INFO("Loading scene from file: {}", filepath);
+            SceneLoader::LoadScene(*s_Scene, filepath);
+        }
+    };
 }
 
 void InitScene() {
