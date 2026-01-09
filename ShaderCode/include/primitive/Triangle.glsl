@@ -6,7 +6,7 @@ struct Triangle {
     vec4 surface[3];
 };
 
-layout(binding = 4, std430) buffer Triangles {
+layout(binding = 12, std430) buffer Triangles {
     uint triangleCount;
     Triangle triangles[];
 };

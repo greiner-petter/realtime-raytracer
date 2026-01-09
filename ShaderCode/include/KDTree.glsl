@@ -59,7 +59,7 @@ bool intersectAABB(Ray ray, vec3 minBounds, vec3 maxBounds, inout float t0, inou
     return true;
 }
 
-bool TraceKDTree(Ray ray, out Hit hit) {
+bool IntersectKDTree(Ray ray, out Hit hit) {
     hit.rayLength = INFINITY;
     hit.primitiveIndex = -1;
 

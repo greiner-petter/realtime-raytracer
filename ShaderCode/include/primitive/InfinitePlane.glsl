@@ -3,7 +3,7 @@ struct InfinitePlane {
     vec4 normal;
 };
 
-layout(binding = 5, std430) buffer InfinitePlanes {
+layout(binding = 13, std430) buffer InfinitePlanes {
     uint InfinitePlaneCount;
     InfinitePlane infinitePlanes[];
 };

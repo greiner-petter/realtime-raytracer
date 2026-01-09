@@ -10,8 +10,9 @@ struct Hit {
     vec2 surface;
     vec3 tangent;
     vec3 bitangent;
-    int materialID;
     int primitiveIndex; // -1 if no hit
+    uint shaderType;
+    int shaderIndex;
 };
 
 Ray createRay(vec2 ndc, vec3 cameraPosition, vec3 cameraForward, vec3 cameraRight, vec3 cameraUp, float focus) {

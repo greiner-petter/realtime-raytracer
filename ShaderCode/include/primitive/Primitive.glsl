@@ -3,34 +3,38 @@
 #include "InfinitePlane.glsl"
 
 struct Primitive {
-    uint type;
-    int index;
-    int materialID;
+    uint primitiveType;
+    int primitiveIndex;
+    uint shaderType;
+    int shaderIndex;
 };
 
-layout(binding = 2, std430) buffer Primitives {
+layout(binding = 10, std430) buffer Primitives {
     uint primitiveCount;
     Primitive primitives[];
 };
 
 void intersectPrimitive(Ray ray, Primitive primitive, inout Hit hit) {
-    if (primitive.type == 1) {
-        Sphere sphere = spheres[primitive.index];
+    if (primitive.primitiveType == 1) {
+        Sphere sphere = spheres[primitive.primitiveIndex];
         if (intersectSphere(ray, sphere, hit)) {
-            hit.materialID = primitive.materialID;
-            hit.primitiveIndex = primitive.index;
+            hit.primitiveIndex = primitive.primitiveIndex;
+            hit.shaderType = primitive.shaderType;
+            hit.shaderIndex = primitive.shaderIndex;
         }
-    } else if (primitive.type == 2) {
-        Triangle triangle = triangles[primitive.index];
+    } else if (primitive.primitiveType == 2) {
+        Triangle triangle = triangles[primitive.primitiveIndex];
         if (intersectTriangle(ray, triangle, hit)) {
-            hit.materialID = primitive.materialID;
-            hit.primitiveIndex = primitive.index;
+            hit.primitiveIndex = primitive.primitiveIndex;
+            hit.shaderType = primitive.shaderType;
+            hit.shaderIndex = primitive.shaderIndex;
         }
-    } else if (primitive.type == 3) {
-        InfinitePlane plane = infinitePlanes[primitive.index];
+    } else if (primitive.primitiveType == 3) {
+        InfinitePlane plane = infinitePlanes[primitive.primitiveIndex];
         if (intersectInfinitePlane(ray, plane, hit)) {
-            hit.materialID = primitive.materialID;
-            hit.primitiveIndex = primitive.index;
+            hit.primitiveIndex = primitive.primitiveIndex;
+            hit.shaderType = primitive.shaderType;
+            hit.shaderIndex = primitive.shaderIndex;
         }
     }
 }

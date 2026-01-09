@@ -3,6 +3,7 @@
 
 #include "common/Types.h"
 #include "primitives/Primitive.h"
+#include "shaders/Shader.h"
 #include "vulkan/Buffer.h"
 
 struct alignas(16) UBO {
@@ -19,71 +20,115 @@ struct alignas(16) UBO {
 };
 
 struct Node {
-  Node() : dimension(0), split(0), startIndex(0), primitiveCount(0) {}
+    Node() : dimension(0), split(0), startIndex(0), primitiveCount(0) {}
 
-  inline bool isLeaf() const {
-    return child[0] == nullptr && child[1] == nullptr;
-  }
+    inline bool isLeaf() const { return child[0] == nullptr && child[1] == nullptr; }
 
+    // Branch split
+    std::unique_ptr<Node> child[2];
+    int dimension;
+    float split;
 
-  // Branch split
-  std::unique_ptr<Node> child[2];
-  int dimension;
-  float split;
-
-  // Leaf primitives
-  uint32_t startIndex;
-  uint32_t primitiveCount;
+    // Leaf primitives
+    uint32_t startIndex;
+    uint32_t primitiveCount;
 };
 
 struct GPUKDNode {
-  int left;
-  int right;
-  int axis;
-  float split;
-  int firstPrim;
-  int primCount;
+    int left;
+    int right;
+    int axis;
+    float split;
+    int firstPrim;
+    int primCount;
 };
 
 class Scene {
 public:
-  Scene() = default;
-  virtual ~Scene();
-  static void CreateGPUBuffers();
-  void BuildTree(int maximumDepth = 10, int minimumNumberOfPrimitives = 2);
+    Scene() = default;
+    virtual ~Scene() = default;
+    static void CreateGPUBuffers();
+    void BuildTree(int maximumDepth = 10, int minimumNumberOfPrimitives = 2);
 
-  void WriteBufferForPrimitiveType(PrimitiveType type, SSBO& ssbo);
-  void ConvertSceneToGPUData();
-  void UpdateGPUBuffers();
-  bool IsBufferDirty() const { return m_IsBufferDirty; }
-  void SetBufferDirty(bool dirty) { m_IsBufferDirty = dirty; }
-public:
-  std::vector<std::shared_ptr<Primitive>> m_Primitives;
+    template <typename T, typename EnumType>
+    void WriteBufferForType(const std::vector<std::shared_ptr<T>>& collection, EnumType typeToFind, SSBO& ssbo) {
+        size_t typeCount = 0;
+        size_t sizeOfType = 0;
+        uint32_t indiceIt = 0;
+        std::vector<std::shared_ptr<T>> itemsOfType;
+        for (const auto& item : collection) {
+            if (item->type == typeToFind) {
+                item->index = indiceIt++;
+                itemsOfType.push_back(item);
+                typeCount++;
+                sizeOfType = item->GetDataSize();
+            }
+        }
 
-  template<typename T>
-  void AddPrimitive(const T& primitive) {
-      m_Primitives.push_back(std::make_shared<T>(primitive));
-      m_IsBufferDirty = true;
-  }
+        if (typeCount == 0) {
+            return;
+        }
 
-  std::unique_ptr<Node> Build(const Vec3& minimumBounds, const Vec3& maximumBounds, int start, int end /* [start, end) */, int depth);
-  std::vector<GPUKDNode> FlattenKDTree() const;
-  void UploadTreeToGPU();
+        size_t GPUDataSize = sizeof(uint32_t)        // count
+                        + sizeof(uint32_t) * 3       // padding (align 16)
+                        + sizeOfType * typeCount;    // data
+        
+        void* DataGPU = ssbo.MapData(GPUDataSize);
+        
+        // Copy count
+        const uint32_t count = static_cast<uint32_t>(typeCount);
+        std::memcpy(DataGPU, &count, sizeof(uint32_t));
+
+        // Copy data
+        for (auto& item : itemsOfType) {
+            std::memcpy(static_cast<byte*>(DataGPU) + sizeof(uint32_t) * 4 + item->index * sizeOfType, 
+                        item->GetDataLayoutBeginPtr(), 
+                        sizeOfType);
+        }
+        ssbo.UnmapData();
+    }
+
+    void ConvertSceneToGPUData();
+    void UpdateGPUBuffers();
+    bool IsBufferDirty() const { return m_IsBufferDirty; }
+    void SetBufferDirty(bool dirty) { m_IsBufferDirty = dirty; }
+
+    void AddPrimitive(const std::shared_ptr<Primitive>& primitive) {
+        m_Primitives.push_back(primitive);
+        m_IsBufferDirty = true;
+    }
+
+    void AddShader(const std::shared_ptr<Shader>& shader) {
+        m_Shaders.push_back(shader);
+        m_IsBufferDirty = true;
+    }
+
+    std::unique_ptr<Node> Build(const Vec3& minimumBounds, const Vec3& maximumBounds, int start, int end /* [start, end) */, int depth);
+    std::vector<GPUKDNode> FlattenKDTree() const;
+    void UploadTreeToGPU();
 
 private:
-  inline static std::shared_ptr<UniformBuffer> uniformBuffer;
-  inline static std::shared_ptr<SSBO> kdTreeSSBO;
-  inline static std::shared_ptr<SSBO> primitiveSSBO;
-  inline static std::shared_ptr<SSBO> sphereSSBO;
-  inline static std::shared_ptr<SSBO> triangleSSBO;
-  inline static std::shared_ptr<SSBO> planeSSBO;
+    inline static std::shared_ptr<UniformBuffer> uniformBuffer;
+    inline static std::shared_ptr<SSBO> kdTreeSSBO;
 
-  std::unique_ptr<Node> root;
-  int maximumDepth;
-  int minimumNumberOfPrimitives;
-  Vec4 absoluteMinimum, absoluteMaximum; // xyz + padding
+    inline static std::shared_ptr<SSBO> primitiveSSBO;
+    inline static std::shared_ptr<SSBO> sphereSSBO;
+    inline static std::shared_ptr<SSBO> triangleSSBO;
+    inline static std::shared_ptr<SSBO> planeSSBO;
 
-  bool m_IsBufferDirty = true;
+    inline static std::shared_ptr<SSBO> shaderSSBO;
+    inline static std::shared_ptr<SSBO> flatSSBO;
+    inline static std::shared_ptr<SSBO> mirrorSSBO;
+
+    std::vector<std::shared_ptr<Primitive>> m_Primitives;
+    std::vector<std::shared_ptr<Shader>> m_Shaders;
+
+    std::unique_ptr<Node> root;
+    int maximumDepth = 10;
+    int minimumNumberOfPrimitives = 10;
+    Vec4 absoluteMinimum, absoluteMaximum; // xyz + padding
+
+    bool m_IsBufferDirty = true;
 };
 
 #endif

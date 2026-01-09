@@ -4,29 +4,22 @@
 #include "Primitive.h"
 #include "common/Types.h"
 
-struct InfinitePlane : public Primitive {
-public:
-    // Constructor
-    InfinitePlane():
-    normal{ Vec4(0, 1, 0, 0) } { type = PrimitiveType::InfinitePlane; }
-    
-    InfinitePlane(Vec3 const &origin, Vec3 const &normal):
-    origin{ Vec4(origin, 0) }, 
-    normal{ Vec4(normal, 0) } { type = PrimitiveType::InfinitePlane; }
+struct InfinitePlane : public TypedPrimitive<PrimitiveType::InfinitePlane> {
+    InfinitePlane(std::shared_ptr<Shader> const &shader) : TypedPrimitive(shader), normal(Vec4(0, 1, 0, 0)) {}
 
-    // Set
+    InfinitePlane(Vec3 const &origin, Vec3 const &normal, std::shared_ptr<Shader> const &shader)
+        : TypedPrimitive(shader), origin(Vec4(origin, 0)), normal(Vec4(glm::normalize(normal), 0)) {}
+
     void setOrigin(Vec3 const &origin) { this->origin = Vec4(origin, 0); }
     void setNormal(Vec3 const &normal) { this->normal = Vec4(glm::normalize(normal), 0); }
 
-    // Bounding box
     float minimumBounds(int dimension) const { return (this->normal[dimension] == 1.0f) ? this->origin[dimension] - EPSILON : -INFINITY; }
     float maximumBounds(int dimension) const { return (this->normal[dimension] == 1.0f) ? this->origin[dimension] + EPSILON : +INFINITY; }
 
     virtual void* GetDataLayoutBeginPtr() override { return &origin[0]; }
     virtual size_t GetDataSize() const override { return sizeof(Vec4) * 2; }
 
-protected:
-  Vec4 origin, normal;
+    Vec4 origin, normal;
 };
 
 #endif

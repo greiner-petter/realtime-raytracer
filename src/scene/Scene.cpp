@@ -51,63 +51,31 @@ UBO uniformBufferData;
 void Scene::CreateGPUBuffers() {
   uniformBuffer = UniformBuffer::Create(0, sizeof(uniformBufferData));
   kdTreeSSBO = SSBO::Create(1);
-  primitiveSSBO = SSBO::Create(2);
-  sphereSSBO = SSBO::Create(3);
-  triangleSSBO = SSBO::Create(4);
-  planeSSBO = SSBO::Create(5);
-}
 
-Scene::~Scene() {
-  
-}
+  primitiveSSBO = SSBO::Create(10);
+  sphereSSBO = SSBO::Create(11);
+  triangleSSBO = SSBO::Create(12);
+  planeSSBO = SSBO::Create(13);
 
-void Scene::WriteBufferForPrimitiveType(PrimitiveType type, SSBO& ssbo) {
-  size_t typeCount = 0;
-  size_t sizeOfType = 0;
-  uint32_t indiceIt = 0;
-  std::vector<std::shared_ptr<Primitive>> primsitivesOfType;
-  for (const auto& prim : m_Primitives) {
-      if (prim->type == type) {
-          prim->index = indiceIt++;
-          primsitivesOfType.push_back(prim);
-          typeCount++;
-          sizeOfType = prim->GetDataSize();
-      }
-  }
-
-  if (typeCount == 0) {
-      return;
-  }
-
-  size_t GPUDataSize = sizeof(uint32_t)           // count
-              + sizeof(uint32_t) * 3              // padding to align to 16 bytes
-              + sizeOfType * typeCount;           // data
-  
-  void* DataGPU = ssbo.MapData(GPUDataSize);
-  
-  // Copy count
-  const uint32_t count = static_cast<uint32_t>(typeCount);
-  std::memcpy(DataGPU, &count, sizeof(uint32_t));
-
-  // Copy data
-  for (auto& prim : primsitivesOfType) {
-      std::memcpy(static_cast<byte*>(DataGPU) + sizeof(uint32_t) * 4 + prim->index * sizeOfType, 
-                  prim->GetDataLayoutBeginPtr(), 
-                  sizeOfType);
-  }
-  ssbo.UnmapData();
+  shaderSSBO = SSBO::Create(20);
+  flatSSBO = SSBO::Create(21);
+  mirrorSSBO = SSBO::Create(22);
 }
 
 void Scene::ConvertSceneToGPUData() {
-  WriteBufferForPrimitiveType(PrimitiveType::Sphere, *sphereSSBO);
-  WriteBufferForPrimitiveType(PrimitiveType::Triangle, *triangleSSBO);
-  WriteBufferForPrimitiveType(PrimitiveType::InfinitePlane, *planeSSBO);
+  WriteBufferForType(m_Primitives, PrimitiveType::Sphere, *sphereSSBO);
+  WriteBufferForType(m_Primitives, PrimitiveType::Triangle, *triangleSSBO);
+  WriteBufferForType(m_Primitives, PrimitiveType::InfinitePlane, *planeSSBO);
+
+  WriteBufferForType(m_Shaders, ShaderType::FlatShader, *flatSSBO);
+  WriteBufferForType(m_Shaders, ShaderType::MirrorShader, *mirrorSSBO);
 
   // PRIMITIVES BUFFER
   struct GPUPrimitive {
-      uint32_t type;
-      int32_t  index;
-      int32_t  materialID;
+      uint32_t primitiveType;
+      int32_t  primitiveIndex;
+      uint32_t shaderType;
+      int32_t  shaderIndex;
   };
   size_t GPUDataSize = 4 + sizeof(GPUPrimitive) * m_Primitives.size();
   void* primitiveDataGPU = primitiveSSBO->MapData(GPUDataSize);
@@ -123,9 +91,10 @@ void Scene::ConvertSceneToGPUData() {
 
   for (size_t i = 0; i < m_Primitives.size(); ++i) {
       RT_ASSERT(m_Primitives[i]->type != PrimitiveType::None, "Primitive type is None");
-      primDst[i].type       = static_cast<uint32_t>(m_Primitives[i]->type);
-      primDst[i].index      = static_cast<int32_t>(m_Primitives[i]->index);
-      primDst[i].materialID = m_Primitives[i]->materialID;
+      primDst[i].primitiveType = static_cast<uint32_t>(m_Primitives[i]->type);
+      primDst[i].primitiveIndex = m_Primitives[i]->index;
+      primDst[i].shaderType = static_cast<uint32_t>(m_Primitives[i]->shader->type);
+      primDst[i].shaderIndex = m_Primitives[i]->shader->index;
   }
 
   primitiveSSBO->UnmapData();

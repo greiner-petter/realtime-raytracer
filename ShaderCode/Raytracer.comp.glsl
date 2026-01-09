@@ -5,9 +5,10 @@
 #include "UBO.glsl"
 #include "Ray.glsl"
 #include "primitive/Primitive.glsl"
+#include "shader/Shader.glsl"
 #include "KDTree.glsl"
 
-bool TraceRay(Ray ray, out Hit hit) {
+bool IntersectScene(Ray ray, out Hit hit) {
     hit.rayLength = INFINITY;
     hit.primitiveIndex = -1;
     for (int i = 0; i < primitiveCount; ++i) {
@@ -16,44 +17,29 @@ bool TraceRay(Ray ray, out Hit hit) {
     return hit.primitiveIndex != -1;
 }
 
-vec3 main_frag(vec2 ndc) {
+vec3 GetSkyColor(vec3 direction) {
+    if (direction.y > 0.0) {
+        return mix(vec3(0.9, 0.9, 1.0), vec3(0.5, 0.7, 1.0), direction.y);
+    } else {
+        return mix(vec3(0.9, 0.9, 1.0), vec3(1.0), -direction.y);
+    }
+}
 
-    // Primary ray
-    Ray ray = createRay(ndc, u_CameraPosition, u_CameraForward, u_CameraRight, u_CameraUp, u_FocusDistance);
-    
+vec3 TraceRay(Ray ray) {    
     vec3 radiance = vec3(0.0);
     vec3 throughput = vec3(1.0);
 
     for (int bounce = 0; bounce < MAX_BOUNCES; ++bounce) {
         Hit hit;
-        if (!TraceKDTree(ray, hit)) {
+        if (!IntersectKDTree(ray, hit)) {
             // sky
-            vec3 skyColor = vec3(0.0);
-            if (ray.direction.y > 0.0) {
-                skyColor = mix(vec3(0.9, 0.9, 1.0), vec3(0.5, 0.7, 1.0), ray.direction.y);
-            } else {
-                skyColor = mix(vec3(0.9, 0.9, 1.0), vec3(1.0), -ray.direction.y);
-            }
-            radiance += throughput * skyColor;
+            radiance += throughput * GetSkyColor(ray.direction);
             break;
         }
-
-        // Unlit / emissive
-        if (hit.materialID == 0) {
-            radiance += throughput * vec3(1, 0.2, 0);
+        if (!shade(ray, hit, throughput, radiance)) {
+            // no bounce
             break;
         }
-
-        // Mirror
-        if (hit.materialID == 1) {
-            ray.origin = hit.point + hit.normal * EPSILON;
-            ray.direction = reflect(ray.direction, hit.normal);
-            throughput *= vec3(0.8);
-            continue;
-        }
-
-        // No material matched, terminate
-        break;
     }
 
     return radiance;
@@ -97,8 +83,10 @@ void main() {
     ndc.y *= -1.0;
     ndc.y *= u_aspectRatio;
 
+    Ray ray = createRay(ndc, u_CameraPosition, u_CameraForward, u_CameraRight, u_CameraUp, u_FocusDistance);
+
     // Raytrace
-    vec3 pixelColor = main_frag(ndc);
+    vec3 pixelColor = TraceRay(ray);
 
     // Write Output over multiple samples
     // Format must match the image layout (rgba8 -> vec4)

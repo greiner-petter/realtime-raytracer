@@ -2,7 +2,7 @@ struct Sphere {
     vec4 center_radius; // xyz = center, w = radius
 };
 
-layout(binding = 3, std430) buffer Spheres {
+layout(binding = 11, std430) buffer Spheres {
     uint sphereCount;
     Sphere spheres[];
 };
