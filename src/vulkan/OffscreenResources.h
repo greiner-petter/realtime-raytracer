@@ -12,6 +12,9 @@ public:
     static VkImageView GetImageView() { return imageView; }
     static VkImage GetImage() { return image; }
 
+    static uint32_t GetWidth();
+    static uint32_t GetHeight();
+
 private:
     inline static VkImage image = VK_NULL_HANDLE;
     inline static VkDeviceMemory memory = VK_NULL_HANDLE;

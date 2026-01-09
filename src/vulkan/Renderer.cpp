@@ -6,36 +6,51 @@
 #include "Buffer.h"
 #include "scene/Scene.h"
 #include "common/Log.h"
+#include "common/Params.h"
 
 void Renderer::Init() {
     VulkanContext::Init();
-    Swapchain::Init();
+
+    if (Params::IsInteractiveMode()) {
+        Swapchain::Init();
+    }
+
     OffscreenResources::Init();
     Scene::CreateGPUBuffers();
     ComputePipeline::Init();
-    
-    CreateSyncObjects();
-    CreateCommandBuffers();
-    RecordCommandBuffers();
+
+    if (Params::IsInteractiveMode()) {
+        CreateSyncObjects();
+        CreateCommandBuffers();
+        RecordCommandBuffers();
+    } else {
+        CreateHeadlessCommandBuffer();
+        RecordHeadlessCommandBuffer();
+    }
 }
 
 void Renderer::Cleanup() {
     VulkanContext::DeviceWaitIdle();
 
     Buffer::DestroyAllBuffers();
-    
-    vkDestroySemaphore(VulkanContext::GetDevice(), imageAvailableSemaphore, nullptr);
-    vkDestroySemaphore(VulkanContext::GetDevice(), renderingFinishedSemaphore, nullptr);
-    vkDestroyFence(VulkanContext::GetDevice(), inFlightFence, nullptr);
-    
-    FreeCommandBuffers();
+
+    if (Params::IsInteractiveMode()) {
+        vkDestroySemaphore(VulkanContext::GetDevice(), imageAvailableSemaphore, nullptr);
+        vkDestroySemaphore(VulkanContext::GetDevice(), renderingFinishedSemaphore, nullptr);
+        vkDestroyFence(VulkanContext::GetDevice(), inFlightFence, nullptr);
+        FreeCommandBuffers();
+        Swapchain::Cleanup();
+    } else {
+        vkFreeCommandBuffers(VulkanContext::GetDevice(), VulkanContext::GetCommandPool(), 1, &headlessCommandBuffer);
+    }
+
     ComputePipeline::Cleanup();
     OffscreenResources::Cleanup();
-    Swapchain::Cleanup();
     VulkanContext::Cleanup();
 }
 
 void Renderer::OnWindowSizeChanged() {
+    RT_ASSERT(Params::IsInteractiveMode(), "OnWindowSizeChanged can only be called in interactive mode");
     VulkanContext::DeviceWaitIdle();
 
     Swapchain::Recreate();
@@ -48,6 +63,11 @@ void Renderer::OnWindowSizeChanged() {
 }
 
 void Renderer::Draw() {
+    if (!Params::IsInteractiveMode()) {
+        DrawHeadless();
+        return;
+    }
+
     vkWaitForFences(VulkanContext::GetDevice(), 1, &inFlightFence, VK_TRUE, UINT64_MAX);
 
     uint32_t imageIndex;
@@ -92,6 +112,16 @@ void Renderer::Draw() {
     }
 }
 
+void Renderer::DrawHeadless() {
+    VkSubmitInfo submit{ VK_STRUCTURE_TYPE_SUBMIT_INFO };
+    submit.commandBufferCount = 1;
+    submit.pCommandBuffers = &headlessCommandBuffer;
+
+    vkQueueSubmit(VulkanContext::GetGraphicsQueue(), 1, &submit, VK_NULL_HANDLE);
+
+    vkQueueWaitIdle(VulkanContext::GetGraphicsQueue());
+}
+
 void Renderer::CreateSyncObjects() {
     VkSemaphoreCreateInfo semInfo = { VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO };
     vkCreateSemaphore(VulkanContext::GetDevice(), &semInfo, nullptr, &imageAvailableSemaphore);
@@ -112,6 +142,15 @@ void Renderer::CreateCommandBuffers() {
 void Renderer::FreeCommandBuffers() {
     vkFreeCommandBuffers(VulkanContext::GetDevice(), VulkanContext::GetCommandPool(), (uint32_t)commandBuffers.size(), commandBuffers.data());
     commandBuffers.clear();
+}
+
+void Renderer::CreateHeadlessCommandBuffer() {
+    VkCommandBufferAllocateInfo allocInfo = { VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO };
+    allocInfo.commandPool = VulkanContext::GetCommandPool();
+    allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+    allocInfo.commandBufferCount = 1;
+
+    vkAllocateCommandBuffers(VulkanContext::GetDevice(), &allocInfo, &headlessCommandBuffer);
 }
 
 void Renderer::RecordCommandBuffers() {
@@ -177,13 +216,72 @@ void Renderer::RecordCommandBuffers() {
     }
 }
 
+void Renderer::RecordHeadlessCommandBuffer() {
+    VkCommandBufferBeginInfo beginInfo = { VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO };
+
+    vkBeginCommandBuffer(headlessCommandBuffer, &beginInfo);
+
+    VkImageMemoryBarrier toGeneral = { VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER };
+    toGeneral.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+    toGeneral.newLayout = VK_IMAGE_LAYOUT_GENERAL;
+    toGeneral.srcAccessMask = 0;
+    toGeneral.dstAccessMask = VK_ACCESS_SHADER_WRITE_BIT;
+    toGeneral.image = OffscreenResources::GetImage();
+    toGeneral.subresourceRange = { VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1 };
+
+    vkCmdPipelineBarrier(
+        headlessCommandBuffer,
+        VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
+        VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
+        0, 0, nullptr, 0, nullptr, 1, &toGeneral
+    );
+
+    vkCmdBindPipeline(
+        headlessCommandBuffer,
+        VK_PIPELINE_BIND_POINT_COMPUTE,
+        ComputePipeline::GetPipeline()
+    );
+
+    VkDescriptorSet ds = ComputePipeline::GetDescriptorSet();
+    vkCmdBindDescriptorSets(
+        headlessCommandBuffer,
+        VK_PIPELINE_BIND_POINT_COMPUTE,
+        ComputePipeline::GetLayout(),
+        0, 1, &ds, 0, nullptr
+    );
+
+    vkCmdDispatch(
+        headlessCommandBuffer,
+        (OffscreenResources::GetWidth() + 15) / 16,
+        (OffscreenResources::GetHeight() + 15) / 16,
+        1
+    );
+
+    VkImageMemoryBarrier toTransferSrc = { VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER };
+    toTransferSrc.oldLayout = VK_IMAGE_LAYOUT_GENERAL;
+    toTransferSrc.newLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
+    toTransferSrc.srcAccessMask = VK_ACCESS_SHADER_WRITE_BIT;
+    toTransferSrc.dstAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
+    toTransferSrc.image = OffscreenResources::GetImage();
+    toTransferSrc.subresourceRange = { VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1 };
+
+    vkCmdPipelineBarrier(
+        headlessCommandBuffer,
+        VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
+        VK_PIPELINE_STAGE_TRANSFER_BIT,
+        0, 0, nullptr, 0, nullptr, 1, &toTransferSrc
+    );
+
+    vkEndCommandBuffer(headlessCommandBuffer);
+}
+
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include "third-party/stb_image_write.h"
 
 void Renderer::SaveCurrentFrameToDisk(const std::string& filePath) {
     auto device = VulkanContext::GetDevice();
-    auto width = Swapchain::GetExtent().width;
-    auto height = Swapchain::GetExtent().height;
+    auto width = OffscreenResources::GetWidth();
+    auto height = OffscreenResources::GetHeight();
     auto image = OffscreenResources::GetImage();
     VkDeviceSize size = width * height * 4;
 

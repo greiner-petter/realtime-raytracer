@@ -2,13 +2,16 @@
 #include "VulkanContext.h"
 #include "common/Window.h"
 #include "common/Log.h"
+#include "common/Params.h"
 #include <algorithm>
 
 void Swapchain::Init() {
+    RT_ASSERT(Params::IsInteractiveMode(), "Swapchain can only be initialized in interactive mode");
     Create();
 }
 
 void Swapchain::Cleanup() {
+    RT_ASSERT(Params::IsInteractiveMode(), "Swapchain can only be destroyed in interactive mode");
     if (swapChain != VK_NULL_HANDLE) {
         vkDestroySwapchainKHR(VulkanContext::GetDevice(), swapChain, nullptr);
         swapChain = VK_NULL_HANDLE;
@@ -21,6 +24,7 @@ void Swapchain::Recreate() {
 }
 
 void Swapchain::Create() {
+    RT_ASSERT(Params::IsInteractiveMode(), "Swapchain can only be created in interactive mode");
     VkSurfaceCapabilitiesKHR capabilities;
     vkGetPhysicalDeviceSurfaceCapabilitiesKHR(VulkanContext::GetPhysicalDevice(), VulkanContext::GetSurface(), &capabilities);
 

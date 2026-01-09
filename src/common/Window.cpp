@@ -83,3 +83,8 @@ Window* Window::GetInstance() {
 GLFWwindow* Window::GetGLFWwindow() {
     return Window::GetInstance()->m_Window;
 }
+
+void Window::UpdateTitleInfo(uint32_t framerate, uint32_t samples) {
+    glfwSetWindowTitle(Window::GetGLFWwindow(), 
+                (std::string("Vulkan Raytracer - FPS: ") + std::to_string(framerate) + " - Samples: " + std::to_string(samples)).c_str());
+}

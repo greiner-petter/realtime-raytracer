@@ -13,14 +13,13 @@
 #include "common/Window.h"
 #include "common/Input.h"
 #include "common/Log.h"
+#include "common/Params.h"
 #include <GLFW/glfw3.h>
-
 
 std::shared_ptr<Scene> s_Scene;
 std::shared_ptr<Window> s_Window;
 std::chrono::time_point<std::chrono::steady_clock> s_PreviousTime;
 double s_DeltaTime = 0.0;
-constexpr bool ENABLE_SHADER_HOT_RELOAD = true;
 extern UBO uniformBufferData;
 
 static bool ends_with(std::string_view str, std::string_view suffix) {
@@ -78,12 +77,14 @@ void InitVulkan() {
 void MainLoop() {
     uint32_t frameCount = 0;
     auto timer = std::chrono::steady_clock::now();
-    while (!glfwWindowShouldClose(Window::GetGLFWwindow())) {
+    bool is_rendering = true;
+
+    while (is_rendering) {
         s_Scene->UpdateGPUBuffers();
         Renderer::Draw();
         frameCount++;
 
-        if (ENABLE_SHADER_HOT_RELOAD) {
+        if (Params::ENABLE_SHADER_HOT_RELOAD) {
             ShaderCompiler::CompileAllShaders();
         }
 
@@ -95,20 +96,32 @@ void MainLoop() {
 
         //update
         if (std::chrono::duration_cast<std::chrono::seconds>(currentTime - timer).count() >= 1.0) {
-            glfwSetWindowTitle(Window::GetGLFWwindow(), 
-                (std::string("Vulkan Raytracer - FPS: ") + std::to_string(frameCount) + " - Samples: " + std::to_string(uniformBufferData.u_SampleIndex)).c_str());
+            if (Params::IsInteractiveMode()) {
+                Window::UpdateTitleInfo(frameCount, uniformBufferData.u_SampleIndex);
+            } else {
+                RT_INFO("FPS: {0}  Samples: {1}", frameCount, uniformBufferData.u_SampleIndex);
+            }
             frameCount = 0;
             timer = currentTime;
         }
         CameraUpdate(*s_Scene, s_DeltaTime);
 
         if (Input::IsKeyPressed(Key::LeftControl) && Input::IsKeyPressed(Key::S)) {
-            Renderer::SaveCurrentFrameToDisk("result.png");
+            Renderer::SaveCurrentFrameToDisk(Params::GetResultImageName());
         }
 
-        glfwPollEvents();
-        glfwSwapInterval(0);
-        Input::Tick();
+        if (Params::IsInteractiveMode()) {
+            is_rendering = !glfwWindowShouldClose(Window::GetGLFWwindow());
+            glfwPollEvents();
+            glfwSwapInterval(0);
+            Input::Tick();
+        } else {
+            is_rendering = uniformBufferData.u_SampleIndex < Params::GetSampleCount();
+        }
+    }
+
+    if (!Params::IsInteractiveMode()) {
+        Renderer::SaveCurrentFrameToDisk(Params::GetResultImageName());
     }
 }
 
@@ -118,7 +131,9 @@ void Cleanup() {
 
 int main() {
     Log::Init();
-    InitWindow();
+    if (Params::IsInteractiveMode()) {
+        InitWindow();
+    }
     InitVulkan();
     InitScene();
     MainLoop();

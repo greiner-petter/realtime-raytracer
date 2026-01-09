@@ -2,12 +2,13 @@
 #include "VulkanContext.h"
 #include "Swapchain.h"
 #include "common/Log.h"
+#include "common/Params.h"
 
 void OffscreenResources::Init() {
     VkImageCreateInfo imageInfo = { VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO };
     imageInfo.imageType = VK_IMAGE_TYPE_2D;
-    imageInfo.extent.width = Swapchain::GetExtent().width;
-    imageInfo.extent.height = Swapchain::GetExtent().height;
+    imageInfo.extent.width = OffscreenResources::GetWidth();
+    imageInfo.extent.height = OffscreenResources::GetHeight();
     imageInfo.extent.depth = 1;
     imageInfo.mipLevels = 1;
     imageInfo.arrayLayers = 1;
@@ -65,4 +66,16 @@ void OffscreenResources::Cleanup() {
 void OffscreenResources::Resize() {
     Cleanup();
     Init();
+}
+
+uint32_t OffscreenResources::GetWidth() {
+    return Params::IsInteractiveMode() 
+        ? Swapchain::GetExtent().width
+        : Params::GetWidth();
+}
+
+uint32_t OffscreenResources::GetHeight() {
+    return Params::IsInteractiveMode() 
+        ? Swapchain::GetExtent().height
+        : Params::GetHeight();
 }

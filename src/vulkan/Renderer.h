@@ -19,6 +19,11 @@ private:
     static void RecordCommandBuffers();
     static void FreeCommandBuffers();
 
+    static void DrawHeadless();
+    static void CreateHeadlessCommandBuffer();
+    static void RecordHeadlessCommandBuffer();
+
+    inline static VkCommandBuffer headlessCommandBuffer = VK_NULL_HANDLE;
     inline static std::vector<VkCommandBuffer> commandBuffers;
     inline static VkSemaphore imageAvailableSemaphore = VK_NULL_HANDLE;
     inline static VkSemaphore renderingFinishedSemaphore = VK_NULL_HANDLE;

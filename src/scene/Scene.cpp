@@ -1,6 +1,7 @@
 #include "scene/Scene.h"
 #include "common/Log.h"
 #include "common/Window.h"
+#include "common/Params.h"
 #include <array>
 #include <cassert>
 #include <fstream>
@@ -122,8 +123,11 @@ void Scene::UploadTreeToGPU() {
 
 void Scene::UpdateGPUBuffers() {
   // Always update uniform buffer
-  uniformBufferData.u_resolution = glm::vec2(Window::GetInstance()->GetWidth(), Window::GetInstance()->GetHeight());
-  uniformBufferData.u_aspectRatio = float(Window::GetInstance()->GetHeight()) / float(Window::GetInstance()->GetWidth());
+  uniformBufferData.u_resolution = Params::IsInteractiveMode() 
+    ? glm::vec2(Window::GetInstance()->GetWidth(), Window::GetInstance()->GetHeight()) 
+    : glm::vec2(Params::GetWidth(), Params::GetHeight());
+
+  uniformBufferData.u_aspectRatio = uniformBufferData.u_resolution.y / uniformBufferData.u_resolution.x;
   uniformBufferData.u_Seed = static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
   uniformBuffer->UploadData(&uniformBufferData, sizeof(uniformBufferData));
   uniformBufferData.u_SampleIndex++;

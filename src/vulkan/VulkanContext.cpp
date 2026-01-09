@@ -1,11 +1,14 @@
 #include "VulkanContext.h"
 #include "common/Log.h"
 #include "common/Window.h"
+#include "common/Params.h"
 #include <GLFW/glfw3.h>
 
 void VulkanContext::Init() {
     CreateInstance();
-    CreateWindowSurface();
+    if (Params::IsInteractiveMode()) {
+        CreateWindowSurface();
+    }
     CreateLogicalDevice();
     CreateCommandPool();
 }
@@ -68,16 +71,33 @@ void VulkanContext::CreateLogicalDevice() {
     vkGetPhysicalDeviceQueueFamilyProperties(physicalDevice, &qCount, queues.data());
 
     int found = -1;
-    for (int i = 0; i < qCount; i++) {
-        VkBool32 present = false;
-        vkGetPhysicalDeviceSurfaceSupportKHR(physicalDevice, i, surface, &present);
-        if ((queues[i].queueFlags & VK_QUEUE_GRAPHICS_BIT) && present) {
-            found = i;
-            break;
+
+    if (Params::IsInteractiveMode()) {
+        for (int i = 0; i < (int)qCount; i++) {
+            VkBool32 present = VK_FALSE;
+            vkGetPhysicalDeviceSurfaceSupportKHR(physicalDevice, i, surface, &present);
+            if ((queues[i].queueFlags & VK_QUEUE_GRAPHICS_BIT) && present) {
+                found = i;
+                break;
+            }
+        }
+        if (found == -1) {
+            RT_ERROR("No graphics+present queue found");
+            exit(1);
+        }
+    } else {
+        for (int i = 0; i < (int)qCount; i++) {
+            if (queues[i].queueFlags & VK_QUEUE_COMPUTE_BIT) {
+                found = i;
+                break;
+            }
+        }
+        if (found == -1) {
+            RT_ERROR("No compute queue found");
+            exit(1);
         }
     }
-    
-    if (found == -1) { RT_ERROR("No graphics+present queue found"); exit(1); }
+
     graphicsQueueFamily = found;
 
     float priority = 1.0f;
@@ -94,8 +114,14 @@ void VulkanContext::CreateLogicalDevice() {
     deviceCreateInfo.pNext = &features13;
     deviceCreateInfo.queueCreateInfoCount = 1;
     deviceCreateInfo.pQueueCreateInfos = &queueInfo;
-    deviceCreateInfo.enabledExtensionCount = 1;
-    deviceCreateInfo.ppEnabledExtensionNames = &ext;
+
+    if (Params::IsInteractiveMode()) {
+        deviceCreateInfo.enabledExtensionCount = 1;
+        deviceCreateInfo.ppEnabledExtensionNames = &ext;
+    } else {
+        deviceCreateInfo.enabledExtensionCount = 0;
+        deviceCreateInfo.ppEnabledExtensionNames = nullptr;
+    }
 
     if (vkCreateDevice(physicalDevice, &deviceCreateInfo, nullptr, &device) != VK_SUCCESS) {
         RT_ERROR("failed to create device"); exit(1);
