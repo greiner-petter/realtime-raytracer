@@ -9,6 +9,17 @@ static void OnWindowResized(GLFWwindow* InWindow, int InWidth, int InHeight) {
     s_WindowResized = true;
 }
 
+static void OnWindowDrop(GLFWwindow* window, int path_count, const char* paths[]) {
+    if (!Window::OnDropFileCallback) {
+        return;
+    }
+
+    for (int i = 0; i < path_count; i++) {
+        RT_INFO("File dropped: {}", paths[i]);
+        Window::OnDropFileCallback(paths[i]);
+    }
+}
+
 Window::Window(const WindowParams& InParams) {
     s_Instance = this;
     if (!glfwInit()) {
@@ -33,6 +44,7 @@ Window::Window(const WindowParams& InParams) {
         return;
     }
     glfwSetWindowSizeCallback(m_Window, OnWindowResized);
+    glfwSetDropCallback(m_Window, OnWindowDrop);
 }
 Window::~Window() {
     // Destructor implementation

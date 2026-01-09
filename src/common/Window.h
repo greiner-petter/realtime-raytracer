@@ -27,6 +27,9 @@ public:
     static std::shared_ptr<Window> Create(const WindowParams& InParams);
     static Window* GetInstance();
     static struct GLFWwindow* GetGLFWwindow();
+
+    inline static std::function<const std::string&> OnDropFileCallback;
+
 private:
     WindowParams m_Params;
     struct GLFWwindow* m_Window = nullptr;
