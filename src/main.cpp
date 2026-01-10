@@ -50,7 +50,8 @@ void InitScene() {
     std::shared_ptr<MirrorShader> mirror = std::make_shared<MirrorShader>(Vec3(0.8));
     std::shared_ptr<SimpleShadowShader> shadowRed = std::make_shared<SimpleShadowShader>(Vec3(1, 0, 0));
 
-    std::shared_ptr<PointLight> pointLight = std::make_shared<PointLight>(Vec3(0, 1, -10), 250, Vec3(1));
+    std::shared_ptr<PointLight> pointLight = std::make_shared<PointLight>(Vec3(0, 1, -9), 0.8, Vec3(1));
+    std::shared_ptr<PointLight> pointLight2 = std::make_shared<PointLight>(Vec3(0, 1, -8), 0.5, Vec3(1));
 
     std::shared_ptr<Sphere> redSphere = std::make_shared<Sphere>(Vec3(0.0f, 0.0f, -9.0f), 0.33f, shadowRed);
     std::shared_ptr<Sphere> mirrorSphere = std::make_shared<Sphere>(Vec3(2.0f, 0.0f, -3.0f), 1.2f, mirror);
@@ -65,6 +66,7 @@ void InitScene() {
     s_Scene->AddShader(shadowRed);
 
     s_Scene->AddLight(pointLight);
+    s_Scene->AddLight(pointLight2);
 
     s_Scene->AddPrimitive(redSphere);
     s_Scene->AddPrimitive(mirrorSphere);

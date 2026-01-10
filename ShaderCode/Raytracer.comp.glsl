@@ -4,21 +4,12 @@
 #include "Constants.glsl"
 #include "UBO.glsl"
 #include "Ray.glsl"
+#include "Scene.glsl"
 #include "primitive/Primitive.glsl"
 #include "light/Light.glsl"
 #include "shader/Shader.glsl"
-#include "KDTree.glsl"
+// #include "KDTree.glsl"
 
-bool IntersectScene(Ray ray, inout Hit hit) {
-    hit.primitiveIndex = -1;
-    bool didHit = false;
-    for (int i = 0; i < primitiveCount; ++i) {
-        if (intersectPrimitive(ray, primitives[i], hit)) {
-            didHit = true;
-        }
-    }
-    return didHit;
-}
 
 layout(local_size_x = 16, local_size_y = 16, local_size_z = 1) in;
 layout(binding = 255, rgba8) uniform image2D resultImage;

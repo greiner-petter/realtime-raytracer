@@ -7,9 +7,14 @@ layout(binding = 22, std430) buffer MirrorShaders {
     MirrorShader mirrorShaders[];
 };
 
-bool shadeMirror(inout Ray ray, in Hit hit, in MirrorShader shader, inout vec3 throughput) {
-    ray.origin = hit.point + hit.normal * EPSILON;
-    ray.direction = reflect(ray.direction, hit.normal);
+bool shadeMirror(inout Ray ray, in MirrorShader shader, inout vec3 throughput) {
+    vec3 reflectionOrigin = ray.origin + (ray.rayLength - REFR_EPS) * ray.direction;
+    vec3 reflectionDirection = reflect(ray.direction, ray.normal);
+
+    // Create a new reflection ray
+    Ray reflectionRay = createRay(reflectionOrigin, reflectionDirection, ray.remainingBounces - 1);
+
+    ray = reflectionRay;
     throughput *= shader.throughput.xyz;
     return true;
 }

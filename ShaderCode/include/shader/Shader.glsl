@@ -12,16 +12,16 @@ layout(binding = 20, std430) buffer Shaders {
     Shader shaders[];
 };
 
-bool shade(inout Ray ray, inout Hit hit, inout vec3 throughput, inout vec3 radiance) {
-    if (hit.shaderType == 1) {
-        FlatShader flatShader = flatShaders[hit.shaderIndex];
+bool shade(inout Ray ray, inout vec3 throughput, inout vec3 radiance) {
+    if (ray.primitive.shaderType == 1) {
+        FlatShader flatShader = flatShaders[ray.primitive.shaderIndex];
         return shadeFlat(flatShader, throughput, radiance);
-    } else if (hit.shaderType == 2) {
-        MirrorShader mirrorShader = mirrorShaders[hit.shaderIndex]; 
-        return shadeMirror(ray, hit, mirrorShader, throughput);
-    } else if (hit.shaderType == 3) {
-        SimpleShadowShader simpleShadowShader = simpleShadowShaders[hit.shaderIndex];
-        return shadeSimpleShadow(hit, simpleShadowShader, throughput, radiance);
+    } else if (ray.primitive.shaderType == 2) {
+        MirrorShader mirrorShader = mirrorShaders[ray.primitive.shaderIndex]; 
+        return shadeMirror(ray, mirrorShader, throughput);
+    } else if (ray.primitive.shaderType == 3) {
+        SimpleShadowShader simpleShadowShader = simpleShadowShaders[ray.primitive.shaderIndex];
+        return shadeSimpleShadow(ray, simpleShadowShader, throughput, radiance);
     }
     return false;
 }

@@ -59,7 +59,7 @@ bool intersectAABB(Ray ray, vec3 minBounds, vec3 maxBounds, inout float t0, inou
     return true;
 }
 
-bool IntersectKDTree(Ray ray, out Hit hit) {
+bool intersectKDTree(Ray ray, out Hit hit) {
     hit.rayLength = INFINITY;
     hit.primitiveIndex = -1;
 
@@ -97,7 +97,7 @@ bool IntersectKDTree(Ray ray, out Hit hit) {
         if (node.left < 0) { // Assuming negative index means leaf
             for (int i = node.firstPrim; i < node.firstPrim + node.primCount; ++i) {
                 // intersectPrimitive should update 'hit' only if the new t is closer
-                intersectPrimitive(ray, primitives[i], hit); 
+                intersectPrimitive(ray, primitives[i]); 
             }
             continue;
         }
