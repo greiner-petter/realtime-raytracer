@@ -15,13 +15,14 @@ layout(binding = 10, std430) buffer Primitives {
     Primitive primitives[];
 };
 
-void intersectPrimitive(Ray ray, Primitive primitive, inout Hit hit) {
+bool intersectPrimitive(Ray ray, Primitive primitive, inout Hit hit) {
     if (primitive.primitiveType == 1) {
         Sphere sphere = spheres[primitive.primitiveIndex];
         if (intersectSphere(ray, sphere, hit)) {
             hit.primitiveIndex = primitive.primitiveIndex;
             hit.shaderType = primitive.shaderType;
             hit.shaderIndex = primitive.shaderIndex;
+            return true;
         }
     } else if (primitive.primitiveType == 2) {
         Triangle triangle = triangles[primitive.primitiveIndex];
@@ -29,6 +30,7 @@ void intersectPrimitive(Ray ray, Primitive primitive, inout Hit hit) {
             hit.primitiveIndex = primitive.primitiveIndex;
             hit.shaderType = primitive.shaderType;
             hit.shaderIndex = primitive.shaderIndex;
+            return true;
         }
     } else if (primitive.primitiveType == 3) {
         InfinitePlane plane = infinitePlanes[primitive.primitiveIndex];
@@ -36,6 +38,7 @@ void intersectPrimitive(Ray ray, Primitive primitive, inout Hit hit) {
             hit.primitiveIndex = primitive.primitiveIndex;
             hit.shaderType = primitive.shaderType;
             hit.shaderIndex = primitive.shaderIndex;
+            return true;
         }
     } else if (primitive.primitiveType == 4) {
         Box box = boxes[primitive.primitiveIndex];
@@ -43,6 +46,8 @@ void intersectPrimitive(Ray ray, Primitive primitive, inout Hit hit) {
             hit.primitiveIndex = primitive.primitiveIndex;
             hit.shaderType = primitive.shaderType;
             hit.shaderIndex = primitive.shaderIndex;
+            return true;
         }
     }
+    return false;
 }

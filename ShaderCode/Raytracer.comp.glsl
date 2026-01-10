@@ -5,46 +5,20 @@
 #include "UBO.glsl"
 #include "Ray.glsl"
 #include "primitive/Primitive.glsl"
+#include "light/Light.glsl"
 #include "shader/Shader.glsl"
 #include "KDTree.glsl"
 
-bool IntersectScene(Ray ray, out Hit hit) {
-    hit.rayLength = INFINITY;
+bool IntersectScene(Ray ray, inout Hit hit) {
     hit.primitiveIndex = -1;
+    bool didHit = false;
     for (int i = 0; i < primitiveCount; ++i) {
-        intersectPrimitive(ray, primitives[i], hit); 
-    }
-    return hit.primitiveIndex != -1;
-}
-
-vec3 GetSkyColor(vec3 direction) {
-    if (direction.y > 0.0) {
-        return mix(vec3(0.9, 0.9, 1.0), vec3(0.5, 0.7, 1.0), direction.y);
-    } else {
-        return mix(vec3(0.9, 0.9, 1.0), vec3(1.0), -direction.y);
-    }
-}
-
-vec3 TraceRay(Ray ray) {    
-    vec3 radiance = vec3(0.0);
-    vec3 throughput = vec3(1.0);
-
-    for (int bounce = 0; bounce < MAX_BOUNCES; ++bounce) {
-        Hit hit;
-        if (!IntersectKDTree(ray, hit)) {
-            // sky
-            radiance += throughput * GetSkyColor(ray.direction);
-            break;
-        }
-        if (!shade(ray, hit, throughput, radiance)) {
-            // no bounce
-            break;
+        if (intersectPrimitive(ray, primitives[i], hit)) {
+            didHit = true;
         }
     }
-
-    return radiance;
+    return didHit;
 }
-
 
 layout(local_size_x = 16, local_size_y = 16, local_size_z = 1) in;
 layout(binding = 255, rgba8) uniform image2D resultImage;
@@ -83,7 +57,14 @@ void main() {
     ndc.y *= -1.0;
     ndc.y *= u_aspectRatio;
 
-    Ray ray = createRay(ndc, u_CameraPosition, u_CameraForward, u_CameraRight, u_CameraUp, u_FocusDistance);
+    vec3 origin = u_CameraPosition;
+    vec3 direction = normalize(
+        ndc.x * u_CameraRight +
+        ndc.y * u_CameraUp +
+        u_FocusDistance * u_CameraForward
+    );
+
+    Ray ray = createRay(origin, direction, MAX_BOUNCES);
 
     // Raytrace
     vec3 pixelColor = TraceRay(ray);

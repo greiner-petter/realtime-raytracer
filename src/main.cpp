@@ -10,6 +10,8 @@
 #include "primitives/Box.h"
 #include "shaders/FlatShader.h"
 #include "shaders/MirrorShader.h"
+#include "shaders/SimpleShadowShader.h"
+#include "lights/PointLight.h"
 #include "common/Window.h"
 #include "common/Input.h"
 #include "common/Log.h"
@@ -46,8 +48,11 @@ void InitScene() {
     std::shared_ptr<FlatShader> green = std::make_shared<FlatShader>(Vec3(0, 1, 0));
     std::shared_ptr<FlatShader> blue = std::make_shared<FlatShader>(Vec3(0, 0, 1));
     std::shared_ptr<MirrorShader> mirror = std::make_shared<MirrorShader>(Vec3(0.8));
+    std::shared_ptr<SimpleShadowShader> shadowRed = std::make_shared<SimpleShadowShader>(Vec3(1, 0, 0));
 
-    std::shared_ptr<Sphere> redSphere = std::make_shared<Sphere>(Vec3(0.0f, 0.0f, -9.0f), 0.33f, red);
+    std::shared_ptr<PointLight> pointLight = std::make_shared<PointLight>(Vec3(0, 1, -10), 250, Vec3(1));
+
+    std::shared_ptr<Sphere> redSphere = std::make_shared<Sphere>(Vec3(0.0f, 0.0f, -9.0f), 0.33f, shadowRed);
     std::shared_ptr<Sphere> mirrorSphere = std::make_shared<Sphere>(Vec3(2.0f, 0.0f, -3.0f), 1.2f, mirror);
     std::shared_ptr<Triangle> greenTriangle = std::make_shared<Triangle>(Vec3(-1.0f, -1.0f, -5.0f), Vec3(1.0f, -1.0f, -5.0f), Vec3(0.0f, 1.0f, -5.0f), green);
     std::shared_ptr<InfinitePlane> mirrorPlane = std::make_shared<InfinitePlane>(Vec3(0, 0, 5), Vec3(0, 0, -1), mirror);
@@ -57,6 +62,9 @@ void InitScene() {
     s_Scene->AddShader(green);
     s_Scene->AddShader(blue);
     s_Scene->AddShader(mirror);
+    s_Scene->AddShader(shadowRed);
+
+    s_Scene->AddLight(pointLight);
 
     s_Scene->AddPrimitive(redSphere);
     s_Scene->AddPrimitive(mirrorSphere);

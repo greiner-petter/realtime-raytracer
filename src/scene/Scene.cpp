@@ -62,6 +62,10 @@ void Scene::CreateGPUBuffers() {
   shaderSSBO = SSBO::Create(20);
   flatSSBO = SSBO::Create(21);
   mirrorSSBO = SSBO::Create(22);
+  simpleShadowSSBO = SSBO::Create(23);
+
+  lightSSBO = SSBO::Create(30);
+  pointSSBO = SSBO::Create(31);
 }
 
 void Scene::ConvertSceneToGPUData() {
@@ -72,6 +76,9 @@ void Scene::ConvertSceneToGPUData() {
 
   WriteBufferForType(m_Shaders, ShaderType::FlatShader, *flatSSBO);
   WriteBufferForType(m_Shaders, ShaderType::MirrorShader, *mirrorSSBO);
+  WriteBufferForType(m_Shaders, ShaderType::SimpleShadowShader, *simpleShadowSSBO);
+
+  WriteBufferForType(m_Lights, LightType::PointLight, *pointSSBO);
 
   // PRIMITIVES BUFFER
   struct GPUPrimitive {
@@ -101,6 +108,26 @@ void Scene::ConvertSceneToGPUData() {
   }
 
   primitiveSSBO->UnmapData();
+
+    struct GPULight {
+        uint32_t lightType;
+        int32_t  lightIndex;
+    };
+    size_t GPULightDataSize = 4 + sizeof(GPULight) * m_Lights.size();
+    void* lightDataGPU = lightSSBO->MapData(GPULightDataSize);
+
+    const uint32_t lightCount = static_cast<uint32_t>(m_Lights.size());
+    std::memcpy(lightDataGPU, &lightCount, sizeof(uint32_t));
+
+    GPULight* lightDst = reinterpret_cast<GPULight*>(reinterpret_cast<byte*>(lightDataGPU) + 4);
+
+    for (size_t i = 0; i < m_Lights.size(); ++i) {
+        RT_ASSERT(m_Lights[i]->type != LightType::None, "Light type is None");
+        lightDst[i].lightType = static_cast<uint32_t>(m_Lights[i]->type);
+        lightDst[i].lightIndex = m_Lights[i]->index;
+    }
+
+    lightSSBO->UnmapData();
 }
 
 void Scene::UploadTreeToGPU() {
