@@ -31,4 +31,4 @@ public:
 #define RT_INTERNAL_ASSERT_GET_MACRO(...) RT_EXPAND_MACRO( RT_INTERNAL_ASSERT_GET_MACRO_NAME(__VA_ARGS__, RT_INTERNAL_ASSERT_WITH_MSG, RT_INTERNAL_ASSERT_NO_MSG) )
 
 //#define RT_ASSERT(...) RT_EXPAND_MACRO( RT_INTERNAL_ASSERT_GET_MACRO(__VA_ARGS__)(__VA_ARGS__) )
-#define RT_ASSERT(COND, ...) { if (!(COND)) { RT_ERROR("Assertion failed: {0}", __VA_ARGS__); } }
+#define RT_ASSERT(COND, ...) { if (!(COND)) { RT_ERROR("Assertion failed: {0}", __VA_ARGS__); exit(1); } }

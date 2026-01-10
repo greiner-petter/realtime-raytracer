@@ -15,6 +15,7 @@
 #include "common/Log.h"
 #include "common/Params.h"
 #include "common/ProgressBar.h"
+#include "common/ArgParse.h"
 #include <GLFW/glfw3.h>
 
 std::shared_ptr<Scene> s_Scene;
@@ -68,6 +69,10 @@ void InitScene() {
     // for (const auto& prim : loadedPrimitives) {
     //     s_Scene->m_Primitives.push_back(prim);
     // }
+
+    if (Params::GetInputSceneFilename() != "") {
+        SceneLoader::LoadScene(*s_Scene, Params::GetInputSceneFilename());
+    }
 }
 
 void InitVulkan() {
@@ -131,8 +136,9 @@ void Cleanup() {
     Renderer::Cleanup();
 }
 
-int main() {
+int main(int argc, char** argv) {
     Log::Init();
+    ArgParse::ParseInput(argc, argv);
     if (Params::IsInteractiveMode()) {
         InitWindow();
     }
