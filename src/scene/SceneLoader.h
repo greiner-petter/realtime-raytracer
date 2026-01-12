@@ -1,0 +1,11 @@
+#ifndef SCENE_LOADER_H
+#define SCENE_LOADER_H
+
+#include <string>
+
+class SceneLoader {
+public:
+    static bool LoadScene(class Scene& scene, const std::string& filename);
+};
+
+#endif

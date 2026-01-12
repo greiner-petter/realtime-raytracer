@@ -4,6 +4,8 @@
 .idea/
 bin/
 build/
+Intermediate/
+ShaderCache/
 
 /data/*
 !/data/README.txt
@@ -12,7 +14,6 @@ build/
 !/data/parallax
 !/data/fractal.obj
 /result*
-*.png
 
 # Latex stuff
 *.aux
@@ -22,9 +23,10 @@ build/
 *.out
 *.pdf
 *.synctex.gz
-*.json
 *__latexindent_temp.tex
 
 # Mac Stuff
 .DS_Store
 
+# Windows
+vcpkg
