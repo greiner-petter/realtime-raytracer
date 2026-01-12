@@ -7,7 +7,6 @@ layout(binding = 21, std430) buffer FlatShaders {
     FlatShader flatShaders[];
 };
 
-bool shadeFlat(in FlatShader shader, in vec3 throughput, inout vec3 radiance) {
-    radiance = throughput * shader.objectColor.xyz;
-    return false;
+vec3 shadeFlat(inout Ray ray, in FlatShader shader, in vec3 throughput) {
+    return throughput * shader.objectColor.xyz;
 }

@@ -16,4 +16,11 @@ layout(binding = 30, std430) buffer Lights {
     Light lights[];
 };
 
+Illumination createIllumination(in vec3 direction) {
+    Illumination illum;
+    illum.color = vec3(0);
+    illum.direction = normalize(direction);
+    return illum;
+}
+
 #endif

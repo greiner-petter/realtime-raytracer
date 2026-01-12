@@ -16,14 +16,13 @@ Illumination illuminatePointLight(inout Ray ray, in PointLight pointLight) {
     const vec3 target = ray.origin + (ray.rayLength - LGT_EPS) * ray.direction;
 
     // Illumination object
-    Illumination illum;
-    illum.direction = normalize(target - pointLight.position.xyz);
+    Illumination illum = createIllumination(target - pointLight.position.xyz);
 
     // Precompute the distance from the light source
     const float dist = length(target - pointLight.position.xyz);
 
     // Define a secondary ray from the surface point to the light source.
-    Ray lightRay = createRay(target, -illum.direction, ray.remainingBounces - 1);
+    Ray lightRay = createRay(target, -illum.direction, 0);
     lightRay.rayLength = dist - LGT_EPS;
 
     // If the target is not in shadow...
