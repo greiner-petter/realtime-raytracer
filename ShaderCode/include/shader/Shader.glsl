@@ -4,6 +4,7 @@ struct Shader {
 };
 
 #include "FlatShader.glsl"
+#include "RefractionShader.glsl"
 #include "MirrorShader.glsl"
 #include "SimpleShadowShader.glsl"
 
@@ -16,14 +17,19 @@ vec3 shade(inout Ray ray, inout vec3 throughput) {
     if (ray.primitive.shaderType == 1) {
         FlatShader flatShader = flatShaders[ray.primitive.shaderIndex];
         ray.remainingBounces = 0;
-        return shadeFlat(ray, flatShader, throughput);
+        return shadeFlatShader(ray, flatShader, throughput);
     } else if (ray.primitive.shaderType == 2) {
+        RefractionShader refractionShader = refractionShaders[ray.primitive.shaderIndex];
+        ray.remainingBounces--;
+        return shadeRefractionShader(ray, refractionShader, throughput);
+    } else if (ray.primitive.shaderType == 3) {
         MirrorShader mirrorShader = mirrorShaders[ray.primitive.shaderIndex];
         ray.remainingBounces--;
-        return shadeMirror(ray, mirrorShader, throughput);
-    } else if (ray.primitive.shaderType == 3) {
+        return shadeMirrorShader(ray, mirrorShader, throughput);
+    } else if (ray.primitive.shaderType == 4) {
         SimpleShadowShader simpleShadowShader = simpleShadowShaders[ray.primitive.shaderIndex];
         ray.remainingBounces = 0;
-        return shadeSimpleShadow(ray, simpleShadowShader, throughput);
+        return shadeSimpleShadowShader(ray, simpleShadowShader, throughput);
     }
+    return vec3(0);
 }

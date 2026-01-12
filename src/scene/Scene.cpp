@@ -61,8 +61,9 @@ void Scene::CreateGPUBuffers() {
 
   shaderSSBO = SSBO::Create(20);
   flatSSBO = SSBO::Create(21);
-  mirrorSSBO = SSBO::Create(22);
-  simpleShadowSSBO = SSBO::Create(23);
+  refractionSSBO = SSBO::Create(22);
+  mirrorSSBO = SSBO::Create(23);
+  simpleShadowSSBO = SSBO::Create(24);
 
   lightSSBO = SSBO::Create(30);
   pointSSBO = SSBO::Create(31);
@@ -76,6 +77,7 @@ void Scene::ConvertSceneToGPUData() {
 
   WriteBufferForType(m_Shaders, ShaderType::FlatShader, *flatSSBO);
   WriteBufferForType(m_Shaders, ShaderType::MirrorShader, *mirrorSSBO);
+  WriteBufferForType(m_Shaders, ShaderType::RefractionShader, *refractionSSBO);
   WriteBufferForType(m_Shaders, ShaderType::SimpleShadowShader, *simpleShadowSSBO);
 
   WriteBufferForType(m_Lights, LightType::PointLight, *pointSSBO);

@@ -4,15 +4,14 @@
 enum class ShaderType : uint32_t {
     None = 0,
     FlatShader = 1,
-    MirrorShader = 2,
-    SimpleShadowShader = 3,
+    RefractionShader = 2,
+    MirrorShader = 3,
+    SimpleShadowShader = 4,
 };
 
 struct Shader {
     Shader(const ShaderType type) : type(type) {}
     virtual ~Shader() = default;
-
-    virtual bool isTransparent() const { return false; }
 
     virtual void* GetDataLayoutBeginPtr() = 0;
     virtual size_t GetDataSize() const = 0;

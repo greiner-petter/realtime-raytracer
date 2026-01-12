@@ -5,7 +5,7 @@
 
 #include "Primitive.h.glsl"
 
-bool intersectPrimitive(inout Ray ray, in Primitive primitive) {
+bool intersect(inout Ray ray, in Primitive primitive) {
     if (primitive.primitiveType == 1) {
         Sphere sphere = spheres[primitive.primitiveIndex];
         if (intersectSphere(ray, sphere)) {

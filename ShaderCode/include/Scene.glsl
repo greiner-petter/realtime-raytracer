@@ -1,12 +1,12 @@
 #include "primitive/Primitive.h.glsl"
 
-bool intersectPrimitive(inout Ray ray, in Primitive primitive);
+bool intersect(inout Ray ray, in Primitive primitive);
 vec3 shade(inout Ray ray, inout vec3 throughput);
 
 bool intersectScene(inout Ray ray) {
     bool didHit = false;
     for (int i = 0; i < primitiveCount; ++i) {
-        if (intersectPrimitive(ray, primitives[i]))
+        if (intersect(ray, primitives[i]))
             didHit = true;
     }
     return didHit;
@@ -14,7 +14,7 @@ bool intersectScene(inout Ray ray) {
 
 bool occludeScene(inout Ray ray) {
     for (int i = 0; i < primitiveCount; ++i) {
-        if (intersectPrimitive(ray, primitives[i]))
+        if (intersect(ray, primitives[i]))
             return true;
     }
     return false;

@@ -9,6 +9,7 @@
 #include "primitives/InfinitePlane.h"
 #include "primitives/Box.h"
 #include "shaders/FlatShader.h"
+#include "shaders/RefractionShader.h"
 #include "shaders/MirrorShader.h"
 #include "shaders/SimpleShadowShader.h"
 #include "lights/PointLight.h"
@@ -50,15 +51,17 @@ void InitScene() {
 
     // Add shaders for the objects
     auto mirror = std::make_shared<MirrorShader>(Vec3(0.95f));
+    auto glass = std::make_shared<RefractionShader>(1.31f, 1.0f);
     auto orange = std::make_shared<SimpleShadowShader>(Vec3(1.0f, 0.5f, 0.0f));
     auto red = std::make_shared<SimpleShadowShader>(Vec3(1.0f, 0.3f, 0.2f));
 
     s_Scene->AddShader(mirror);
+    s_Scene->AddShader(glass);
     s_Scene->AddShader(orange);
     s_Scene->AddShader(red);
 
     // Add objects
-    s_Scene->AddPrimitive(std::make_shared<Sphere>(Vec3(-3.0f, 0.0f, 0.0f), 1.5f, mirror));
+    s_Scene->AddPrimitive(std::make_shared<Sphere>(Vec3(-3.0f, 0.0f, 0.0f), 1.5f, glass));
     s_Scene->AddPrimitive(std::make_shared<Box>(Vec3(3.5f, -1.0f, 0.0f), Vec3(3.0f, 3.0f, 3.0f), mirror));
     s_Scene->AddPrimitive(std::make_shared<Triangle>(Vec3(5.0f, -5.0f, 5.0f), Vec3(-10.0f, -5.0f, 10.0f), Vec3(-2.0f, -5.0f, -2.0f), orange));
     s_Scene->AddPrimitive(std::make_shared<Triangle>(Vec3(-2.0f, -5.0f, -2.0f), Vec3(10.0f, -5.0f, -10.0f), Vec3(5.0f, -5.0f, 5.0f), orange));

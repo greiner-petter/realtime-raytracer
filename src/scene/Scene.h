@@ -128,6 +128,7 @@ private:
 
     inline static std::shared_ptr<SSBO> shaderSSBO;
     inline static std::shared_ptr<SSBO> flatSSBO;
+    inline static std::shared_ptr<SSBO> refractionSSBO;
     inline static std::shared_ptr<SSBO> mirrorSSBO;
     inline static std::shared_ptr<SSBO> simpleShadowSSBO;
 
