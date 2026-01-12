@@ -6,6 +6,7 @@
 #include "shaders/Shader.h"
 #include "lights/Light.h"
 #include "vulkan/Buffer.h"
+#include <cstring>
 
 struct alignas(16) UBO {
     glm::vec2 u_resolution;

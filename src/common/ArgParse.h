@@ -3,6 +3,7 @@
 
 #include <unordered_map>
 #include <functional>
+#include "common/Types.h"
 
 using ArgFuncInput = std::pair<std::vector<std::string>, uint32_t&>;
 using ArgFunc = std::function<void(ArgFuncInput)>;
