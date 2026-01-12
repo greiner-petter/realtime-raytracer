@@ -5,6 +5,7 @@ enum class ShaderType : uint32_t {
     None = 0,
     FlatShader = 1,
     MirrorShader = 2,
+    SimpleShadowShader = 3,
 };
 
 struct Shader {

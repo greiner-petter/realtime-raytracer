@@ -4,46 +4,11 @@
 #include "Constants.glsl"
 #include "UBO.glsl"
 #include "Ray.glsl"
+// #include "KDTree.glsl"
+#include "Scene.glsl"
 #include "primitive/Primitive.glsl"
+#include "light/Light.glsl"
 #include "shader/Shader.glsl"
-#include "KDTree.glsl"
-
-bool IntersectScene(Ray ray, out Hit hit) {
-    hit.rayLength = INFINITY;
-    hit.primitiveIndex = -1;
-    for (int i = 0; i < primitiveCount; ++i) {
-        intersectPrimitive(ray, primitives[i], hit); 
-    }
-    return hit.primitiveIndex != -1;
-}
-
-vec3 GetSkyColor(vec3 direction) {
-    if (direction.y > 0.0) {
-        return mix(vec3(0.9, 0.9, 1.0), vec3(0.5, 0.7, 1.0), direction.y);
-    } else {
-        return mix(vec3(0.9, 0.9, 1.0), vec3(1.0), -direction.y);
-    }
-}
-
-vec3 TraceRay(Ray ray) {    
-    vec3 radiance = vec3(0.0);
-    vec3 throughput = vec3(1.0);
-
-    for (int bounce = 0; bounce < MAX_BOUNCES; ++bounce) {
-        Hit hit;
-        if (!IntersectKDTree(ray, hit)) {
-            // sky
-            radiance += throughput * GetSkyColor(ray.direction);
-            break;
-        }
-        if (!shade(ray, hit, throughput, radiance)) {
-            // no bounce
-            break;
-        }
-    }
-
-    return radiance;
-}
 
 
 layout(local_size_x = 16, local_size_y = 16, local_size_z = 1) in;
@@ -60,6 +25,9 @@ vec2 hash2(float n) {
     );
 }
 
+vec3 clamp(vec3 c) {
+  return vec3(max(0.0f, min(c.x, 1.0f)), max(0.0f, min(c.y, 1.0f)), max(0.0f, min(c.z, 1.0f)));
+}
 
 void main() {
     ivec2 pixelCoords = ivec2(gl_GlobalInvocationID.xy);
@@ -83,10 +51,17 @@ void main() {
     ndc.y *= -1.0;
     ndc.y *= u_aspectRatio;
 
-    Ray ray = createRay(ndc, u_CameraPosition, u_CameraForward, u_CameraRight, u_CameraUp, u_FocusDistance);
+    vec3 origin = u_CameraPosition;
+    vec3 direction = normalize(
+        ndc.x * u_CameraRight +
+        ndc.y * u_CameraUp +
+        u_FocusDistance * u_CameraForward
+    );
+
+    Ray ray = createRay(origin, direction, MAX_BOUNCES);
 
     // Raytrace
-    vec3 pixelColor = TraceRay(ray);
+    vec3 pixelColor = clamp(traceRay(ray));
 
     // Write Output over multiple samples
     // Format must match the image layout (rgba8 -> vec4)

@@ -3,46 +3,33 @@
 #include "InfinitePlane.glsl"
 #include "Box.glsl"
 
-struct Primitive {
-    uint primitiveType;
-    int primitiveIndex;
-    uint shaderType;
-    int shaderIndex;
-};
+#include "Primitive.h.glsl"
 
-layout(binding = 10, std430) buffer Primitives {
-    uint primitiveCount;
-    Primitive primitives[];
-};
-
-void intersectPrimitive(Ray ray, Primitive primitive, inout Hit hit) {
+bool intersectPrimitive(inout Ray ray, in Primitive primitive) {
     if (primitive.primitiveType == 1) {
         Sphere sphere = spheres[primitive.primitiveIndex];
-        if (intersectSphere(ray, sphere, hit)) {
-            hit.primitiveIndex = primitive.primitiveIndex;
-            hit.shaderType = primitive.shaderType;
-            hit.shaderIndex = primitive.shaderIndex;
+        if (intersectSphere(ray, sphere)) {
+            ray.primitive = primitive;
+            return true;
         }
     } else if (primitive.primitiveType == 2) {
         Triangle triangle = triangles[primitive.primitiveIndex];
-        if (intersectTriangle(ray, triangle, hit)) {
-            hit.primitiveIndex = primitive.primitiveIndex;
-            hit.shaderType = primitive.shaderType;
-            hit.shaderIndex = primitive.shaderIndex;
+        if (intersectTriangle(ray, triangle)) {
+            ray.primitive = primitive;
+            return true;
         }
     } else if (primitive.primitiveType == 3) {
         InfinitePlane plane = infinitePlanes[primitive.primitiveIndex];
-        if (intersectInfinitePlane(ray, plane, hit)) {
-            hit.primitiveIndex = primitive.primitiveIndex;
-            hit.shaderType = primitive.shaderType;
-            hit.shaderIndex = primitive.shaderIndex;
+        if (intersectInfinitePlane(ray, plane)) {
+            ray.primitive = primitive;
+            return true;
         }
     } else if (primitive.primitiveType == 4) {
         Box box = boxes[primitive.primitiveIndex];
-        if (intersectBox(ray, box, hit)) {
-            hit.primitiveIndex = primitive.primitiveIndex;
-            hit.shaderType = primitive.shaderType;
-            hit.shaderIndex = primitive.shaderIndex;
+        if (intersectBox(ray, box)) {
+            ray.primitive = primitive;
+            return true;
         }
     }
+    return false;
 }

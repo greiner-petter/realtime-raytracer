@@ -4,6 +4,7 @@
 #include "common/Types.h"
 #include "primitives/Primitive.h"
 #include "shaders/Shader.h"
+#include "lights/Light.h"
 #include "vulkan/Buffer.h"
 
 struct alignas(16) UBO {
@@ -103,6 +104,11 @@ public:
         m_IsBufferDirty = true;
     }
 
+    void AddLight(const std::shared_ptr<Light>& light) {
+        m_Lights.push_back(light);
+        m_IsBufferDirty = true;
+    }
+
     void ClearScene();
 
     std::unique_ptr<Node> Build(const Vec3& minimumBounds, const Vec3& maximumBounds, int start, int end /* [start, end) */, int depth);
@@ -122,9 +128,14 @@ private:
     inline static std::shared_ptr<SSBO> shaderSSBO;
     inline static std::shared_ptr<SSBO> flatSSBO;
     inline static std::shared_ptr<SSBO> mirrorSSBO;
+    inline static std::shared_ptr<SSBO> simpleShadowSSBO;
+
+    inline static std::shared_ptr<SSBO> lightSSBO;
+    inline static std::shared_ptr<SSBO> pointSSBO;
 
     std::vector<std::shared_ptr<Primitive>> m_Primitives;
     std::vector<std::shared_ptr<Shader>> m_Shaders;
+    std::vector<std::shared_ptr<Light>> m_Lights;
 
     std::unique_ptr<Node> root;
     int maximumDepth = 10;

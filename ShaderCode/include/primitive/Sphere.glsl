@@ -7,56 +7,45 @@ layout(binding = 11, std430) buffer Spheres {
     Sphere spheres[];
 };
 
-bool intersectSphere(Ray ray, Sphere sphere, inout Hit hit) {
-    // Ray-sphere difference vector
-    vec3 difference = ray.origin - sphere.center_radius.xyz;
+bool intersectSphere(inout Ray ray, in Sphere sphere) {
+    // Use the definitions from the lecture
+    const vec3 difference = ray.origin - sphere.center_radius.xyz;
+    const float a = 1.0f;
+    const float b = 2.0f * dot(ray.direction, difference);
+    const float c = dot(difference, difference) - sphere.center_radius.w * sphere.center_radius.w;
+    const float discriminant = b * b - 4 * a * c;
 
-    // Quadratic coefficients (a = 1 because direction is normalized)
-    float a = 1.0;
-    float b = 2.0 * dot(ray.direction, difference);
-    float c = dot(difference, difference) - sphere.center_radius.w * sphere.center_radius.w;
-
-    float discriminant = b * b - 4.0 * a * c;
-
-    // No intersection
-    if (discriminant < 0.0)
+    // Test whether the ray could intersect at all
+    if (discriminant < 0)
         return false;
+    const float root = sqrt(discriminant);
 
-    float root = sqrt(discriminant);
-
-    // Numerically stable quadratic solution
-    float q = -0.5 * (b < 0.0 ? (b - root) : (b + root));
-    float t0 = q / a;
-    float t1 = c / q;
-
+    // Stable solution
+    const float q = -0.5f * (b < 0 ? (b - root) : (b + root));
+    const float t0 = q / a;
+    const float t1 = c / q;
     float t = min(t0, t1);
     if (t < EPSILON)
         t = max(t0, t1);
 
-    // Reject if behind camera or farther than previous hit
-    if (t < EPSILON || t > hit.rayLength)
+    // Test whether this is the foremost primitive in front of the camera
+    if (t < EPSILON || ray.rayLength < t)
         return false;
 
-    // Compute hit point
-    vec3 hitPoint = ray.origin + t * ray.direction;
+    // Calculate the normal
+    const vec3 hitPoint = ray.origin + t * ray.direction;
+    ray.normal = normalize(hitPoint - sphere.center_radius.xyz);
 
-    // Surface normal
-    hit.normal = normalize(hitPoint - sphere.center_radius.xyz);
+    // Calculate the surface position and tangent vector
+    const float phi = acos(ray.normal.y);
+    const float rho = 2 * atan(ray.normal.z, ray.normal.x) + PI;
+    ray.surface = vec2(rho / (2 * PI), phi / PI);
+    ray.tangent = vec3(sin(rho), 0, cos(rho));
+    ray.bitangent = normalize(cross(ray.normal, ray.tangent));
 
-    // Spherical UV coordinates
-    float phi = acos(hit.normal.y);
-    float rho = atan(hit.normal.z, hit.normal.x) + PI;
-    hit.surface = vec2(
-        rho / (2.0 * PI),
-        phi / PI
-    );
+    // Set the new length and the current primitive
+    ray.rayLength = t;
 
-    // Tangent space
-    hit.tangent = vec3(sin(rho), 0.0, cos(rho));
-    hit.bitangent = normalize(cross(hit.normal, hit.tangent));
-
-    // Update ray hit distance
-    hit.rayLength = t;
-    hit.point = hitPoint;
+    // True, because the primitive was hit
     return true;
 }

@@ -11,62 +11,56 @@ layout(binding = 12, std430) buffer Triangles {
     Triangle triangles[];
 };
 
-bool intersectTriangle(Ray ray, Triangle triangle, inout Hit hit) {
-  // We use the Möller–Trumbore intersection algorithm
+bool intersectTriangle(inout  Ray ray, in Triangle triangle) {
+    // We use the Möller–Trumbore intersection algorithm
 
-  // Determine two neighboring edge vectors
-  vec3 edge1 = triangle.vertex[1].xyz - triangle.vertex[0].xyz;
-  vec3 edge2 = triangle.vertex[2].xyz - triangle.vertex[0].xyz;
+    // Determine two neighboring edge vectors
+    const vec3 edge1 = triangle.vertex[1].xyz - triangle.vertex[0].xyz;
+    const vec3 edge2 = triangle.vertex[2].xyz - triangle.vertex[0].xyz;
 
-  // Begin calculating determinant
-  vec3 pVec = cross(ray.direction, edge2);
+    // Begin calculating determinant
+    const vec3 pVec = cross(ray.direction, edge2);
 
-  // Make sure the ray is not parallel to the triangle
-  float det = dot(edge1, pVec);
-  if (abs(det) < EPSILON)
-    return false;
-  float inv_det = 1.0 / det;
+    // Make sure the ray is not parallel to the triangle
+    const float det = dot(edge1, pVec);
+    if (abs(det) < EPSILON)
+        return false;
+    const float inv_det = 1.0f / det;
 
-  // Calculate u and test bound
-  vec3 tVec = ray.origin - triangle.vertex[0].xyz;
-  float u = dot(tVec, pVec) * inv_det;
-  // Test whether the intersection lies outside the triangle
-  if (0.0 > u || u > 1.0)
-    return false;
+    // Calculate u and test bound
+    const vec3 tVec = ray.origin - triangle.vertex[0].xyz;
+    const float u = dot(tVec, pVec) * inv_det;
+    // Test whether the intersection lies outside the triangle
+    if (0.0f > u || u > 1.0f)
+        return false;
 
-  // Calculate v and test bound
-  vec3 qVec = cross(tVec, edge1);
-  float v = dot(ray.direction, qVec) * inv_det;
-  // Test whether the intersection lies outside the triangle
-  if (0.0 > v || u + v > 1.0)
-    return false;
+    // Calculate v and test bound
+    const vec3 qVec = cross(tVec, edge1);
+    const float v = dot(ray.direction, qVec) * inv_det;
+    // Test whether the intersection lies outside the triangle
+    if (0.0f > v || u + v > 1.0f)
+        return false;
 
-  // Test whether this is the foremost primitive in front of the camera
-  float t = dot(edge2, qVec) * inv_det;
-  if (t < EPSILON || hit.rayLength < t)
-    return false;
+    // Test whether this is the foremost primitive in front of the camera
+    const float t = dot(edge2, qVec) * inv_det;
+    if (t < EPSILON || ray.rayLength < t)
+        return false;
 
-  // Calculate the normal
-  vec3 norm = vec3(0.0);
-  if (length(triangle.normal[0].xyz) * length(triangle.normal[1].xyz) * length(triangle.normal[2].xyz) > EPSILON)
-    norm = normalize(u * triangle.normal[1].xyz + v * triangle.normal[2].xyz + (1 - u - v) * triangle.normal[0].xyz);
-  else
-    norm = normalize(cross(edge1, edge2));
+    // Calculate the normal
+    if (length(triangle.normal[0].xyz) * length(triangle.normal[1].xyz) * length(triangle.normal[2].xyz) > EPSILON)
+        ray.normal = normalize(u * triangle.normal[1].xyz + v * triangle.normal[2].xyz + (1 - u - v) * triangle.normal[0].xyz);
+    else
+        ray.normal = normalize(cross(edge1, edge2));
+    // calculate the tangent and bitangent vectors as well
+    ray.tangent = normalize(u * triangle.tangent[1].xyz + v * triangle.tangent[2].xyz + (1 - u - v) * triangle.tangent[0].xyz);
+    ray.bitangent = normalize(u * triangle.bitangent[1].xyz + v * triangle.bitangent[2].xyz + (1 - u - v) * triangle.bitangent[0].xyz);
 
-  if (dot(norm, ray.direction) > 0.0)
-    norm = -norm; // TODO: maybe handle backface culling here
-  hit.normal = norm;
+    // Calculate the surface position
+    ray.surface = u * triangle.surface[1].xy + v * triangle.surface[2].xy + (1 - u - v) * triangle.surface[0].xy;
 
-  // calculate the tangent and bitangent vectors as well
-  hit.tangent = normalize(u * triangle.tangent[1].xyz + v * triangle.tangent[2].xyz + (1 - u - v) * triangle.tangent[0].xyz);
-  hit.bitangent = normalize(u * triangle.bitangent[1].xyz + v * triangle.bitangent[2].xyz + (1 - u - v) * triangle.bitangent[0].xyz);
+    // Set the new length and the current primitive
+    ray.rayLength = t;
 
-  // Calculate the surface position
-  hit.surface = u * triangle.surface[1].xy + v * triangle.surface[2].xy + (1 - u - v) * triangle.surface[0].xy;
-  // Set the new length and the current primitive
-  hit.rayLength = t;
-  hit.point = ray.origin + t * ray.direction;
-
-  // True, because the primitive was hit
-  return true;
+    // True, because the primitive was hit
+    return true;
 }
