@@ -13,7 +13,7 @@ vec3 shadeMirrorShader(inout Ray ray, in MirrorShader shader, inout vec3 through
     const vec3 reflectionDirection = reflect(ray.direction, ray.normal);
 
     // Create a new reflection ray
-    Ray reflectionRay = createRay(reflectionOrigin, reflectionDirection, ray.remainingBounces);
+    Ray reflectionRay = createRay(reflectionOrigin, reflectionDirection, ray.remainingBounces - 1);
 
     ray = reflectionRay;
     throughput *= thrpt;

@@ -44,6 +44,7 @@ vec3 shadeRefractionShader(inout Ray ray, in RefractionShader shader, inout vec3
 
         // Change the ray direction and origin
         direction = normalize(reflectionVector);
+        ray.remainingBounces--;
     }
 
     // Send out a new refracted ray into the scene

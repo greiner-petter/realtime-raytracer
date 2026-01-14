@@ -9,6 +9,8 @@ layout(binding = 24, std430) buffer SimpleShadowShaders {
 
 vec3 shadeSimpleShadowShader(inout Ray ray, in SimpleShadowShader shader, in vec3 throughput) {
     const vec3 objectColor = shader.objectColor.xyz;
+    ray.remainingBounces = 0;
+    
     vec3 fragmentColor = vec3(0);
 
     for (int i = 0; i < lightCount; i++) {
