@@ -7,6 +7,7 @@ struct Shader {
 #include "RefractionShader.glsl"
 #include "MirrorShader.glsl"
 #include "SimpleShadowShader.glsl"
+#include "LambertShader.glsl"
 
 layout(binding = 20, std430) buffer Shaders {
     uint shaderCount;
@@ -26,6 +27,9 @@ vec3 shade(inout Ray ray, inout vec3 throughput) {
     } else if (ray.primitive.shaderType == 4) {
         SimpleShadowShader simpleShadowShader = simpleShadowShaders[ray.primitive.shaderIndex];
         return shadeSimpleShadowShader(ray, simpleShadowShader, throughput);
+    } else if (ray.primitive.shaderType == 5) {
+        LambertShader lambertShader = lambertShaders[ray.primitive.shaderIndex];
+        return shadeLambertShader(ray, lambertShader, throughput);
     }
     return vec3(0);
 }

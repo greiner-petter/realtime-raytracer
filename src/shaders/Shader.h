@@ -7,6 +7,11 @@ enum class ShaderType : uint32_t {
     RefractionShader = 2,
     MirrorShader = 3,
     SimpleShadowShader = 4,
+    LambertShader = 5,
+    PhongShader = 6,
+    CookTorranceShader = 7,
+    BRDFShader = 8,
+    MaterialShader = 9,
 };
 
 struct Shader {
