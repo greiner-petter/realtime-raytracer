@@ -7,7 +7,8 @@ layout(binding = 11, std430) buffer Spheres {
     Sphere spheres[];
 };
 
-bool intersectSphere(inout Ray ray, in Sphere sphere) {
+bool intersectSphere(inout Ray ray, in Primitive primitive) {
+    const Sphere sphere = spheres[primitive.primitiveIndex];
     // Use the definitions from the lecture
     const vec3 difference = ray.origin - sphere.center_radius.xyz;
     const float a = 1.0f;
@@ -45,6 +46,7 @@ bool intersectSphere(inout Ray ray, in Sphere sphere) {
 
     // Set the new length and the current primitive
     ray.rayLength = t;
+    ray.primitive = primitive;
 
     // True, because the primitive was hit
     return true;

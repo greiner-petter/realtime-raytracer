@@ -7,7 +7,8 @@ layout(binding = 22, std430) buffer RefractionShaders {
     RefractionShader refractionShaders[];
 };
 
-vec3 shadeRefractionShader(inout Ray ray, in RefractionShader shader, inout vec3 throughput) {
+vec3 shadeRefractionShader(inout Ray ray, inout vec3 throughput) {
+    const RefractionShader shader = refractionShaders[ray.primitive.shaderIndex];
     const float indexInside = shader.indexInside_Outside.x;
     const float indexOutside = shader.indexInside_Outside.y;
 

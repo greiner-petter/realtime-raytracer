@@ -7,7 +7,8 @@ layout(binding = 25, std430) buffer LambertShaders {
     LambertShader lambertShaders[];
 };
 
-vec3 shadeLambertShader(inout Ray ray, in LambertShader shader, in vec3 throughput) {
+vec3 shadeLambertShader(inout Ray ray, in vec3 throughput) {
+    const LambertShader shader = lambertShaders[ray.primitive.shaderIndex];
     const vec3 diffuseColor = shader.diffuseColor.xyz;
     ray.remainingBounces = 0;
     

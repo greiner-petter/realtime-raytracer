@@ -6,27 +6,11 @@
 #include "Primitive.h.glsl"
 
 bool intersect(inout Ray ray, in Primitive primitive) {
-    const int i = primitive.primitiveIndex;
-    if (primitive.primitiveType == 1) {
-        if (intersectSphere(ray, spheres[i])) {
-            ray.primitive = primitive;
-            return true;
-        }
-    } else if (primitive.primitiveType == 2) {
-        if (intersectTriangle(ray, triangles[i])) {
-            ray.primitive = primitive;
-            return true;
-        }
-    } else if (primitive.primitiveType == 3) {
-        if (intersectInfinitePlane(ray, infinitePlanes[i])) {
-            ray.primitive = primitive;
-            return true;
-        }
-    } else if (primitive.primitiveType == 4) {
-        if (intersectBox(ray, boxes[i])) {
-            ray.primitive = primitive;
-            return true;
-        }
+    switch (primitive.primitiveType) {
+        case 1: return intersectSphere(ray, primitive);
+        case 2: return intersectTriangle(ray, primitive);
+        case 3: return intersectInfinitePlane(ray, primitive);
+        case 4: return intersectBox(ray, primitive);
     }
     return false;
 }

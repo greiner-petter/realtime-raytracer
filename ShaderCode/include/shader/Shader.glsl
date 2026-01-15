@@ -16,14 +16,13 @@ layout(binding = 20, std430) buffer Shaders {
 };
 
 vec3 shade(inout Ray ray, inout vec3 throughput) {
-    const int i = ray.primitive.shaderIndex;
     switch (ray.primitive.shaderType) {
-        case 1: return shadeFlatShader(ray, flatShaders[i], throughput);
-        case 2: return shadeRefractionShader(ray, refractionShaders[i], throughput);
-        case 3: return shadeMirrorShader(ray, mirrorShaders[i], throughput);
-        case 4: return shadeSimpleShadowShader(ray, simpleShadowShaders[i], throughput);
-        case 5: return shadeLambertShader(ray, lambertShaders[i], throughput);
-        case 6: return shadePhongShader(ray, phongShaders[i], throughput);
+        case 1: return shadeFlatShader(ray, throughput);
+        case 2: return shadeRefractionShader(ray, throughput);
+        case 3: return shadeMirrorShader(ray, throughput);
+        case 4: return shadeSimpleShadowShader(ray, throughput);
+        case 5: return shadeLambertShader(ray, throughput);
+        case 6: return shadePhongShader(ray, throughput);
     }
     return vec3(0);
 }

@@ -7,7 +7,8 @@ layout(binding = 21, std430) buffer FlatShaders {
     FlatShader flatShaders[];
 };
 
-vec3 shadeFlatShader(inout Ray ray, in FlatShader shader, in vec3 throughput) {
+vec3 shadeFlatShader(inout Ray ray, in vec3 throughput) {
+    const FlatShader shader = flatShaders[ray.primitive.shaderIndex];
     const vec3 objectColor = shader.objectColor.xyz;
     ray.remainingBounces = 0;
     

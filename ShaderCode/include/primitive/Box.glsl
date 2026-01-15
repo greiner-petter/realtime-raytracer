@@ -10,7 +10,8 @@ layout(binding = 14, std430) buffer Boxes {
 
 vec3 componentQuotient(vec3 left, vec3 right) { return vec3(left.x / right.x, left.y / right.y, left.z / right.z); }
 
-bool intersectBox(inout Ray ray, in Box box) {
+bool intersectBox(inout Ray ray, in Primitive primitive) {
+    const Box box = boxes[primitive.primitiveIndex];
     // Project the ray onto the box
     const vec3 minBounds = box.center.xyz - box.size.xyz / 2;
     const vec3 maxBounds = box.center.xyz + box.size.xyz / 2;
@@ -84,6 +85,7 @@ bool intersectBox(inout Ray ray, in Box box) {
 
     // Set the new length and the current primitive
     ray.rayLength = t;
+    ray.primitive = primitive;
 
     // True, because the primitive was hit
     return true;

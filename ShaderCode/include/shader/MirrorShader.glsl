@@ -7,7 +7,8 @@ layout(binding = 23, std430) buffer MirrorShaders {
     MirrorShader mirrorShaders[];
 };
 
-vec3 shadeMirrorShader(inout Ray ray, in MirrorShader shader, inout vec3 throughput) {
+vec3 shadeMirrorShader(inout Ray ray, inout vec3 throughput) {
+    const MirrorShader shader = mirrorShaders[ray.primitive.shaderIndex];
     const vec3 thrpt = shader.throughput.xyz;
     const vec3 reflectionOrigin = ray.origin + (ray.rayLength - REFR_EPS) * ray.direction;
     const vec3 reflectionDirection = reflect(ray.direction, ray.normal);

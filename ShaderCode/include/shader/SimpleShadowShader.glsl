@@ -7,7 +7,8 @@ layout(binding = 24, std430) buffer SimpleShadowShaders {
     SimpleShadowShader simpleShadowShaders[];
 };
 
-vec3 shadeSimpleShadowShader(inout Ray ray, in SimpleShadowShader shader, in vec3 throughput) {
+vec3 shadeSimpleShadowShader(inout Ray ray, in vec3 throughput) {
+    const SimpleShadowShader shader = simpleShadowShaders[ray.primitive.shaderIndex];
     const vec3 objectColor = shader.objectColor.xyz;
     ray.remainingBounces = 0;
     

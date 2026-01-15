@@ -9,7 +9,8 @@ layout(binding = 26, std430) buffer PhongShaders {
     PhongShader phongShaders[];
 };
 
-vec3 shadePhongShader(inout Ray ray, in PhongShader shader, in vec3 throughput) {
+vec3 shadePhongShader(inout Ray ray, in vec3 throughput) {
+    const PhongShader shader = phongShaders[ray.primitive.shaderIndex];
     const vec3 diffuseColor = shader.diffuseColor_Coefficient.xyz;
     const float diffuseCoefficient = shader.diffuseColor_Coefficient.w;
     const vec3 specularColor = shader.specularColor_Coefficient.xyz;

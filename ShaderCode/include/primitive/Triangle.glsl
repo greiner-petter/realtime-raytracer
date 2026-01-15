@@ -11,7 +11,8 @@ layout(binding = 12, std430) buffer Triangles {
     Triangle triangles[];
 };
 
-bool intersectTriangle(inout  Ray ray, in Triangle triangle) {
+bool intersectTriangle(inout  Ray ray, in Primitive primitive) {
+    const Triangle triangle = triangles[primitive.primitiveIndex];
     // We use the Möller–Trumbore intersection algorithm
 
     // Determine two neighboring edge vectors
@@ -64,6 +65,7 @@ bool intersectTriangle(inout  Ray ray, in Triangle triangle) {
 
     // Set the new length and the current primitive
     ray.rayLength = t;
+    ray.primitive = primitive;
 
     // True, because the primitive was hit
     return true;

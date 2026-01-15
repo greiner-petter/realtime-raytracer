@@ -8,7 +8,8 @@ layout(binding = 13, std430) buffer InfinitePlanes {
     InfinitePlane infinitePlanes[];
 };
 
-bool intersectInfinitePlane(inout Ray ray, in InfinitePlane plane) {
+bool intersectInfinitePlane(inout Ray ray, in Primitive primitive) {
+    const InfinitePlane plane = infinitePlanes[primitive.primitiveIndex];
     const float cosine = dot(ray.direction, plane.normal.xyz);
 
     // Make sure the ray is not coming from the other side (backface culling).
@@ -29,6 +30,7 @@ bool intersectInfinitePlane(inout Ray ray, in InfinitePlane plane) {
 
     // Set the new length and the current primitive
     ray.rayLength = t;
+    ray.primitive = primitive;
 
     // True, because the primitive was hit
     return true;
