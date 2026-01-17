@@ -14,6 +14,8 @@
 #include "shaders/SimpleShadowShader.h"
 #include "shaders/LambertShader.h"
 #include "lights/PointLight.h"
+#include "lights/AmbientLight.h"
+#include "lights/SpotLight.h"
 #include "common/Window.h"
 #include "common/Input.h"
 #include "common/Log.h"
@@ -48,7 +50,8 @@ void InitScene() {
 
     // add some lights
     s_Scene->AddLight(std::make_shared<PointLight>(Vec3(0.0f, 4.0f, 0.0f), 10.0f));
-    s_Scene->AddLight(std::make_shared<PointLight>(Vec3(0.0f, -4.0f, 0.0f), 10.0f));
+    // s_Scene->AddLight(std::make_shared<AmbientLight>(0.15f));
+    // s_Scene->AddLight(std::make_shared<SpotLight>(Vec3(1.0f, 0.0f, -4.0f), Vec3(0.0f, 0.0f, 1.0f), 50.0f, 70.0f, 20.0f));
 
     // Add shaders for the objects
     auto red = std::make_shared<LambertShader>(Vec3(1.0f, 0.3f, 0.2f));

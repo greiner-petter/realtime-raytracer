@@ -136,6 +136,8 @@ private:
 
     inline static std::shared_ptr<SSBO> lightSSBO;
     inline static std::shared_ptr<SSBO> pointSSBO;
+    inline static std::shared_ptr<SSBO> ambientSSBO;
+    inline static std::shared_ptr<SSBO> spotSSBO;
 
     std::vector<std::shared_ptr<Primitive>> m_Primitives;
     std::vector<std::shared_ptr<Shader>> m_Shaders;

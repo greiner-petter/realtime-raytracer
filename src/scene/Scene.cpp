@@ -69,6 +69,8 @@ void Scene::CreateGPUBuffers() {
 
   lightSSBO = SSBO::Create(30);
   pointSSBO = SSBO::Create(31);
+  ambientSSBO = SSBO::Create(32);
+  spotSSBO = SSBO::Create(33);
 }
 
 void Scene::ConvertSceneToGPUData() {
@@ -85,6 +87,8 @@ void Scene::ConvertSceneToGPUData() {
   WriteBufferForType(m_Shaders, ShaderType::PhongShader, *phongSSBO);
 
   WriteBufferForType(m_Lights, LightType::PointLight, *pointSSBO);
+  WriteBufferForType(m_Lights, LightType::AmbientLight, *ambientSSBO);
+  WriteBufferForType(m_Lights, LightType::SpotLight, *spotSSBO);
 
   // PRIMITIVES BUFFER
   struct GPUPrimitive {

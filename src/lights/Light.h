@@ -6,6 +6,8 @@
 enum class LightType : uint32_t {
     None = 0,
     PointLight = 1,
+    AmbientLight = 2,
+    SpotLight = 3,
 };
 
 struct Light {

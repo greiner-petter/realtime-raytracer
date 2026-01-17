@@ -1,8 +1,8 @@
 #include "Light.h.glsl"
 
 struct PointLight {
-    vec4 position;
     vec4 color_intensity;
+    vec4 position;
 };
 
 layout(binding = 31, std430) buffer PointLights {
