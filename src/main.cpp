@@ -12,6 +12,7 @@
 #include "shaders/RefractionShader.h"
 #include "shaders/MirrorShader.h"
 #include "shaders/SimpleShadowShader.h"
+#include "shaders/LambertShader.h"
 #include "lights/PointLight.h"
 #include "common/Window.h"
 #include "common/Input.h"
@@ -46,27 +47,31 @@ void InitScene() {
     s_Scene = std::make_shared<Scene>();
 
     // add some lights
-    s_Scene->AddLight(std::make_shared<PointLight>(Vec3(0.0f, 10.0f, -10.0f), 250.f, Vec3(1.0f, 1.0f, 1.0f)));
-    s_Scene->AddLight(std::make_shared<PointLight>(Vec3(0.0f, 10.0f, 10.0f), 250.f, Vec3(1.0f, 1.0f, 1.0f)));
+    s_Scene->AddLight(std::make_shared<PointLight>(Vec3(0.0f, 4.0f, 0.0f), 10.0f));
+    s_Scene->AddLight(std::make_shared<PointLight>(Vec3(0.0f, -4.0f, 0.0f), 10.0f));
 
     // Add shaders for the objects
-    auto mirror = std::make_shared<MirrorShader>(Vec3(0.95f));
-    auto glass = std::make_shared<RefractionShader>(1.31f, 1.0f);
-    auto orange = std::make_shared<SimpleShadowShader>(Vec3(1.0f, 0.5f, 0.0f));
-    auto red = std::make_shared<SimpleShadowShader>(Vec3(1.0f, 0.3f, 0.2f));
+    auto red = std::make_shared<LambertShader>(Vec3(1.0f, 0.3f, 0.2f));
+    auto white = std::make_shared<LambertShader>(Vec3(1.0f, 1.0f, 1.0f));
+    auto blue = std::make_shared<LambertShader>(Vec3(0.2f, 0.3f, 1.0f));
+    auto orange = std::make_shared<LambertShader>(Vec3(1.0f, 0.5f, 0.0f));
 
-    s_Scene->AddShader(mirror);
-    s_Scene->AddShader(glass);
-    s_Scene->AddShader(orange);
     s_Scene->AddShader(red);
+    s_Scene->AddShader(white);
+    s_Scene->AddShader(blue);
+    s_Scene->AddShader(orange);
 
     // Add objects
-    s_Scene->AddPrimitive(std::make_shared<Sphere>(Vec3(-3.0f, 0.0f, 0.0f), 1.5f, glass));
-    s_Scene->AddPrimitive(std::make_shared<Box>(Vec3(3.5f, -1.0f, 0.0f), Vec3(3.0f, 3.0f, 3.0f), mirror));
-    s_Scene->AddPrimitive(std::make_shared<Triangle>(Vec3(5.0f, -5.0f, 5.0f), Vec3(-10.0f, -5.0f, 10.0f), Vec3(-2.0f, -5.0f, -2.0f), orange));
-    s_Scene->AddPrimitive(std::make_shared<Triangle>(Vec3(-2.0f, -5.0f, -2.0f), Vec3(10.0f, -5.0f, -10.0f), Vec3(5.0f, -5.0f, 5.0f), orange));
-    s_Scene->AddPrimitive(std::make_shared<Triangle>(Vec3(0.0f, -2.0f, 0.0f), Vec3(2.0f, -2.0f, 0.0f), Vec3(0.0f, 0.0f, 0.0f), red));
+    s_Scene->AddPrimitive(std::make_shared<InfinitePlane>(Vec3(0.0f, 0.0f, +5.0f), Vec3(0.0f, 0.0f, -1.0f), white));
+    s_Scene->AddPrimitive(std::make_shared<InfinitePlane>(Vec3(0.0f, 0.0f, -5.0f), Vec3(0.0f, 0.0f, +1.0f), white));
+    s_Scene->AddPrimitive(std::make_shared<InfinitePlane>(Vec3(0.0f, +5.0f, 0.0f), Vec3(0.0f, -1.0f, 0.0f), white));
+    s_Scene->AddPrimitive(std::make_shared<InfinitePlane>(Vec3(0.0f, -5.0f, 0.0f), Vec3(0.0f, +1.0f, 0.0f), white));
+    s_Scene->AddPrimitive(std::make_shared<InfinitePlane>(Vec3(+5.0f, 0.0f, 0.0f), Vec3(-1.0f, 0.0f, 0.0f), blue));
+    s_Scene->AddPrimitive(std::make_shared<InfinitePlane>(Vec3(-5.0f, 0.0f, 0.0f), Vec3(+1.0f, 0.0f, 0.0f), red));
 
+    s_Scene->AddPrimitive(std::make_shared<Box>(Vec3(2.5f, -3.0f, 1.0f), Vec3(3.0f, 4.0f, 3.0f), red));
+    s_Scene->AddPrimitive(std::make_shared<Box>(Vec3(-3.0f, -2.0f, 0.0f), Vec3(1.0f, 6.0f, 1.0f), blue));
+    s_Scene->AddPrimitive(std::make_shared<Box>(Vec3(-0.5f, -4.0f, -2.0f), Vec3(2.0f, 2.0f, 2.0f), orange));
     // auto loadedPrimitives = Mesh::LoadObj("data/teapot.obj", Vec3(1.0f), Vec3(-3.0f, 0.0f, -8.0f), false, false);
     // for (const auto& prim : loadedPrimitives) {
     //     s_Scene->m_Primitives.push_back(prim);

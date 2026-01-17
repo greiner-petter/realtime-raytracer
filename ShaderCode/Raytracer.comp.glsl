@@ -14,15 +14,15 @@
 layout(local_size_x = 16, local_size_y = 16, local_size_z = 1) in;
 layout(binding = 255, rgba8) uniform image2D resultImage;
 
-float hash1(float n) {
-    return fract(sin(n) * 43758.5453123);
+uint nextRandom(inout uint state) {
+    state = state * 747796405u + 2891336453u;
+    uint result = ((state >> ((state >> 28u) + 4u)) ^ state) * 277803737u;
+    result = (result >> 22u) ^ result;
+    return result;
 }
 
-vec2 hash2(float n) {
-    return vec2(
-        hash1(n),
-        hash1(n + 1.0)
-    );
+float rand(inout uint state) {
+    return float(nextRandom(state)) / 4294967295.0;
 }
 
 vec3 clamp(vec3 c) {
@@ -39,8 +39,11 @@ void main() {
         return;
     }
 
+    uint rngState = uint(gl_GlobalInvocationID.y * imageSize(resultImage).x + gl_GlobalInvocationID.x) + uint(u_SampleIndex) * 719393u;
+    nextRandom(rngState);
+
     // center the ray in the pixel.
-    vec2 antiAliasJitter = hash2(u_Seed + float(pixelCoords.x) * 1973.0 + float(pixelCoords.y) * 9277.0) - 0.5; // range [-0.5, 0.5)
+    vec2 antiAliasJitter = vec2(rand(rngState), rand(rngState)) - 0.5;
     antiAliasJitter *= 0.5; // reduce jitter amount
     vec2 uv = (vec2(pixelCoords) + vec2(0.5) + antiAliasJitter) / vec2(screenDims);
 
@@ -61,7 +64,7 @@ void main() {
     Ray ray = createRay(origin, direction, MAX_BOUNCES);
 
     // Raytrace
-    vec3 pixelColor = clamp(traceRay(ray));
+    vec3 pixelColor = traceRay(ray, rngState);
 
     // Write Output over multiple samples
     // Format must match the image layout (rgba8 -> vec4)

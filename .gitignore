@@ -7,7 +7,7 @@ build/
 Intermediate/
 ShaderCache/
 
-/data/*
+/data/**
 !/data/README.txt
 !/data/fireplace
 !/data/subdiv

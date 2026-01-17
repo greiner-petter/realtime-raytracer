@@ -1,7 +1,8 @@
 #include "primitive/Primitive.h.glsl"
+#include "light/Light.h.glsl"
 
 bool intersect(inout Ray ray, in Primitive primitive);
-vec3 shade(inout Ray ray, inout vec3 throughput);
+vec3 shade(inout Ray ray, inout vec3 throughput, inout uint rngState);
 
 bool intersectScene(inout Ray ray) {
     bool didHit = false;
@@ -28,15 +29,15 @@ vec3 getSkyColor(vec3 direction) {
     }
 }
 
-vec3 traceRay(inout Ray ray) {    
+vec3 traceRay(inout Ray ray, inout uint rngState) {    
     vec3 radiance = vec3(0);
     vec3 throughput = vec3(1);
 
     while (ray.remainingBounces > 0) {
         if (!intersectScene(ray)) {
-            return throughput * getSkyColor(ray.direction);
+            return radiance + throughput * getSkyColor(ray.direction);
         }
-        radiance += shade(ray, throughput);
+        radiance += throughput * shade(ray, throughput, rngState) / lightCount;
     }
     return radiance;
 }
