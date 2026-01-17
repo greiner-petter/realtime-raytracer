@@ -16,6 +16,7 @@ void VulkanContext::Init() {
 void VulkanContext::Cleanup() {
     vkDestroyCommandPool(device, commandPool, nullptr);
     vkDestroyDevice(device, nullptr);
+    device = VK_NULL_HANDLE;
     vkDestroySurfaceKHR(instance, surface, nullptr);
     vkDestroyInstance(instance, nullptr);
 }

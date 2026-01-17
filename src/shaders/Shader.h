@@ -12,6 +12,7 @@ enum class ShaderType : uint32_t {
     CookTorranceShader = 7,
     BRDFShader = 8,
     MaterialShader = 9,
+    SimpleTextureShader = 10,
 };
 
 struct Shader {

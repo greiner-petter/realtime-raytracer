@@ -1,5 +1,6 @@
 #include "vulkan/Renderer.h"
 #include "vulkan/ShaderCompiler.h"
+#include "vulkan/Texture.h"
 #include "scene/Camera.h"
 #include "scene/Scene.h"
 #include "scene/SceneLoader.h"
@@ -12,6 +13,7 @@
 #include "shaders/RefractionShader.h"
 #include "shaders/MirrorShader.h"
 #include "shaders/SimpleShadowShader.h"
+#include "shaders/SimpleTextureShader.h"
 #include "shaders/LambertShader.h"
 #include "lights/PointLight.h"
 #include "lights/AmbientLight.h"
@@ -24,6 +26,7 @@
 #include "common/ArgParse.h"
 #include <GLFW/glfw3.h>
 
+std::shared_ptr<Texture> s_SkyboxTexture;
 std::shared_ptr<Scene> s_Scene;
 std::shared_ptr<Window> s_Window;
 std::chrono::time_point<std::chrono::steady_clock> s_PreviousTime;
@@ -58,11 +61,13 @@ void InitScene() {
     auto white = std::make_shared<LambertShader>(Vec3(1.0f, 1.0f, 1.0f));
     auto blue = std::make_shared<LambertShader>(Vec3(0.2f, 0.3f, 1.0f));
     auto orange = std::make_shared<LambertShader>(Vec3(1.0f, 0.5f, 0.0f));
+    auto texture = std::make_shared<SimpleTextureShader>((new Texture("data/space.png"))->GetId());
 
     s_Scene->AddShader(red);
     s_Scene->AddShader(white);
     s_Scene->AddShader(blue);
     s_Scene->AddShader(orange);
+    s_Scene->AddShader(texture);
 
     // Add objects
     s_Scene->AddPrimitive(std::make_shared<InfinitePlane>(Vec3(0.0f, 0.0f, +5.0f), Vec3(0.0f, 0.0f, -1.0f), white));

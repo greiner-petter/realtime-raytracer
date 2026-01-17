@@ -133,6 +133,7 @@ private:
     inline static std::shared_ptr<SSBO> simpleShadowSSBO;
     inline static std::shared_ptr<SSBO> lambertSSBO;
     inline static std::shared_ptr<SSBO> phongSSBO;
+    inline static std::shared_ptr<SSBO> simpleTextureSSBO;
 
     inline static std::shared_ptr<SSBO> lightSSBO;
     inline static std::shared_ptr<SSBO> pointSSBO;

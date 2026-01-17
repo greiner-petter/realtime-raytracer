@@ -4,6 +4,7 @@
 #include "OffscreenResources.h"
 #include "ComputePipeline.h"
 #include "Buffer.h"
+#include "Texture.h"
 #include "scene/Scene.h"
 #include "common/Log.h"
 #include "common/Params.h"
@@ -17,6 +18,7 @@ void Renderer::Init() {
 
     OffscreenResources::Init();
     Scene::CreateGPUBuffers();
+    Texture::CreateGPUBuffers();
     ComputePipeline::Init();
 
     if (Params::IsInteractiveMode()) {

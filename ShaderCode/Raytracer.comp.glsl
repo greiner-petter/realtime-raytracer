@@ -3,6 +3,7 @@
 
 #include "Constants.glsl"
 #include "UBO.glsl"
+#include "Textures.glsl"
 #include "Ray.glsl"
 // #include "KDTree.glsl"
 #include "Scene.glsl"

@@ -4,6 +4,7 @@
 #include "SimpleShadowShader.glsl"
 #include "LambertShader.glsl"
 #include "PhongShader.glsl"
+#include "SimpleTextureShader.glsl"
 
 struct Shader {
     uint shaderType;
@@ -23,6 +24,7 @@ vec3 shade(inout Ray ray, inout vec3 throughput, inout uint rngState) {
         case 4: return shadeSimpleShadowShader(ray, throughput);
         case 5: return shadeLambertShaderGI(ray, throughput, rngState);
         case 6: return shadePhongShader(ray, throughput);
+        case 10: return shadeSimpleTextureShader(ray, throughput);
     }
     return vec3(0);
 }
