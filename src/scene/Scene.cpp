@@ -283,7 +283,7 @@ void Scene::ClearScene() {
   uniformBufferData.u_SampleIndex = 0;
   m_Primitives.clear();
   m_Shaders.clear();
-  //m_Lights.clear();
+  m_Lights.clear();
   root.reset(nullptr);
   m_IsBufferDirty = true;
 }
