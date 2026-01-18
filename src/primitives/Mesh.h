@@ -8,7 +8,7 @@ class Mesh {
 public:
 
 
-  static std::vector<std::shared_ptr<Primitive>> LoadObj(char const *fileName, Vec3 const &scale, Vec3 const &translation, bool flipU, bool flipV);
+  static std::vector<std::shared_ptr<Primitive>> LoadObj(char const *fileName, std::shared_ptr<class Shader> shader, Vec3 const &scale, Vec3 const &translation, bool flipU, bool flipV);
 
 };
 
