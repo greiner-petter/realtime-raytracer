@@ -21,36 +21,17 @@ struct alignas(16) UBO {
     glm::vec4 u_CameraUp = glm::vec4(0.0f, 1.0f, 0.0f, 0.0f);
 };
 
-struct Node {
-    Node() : dimension(0), split(0), startIndex(0), primitiveCount(0) {}
-
-    inline bool isLeaf() const { return child[0] == nullptr && child[1] == nullptr; }
-
-    // Branch split
-    std::unique_ptr<Node> child[2];
-    int dimension;
-    float split;
-
-    // Leaf primitives
-    uint32_t startIndex;
-    uint32_t primitiveCount;
-};
-
-struct GPUKDNode {
-    int left;
-    int right;
-    int axis;
-    float split;
-    int firstPrim;
-    int primCount;
-};
+// Left-balanced KD-tree: tree topology is implicit from array indices
+// No explicit node structure needed - primitives are sorted in level-order
+// For node i: lChild = 2i+1, rChild = 2i+2, parent = (i-1)/2
+// Split axis = level(i) % 3, split value = primitive[i].centroid[axis]
 
 class Scene {
 public:
     Scene() = default;
     virtual ~Scene() = default;
     static void CreateGPUBuffers();
-    void BuildTree(int maximumDepth = 10, int minimumNumberOfPrimitives = 2);
+    void BuildKDTree();
 
     template <typename T, typename EnumType>
     void WriteBufferForType(const std::vector<std::shared_ptr<T>>& collection, EnumType typeToFind, SSBO& ssbo) {
@@ -112,9 +93,7 @@ public:
 
     void ClearScene();
 
-    std::unique_ptr<Node> Build(const Vec3& minimumBounds, const Vec3& maximumBounds, int start, int end /* [start, end) */, int depth);
-    std::vector<GPUKDNode> FlattenKDTree() const;
-    void UploadTreeToGPU();
+    void UploadKDTreeToGPU();
 
 private:
     inline static std::shared_ptr<UniformBuffer> uniformBuffer;
@@ -144,10 +123,7 @@ private:
     std::vector<std::shared_ptr<Shader>> m_Shaders;
     std::vector<std::shared_ptr<Light>> m_Lights;
 
-    std::unique_ptr<Node> root;
-    int maximumDepth = 10;
-    int minimumNumberOfPrimitives = 10;
-    Vec4 absoluteMinimum, absoluteMaximum; // xyz + padding
+    Vec4 absoluteMinimum, absoluteMaximum; // scene AABB (xyz + padding)
 
     bool m_IsBufferDirty = true;
 };

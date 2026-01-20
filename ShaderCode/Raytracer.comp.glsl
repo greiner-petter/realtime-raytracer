@@ -5,9 +5,9 @@
 #include "UBO.glsl"
 #include "Textures.glsl"
 #include "Ray.glsl"
-// #include "KDTree.glsl"
-#include "Scene.glsl"
 #include "primitive/Primitive.glsl"
+#include "KDTree.glsl"
+#include "Scene.glsl"
 #include "light/Light.glsl"
 #include "shader/Shader.glsl"
 

@@ -4,7 +4,12 @@
 bool intersect(inout Ray ray, in Primitive primitive);
 vec3 shade(inout Ray ray, inout vec3 throughput, inout uint rngState);
 
+// Forward declarations for KD-tree functions (defined in KDTree.glsl)
+bool intersectKDTree(inout Ray ray);
+bool occludeKDTree(inout Ray ray);
+
 bool intersectScene(inout Ray ray) {
+    return intersectKDTree(ray);
     bool didHit = false;
     for (int i = 0; i < primitiveCount; ++i) {
         if (intersect(ray, primitives[i]))
@@ -14,6 +19,7 @@ bool intersectScene(inout Ray ray) {
 }
 
 bool occludeScene(inout Ray ray) {
+    return occludeKDTree(ray);
     for (int i = 0; i < primitiveCount; ++i) {
         if (intersect(ray, primitives[i]))
             return true;
