@@ -25,41 +25,34 @@ public:
     ~KDTree() = default;
 
     // Build the tree from primitives
-    void Build(const std::vector<std::shared_ptr<Primitive>>& primitives,
-               int maxDepth = 20, int minPrimitives = 2);
+    void BuildTree(const std::vector<std::shared_ptr<Primitive>>& primitives, int maxDepth = 20, int minPrimitives = 2);
 
     // Get flattened data for GPU upload
     const std::vector<GPUKDNode>& GetNodes() const { return m_Nodes; }
     const std::vector<int>& GetPrimitiveIndices() const { return m_PrimitiveIndices; }
-    const Vec3& GetBoundsMin() const { return m_BoundsMin; }
-    const Vec3& GetBoundsMax() const { return m_BoundsMax; }
+    const Vec3& GetBoundsMin() const { return absoluteMinimum; }
+    const Vec3& GetBoundsMax() const { return absoluteMaximum; }
     bool IsEmpty() const { return m_Nodes.empty(); }
 
 private:
-    struct BuildNode {
-        std::unique_ptr<BuildNode> children[2];
-        int dimension = -1;
-        float split = 0.0f;
-        std::vector<int> primitiveIndices;  // indices into original primitive array
+    struct Node {
+        std::unique_ptr<Node> child[2];
+        int dimension = 0;
+        float split = 0;
+        std::vector<std::shared_ptr<Primitive>> primitives;
 
-        bool IsLeaf() const { return children[0] == nullptr && children[1] == nullptr; }
+        inline bool IsLeaf() const { return (!this->primitives.empty() || (!this->child[0] && !this->child[1])); }
     };
 
-    std::unique_ptr<BuildNode> BuildRecursive(
-        const Vec3& minBounds, const Vec3& maxBounds,
-        const std::vector<int>& primIndices,
-        int depth);
-
-    int FlattenTree(BuildNode* node);
+    std::unique_ptr<Node> Build(Vec3 const &minimumBounds, Vec3 const &maximumBounds, const std::vector<std::shared_ptr<Primitive>> &primitives, int depth);
+    int FlattenTree(Node* node);
 
     // Build-time reference to primitives
-    const std::vector<std::shared_ptr<Primitive>>* m_Primitives = nullptr;
-    int m_MaxDepth = 20;
-    int m_MinPrimitives = 2;
+    int maximumDepth = 10;
+    int minimumNumberOfPrimitives = 2;
 
     // Scene bounds
-    Vec3 m_BoundsMin;
-    Vec3 m_BoundsMax;
+    Vec3 absoluteMinimum, absoluteMaximum;
 
     // Flattened GPU data
     std::vector<GPUKDNode> m_Nodes;

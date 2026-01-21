@@ -195,15 +195,15 @@ void Scene::UpdateGPUBuffers() {
     uniformBufferData.u_SampleIndex++;
 
     if (IsBufferDirty()) {
+        ConvertSceneToGPUData();  // Must set primitive indices before building KD-tree
         BuildKDTree();
         UploadKDTreeToGPU();
-        ConvertSceneToGPUData();
         SetBufferDirty(false);
     }
 }
 
 void Scene::BuildKDTree() {
-    m_KDTree.Build(m_Primitives);
+    m_KDTree.BuildTree(m_Primitives);
 }
 
 void Scene::ClearScene() {

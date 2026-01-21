@@ -22,7 +22,7 @@ vec3 shade(inout Ray ray, inout vec3 throughput, inout uint rngState) {
         case 2: return shadeRefractionShader(ray, throughput);
         case 3: return shadeMirrorShader(ray, throughput);
         case 4: return shadeSimpleShadowShader(ray, throughput);
-        case 5: return shadeLambertShaderGI(ray, throughput, rngState);
+        case 5: return shadeLambertShader(ray, throughput);
         case 6: return shadePhongShader(ray, throughput);
         case 10: return shadeSimpleTextureShader(ray, throughput);
     }
