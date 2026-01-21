@@ -9,15 +9,13 @@ void KDTree::BuildTree(const std::vector<std::shared_ptr<Primitive>>& primitives
     m_Nodes.clear();
     m_PrimitiveIndices.clear();
 
-    // Compute world bounds from all primitives
-    // Note: Don't clamp infinities - let infinite planes have infinite bounds
-    // The reference implementation uses ±INFINITY directly
+  // Determine the bounding box of the kD-Tree
     this->absoluteMinimum = Vec3(+INFINITY, +INFINITY, +INFINITY);
     this->absoluteMaximum = Vec3(-INFINITY, -INFINITY, -INFINITY);
     for (const auto &primitive : primitives) {
         for (int d = 0; d < 3; ++d) {
-        this->absoluteMinimum[d] = std::min(this->absoluteMinimum[d], primitive->minimumBounds(d));
-        this->absoluteMaximum[d] = std::max(this->absoluteMaximum[d], primitive->maximumBounds(d));
+            this->absoluteMinimum[d] = std::min(this->absoluteMinimum[d], primitive->minimumBounds(d));
+            this->absoluteMaximum[d] = std::max(this->absoluteMaximum[d], primitive->maximumBounds(d));
         }
     }
 
@@ -63,9 +61,9 @@ std::unique_ptr<KDTree::Node> KDTree::Build(Vec3 const &minimumBounds, Vec3 cons
     std::vector<std::shared_ptr<Primitive>> leftPrimitives, rightPrimitives;
     for (const auto &primitive : primitives) {
         if (primitive->minimumBounds(node->dimension) < node->split)
-        leftPrimitives.push_back(primitive);
+            leftPrimitives.push_back(primitive);
         if (primitive->maximumBounds(node->dimension) >= node->split)
-        rightPrimitives.push_back(primitive);
+            rightPrimitives.push_back(primitive);
     }
 
     // Print out the number of primitives in the left and right child node
@@ -99,7 +97,7 @@ int KDTree::FlattenTree(Node* node) {
 
         // Add primitive indices
         for (auto prim : node->primitives) {
-            m_PrimitiveIndices.push_back(prim->index);
+            m_PrimitiveIndices.push_back(prim->globalIndex);
         }
     } else {
         // For internal nodes, store data first, then recurse

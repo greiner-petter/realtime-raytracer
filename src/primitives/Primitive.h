@@ -29,6 +29,7 @@ struct Primitive {
 
     PrimitiveType type = PrimitiveType::None;
     int32_t index = -1; // Index in the specific primitive array (spheres, triangles, etc.)
+    int32_t globalIndex = -1; // Index in the combined primitives array (for KD-tree)
     std::shared_ptr<Shader> shader;
 };
 

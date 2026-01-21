@@ -70,6 +70,7 @@ void Scene::ConvertSceneToGPUData() {
 
     for (size_t i = 0; i < m_Primitives.size(); ++i) {
         RT_ASSERT(m_Primitives[i]->type != PrimitiveType::None, "Primitive type is None");
+        m_Primitives[i]->globalIndex = static_cast<int32_t>(i); // Set global index for KD-tree
         primDst[i].primitiveType = static_cast<uint32_t>(m_Primitives[i]->type);
         primDst[i].primitiveIndex = m_Primitives[i]->index;
         primDst[i].shaderType = static_cast<uint32_t>(m_Primitives[i]->shader->type);
