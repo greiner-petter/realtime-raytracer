@@ -5,112 +5,13 @@
 #include <algorithm>
 #include <cassert>
 #include <cstring>
-#include <numeric>
-#include <vector>
-#include <cmath>
-
-// ============================================================================
-// Left-Balanced KD-Tree Helper Functions (from Wald's paper)
-// ============================================================================
-
-// Count leading zeros (pure C++ implementation)
-static inline int clz(uint32_t x) {
-    if (x == 0) return 32;
-    int n = 0;
-    if ((x & 0xFFFF0000) == 0) { n += 16; x <<= 16; }
-    if ((x & 0xFF000000) == 0) { n += 8;  x <<= 8; }
-    if ((x & 0xF0000000) == 0) { n += 4;  x <<= 4; }
-    if ((x & 0xC0000000) == 0) { n += 2;  x <<= 2; }
-    if ((x & 0x80000000) == 0) { n += 1; }
-    return n;
-}
-
-// Tree level of node i: level(i) = floor(log2(i+1))
-static inline int nodeLevel(int i) {
-    return 31 - clz(static_cast<uint32_t>(i + 1));
-}
-
-// Number of levels in tree of N nodes
-static inline int numLevels(int N) {
-    if (N <= 0) return 0;
-    return nodeLevel(N - 1) + 1;
-}
-
-// Left child of node i
-static inline int lChild(int i) {
-    return 2 * i + 1;
-}
-
-// Right child of node i
-static inline int rChild(int i) {
-    return 2 * i + 2;
-}
-
-// Number of nodes in a full tree of l levels: F(l) = 2^l - 1
-static inline int fullTreeSize(int l) {
-    return (1 << l) - 1;
-}
-
-// Subtree size under node s in a tree of N nodes
-// Based on Wald's paper Section 4.1
-static int subtreeSize(int s, int N) {
-    if (s >= N) return 0;
-
-    int L = numLevels(N);
-    int l = nodeLevel(s);
-
-    // First lowest-level child of subtree s
-    // fllc_s = ~((~s) << (L-l-1))
-    int shift = L - l - 1;
-    if (shift < 0) shift = 0;
-    int fllc_s = ~((~s) << shift);
-
-    // Inner nodes (levels l+1 to L-2, all full)
-    int innerNodes = (1 << shift) - 1;
-
-    // Nodes on lowest level
-    int maxLowestLevel = 1 << shift;
-    int lowestLevelNodes = std::min(std::max(0, N - fllc_s), maxLowestLevel);
-
-    return innerNodes + lowestLevelNodes;
-}
-
-// Segment begin index for subtree s in step l
-// Based on Wald's paper Section 4.2
-static int segmentBegin(int s, int l, int N) {
-    int L = numLevels(N);
-
-    // Number of left siblings: nls = s - F(l) = s - (2^l - 1)
-    int F_l = fullTreeSize(l);
-    int nls_s = s - F_l;
-
-    // Calculate segment begin
-    int shift = L - l - 1;
-    if (shift < 0) shift = 0;
-
-    // Top l levels (already fixed)
-    int topLevels = F_l;
-
-    // Left siblings' inner nodes
-    int leftSiblingsInner = nls_s * ((1 << shift) - 1);
-
-    // Left siblings' lowest level nodes
-    int lowestLevelStart = fullTreeSize(L - 1);  // F(L-1) = 2^(L-1) - 1
-    int leftSiblingsLowest = std::min(nls_s * (1 << shift),
-                                       std::max(0, N - lowestLevelStart));
-
-    return topLevels + leftSiblingsInner + leftSiblingsLowest;
-}
-
-// ============================================================================
-// Scene Implementation
-// ============================================================================
 
 UBO uniformBufferData;
 
 void Scene::CreateGPUBuffers() {
     uniformBuffer = UniformBuffer::Create(0, sizeof(uniformBufferData));
     kdTreeSSBO = SSBO::Create(1);
+    kdTreeIndicesSSBO = SSBO::Create(2);
 
     primitiveSSBO = SSBO::Create(10);
     sphereSSBO = SSBO::Create(11);
@@ -201,15 +102,85 @@ void Scene::ConvertSceneToGPUData() {
 }
 
 void Scene::UploadKDTreeToGPU() {
-    // Upload scene bounds only (tree structure is implicit)
-    size_t GPUDataSize = sizeof(Vec4) * 2;
+    if (m_KDTree.IsEmpty()) {
+        // Upload minimal data for empty tree
+        struct {
+            Vec4 boundsMin;
+            Vec4 boundsMax;
+            uint32_t nodeCount;
+            uint32_t padding[3];
+        } emptyHeader = {};
+        void* data = kdTreeSSBO->MapData(sizeof(emptyHeader));
+        std::memcpy(data, &emptyHeader, sizeof(emptyHeader));
+        kdTreeSSBO->UnmapData();
 
-    void* DataGPU = kdTreeSSBO->MapData(GPUDataSize);
+        // Also upload empty indices buffer
+        struct {
+            uint32_t indexCount;
+            uint32_t padding[3];
+        } emptyIndices = {};
+        void* indicesData = kdTreeIndicesSSBO->MapData(sizeof(emptyIndices));
+        std::memcpy(indicesData, &emptyIndices, sizeof(emptyIndices));
+        kdTreeIndicesSSBO->UnmapData();
+        return;
+    }
 
-    std::memcpy(DataGPU, &absoluteMinimum, sizeof(Vec4));
-    std::memcpy(static_cast<byte*>(DataGPU) + sizeof(Vec4), &absoluteMaximum, sizeof(Vec4));
+    const auto& nodes = m_KDTree.GetNodes();
+    const auto& indices = m_KDTree.GetPrimitiveIndices();
+    const Vec3& boundsMin = m_KDTree.GetBoundsMin();
+    const Vec3& boundsMax = m_KDTree.GetBoundsMax();
+
+    // KD-tree nodes SSBO layout:
+    // vec4 boundsMin
+    // vec4 boundsMax
+    // uint nodeCount
+    // uint padding[3]
+    // GPUKDNode nodes[]
+    size_t headerSize = sizeof(Vec4) * 2 + sizeof(uint32_t) * 4;
+    size_t nodesSize = sizeof(GPUKDNode) * nodes.size();
+    size_t totalSize = headerSize + nodesSize;
+
+    void* data = kdTreeSSBO->MapData(totalSize);
+    byte* ptr = static_cast<byte*>(data);
+
+    // Write bounds
+    Vec4 min4(boundsMin, 0.0f);
+    Vec4 max4(boundsMax, 0.0f);
+    std::memcpy(ptr, &min4, sizeof(Vec4));
+    ptr += sizeof(Vec4);
+    std::memcpy(ptr, &max4, sizeof(Vec4));
+    ptr += sizeof(Vec4);
+
+    // Write node count
+    uint32_t nodeCount = static_cast<uint32_t>(nodes.size());
+    std::memcpy(ptr, &nodeCount, sizeof(uint32_t));
+    ptr += sizeof(uint32_t) * 4;  // count + padding
+
+    // Write nodes
+    std::memcpy(ptr, nodes.data(), nodesSize);
 
     kdTreeSSBO->UnmapData();
+
+    // Primitive indices SSBO layout:
+    // uint indexCount
+    // uint padding[3]
+    // int indices[]
+    size_t indicesHeaderSize = sizeof(uint32_t) * 4;
+    size_t indicesDataSize = sizeof(int) * indices.size();
+    size_t indicesTotalSize = indicesHeaderSize + indicesDataSize;
+
+    void* indicesData = kdTreeIndicesSSBO->MapData(indicesTotalSize);
+    ptr = static_cast<byte*>(indicesData);
+
+    uint32_t indexCount = static_cast<uint32_t>(indices.size());
+    std::memcpy(ptr, &indexCount, sizeof(uint32_t));
+    ptr += indicesHeaderSize;
+
+    if (!indices.empty()) {
+        std::memcpy(ptr, indices.data(), indicesDataSize);
+    }
+
+    kdTreeIndicesSSBO->UnmapData();
 }
 
 void Scene::UpdateGPUBuffers() {
@@ -231,102 +202,8 @@ void Scene::UpdateGPUBuffers() {
     }
 }
 
-// Build left-balanced KD-tree using Wald's algorithm
-// Sorts primitives in level-order so tree topology is implicit from indices
 void Scene::BuildKDTree() {
-    int N = static_cast<int>(m_Primitives.size());
-
-    if (N == 0) {
-        absoluteMinimum = Vec4(0.0f);
-        absoluteMaximum = Vec4(0.0f);
-        return;
-    }
-
-    // Compute scene bounds
-    absoluteMinimum = Vec4(+INFINITY, +INFINITY, +INFINITY, 0.0f);
-    absoluteMaximum = Vec4(-INFINITY, -INFINITY, -INFINITY, 0.0f);
-    for (const auto& primitive : m_Primitives) {
-        for (int d = 0; d < 3; ++d) {
-            absoluteMinimum[d] = std::min(absoluteMinimum[d], primitive->minimumBounds(d));
-            absoluteMaximum[d] = std::max(absoluteMaximum[d], primitive->maximumBounds(d));
-        }
-    }
-
-    // Special case: single primitive
-    if (N == 1) {
-        RT_INFO("{0} primitive organized into tree", N);
-        return;
-    }
-
-    int treeN = N;
-
-    // Initialize tags to 0 (level-0 ancestor = root)
-    std::vector<int> tags(treeN, 0);
-
-    int L = numLevels(treeN);
-
-    // Helper to get centroid of primitive along axis
-    auto getCentroid = [this](int idx, int axis) -> float {
-        return 0.5f * (m_Primitives[idx]->minimumBounds(axis) +
-                       m_Primitives[idx]->maximumBounds(axis));
-    };
-
-    // Iterate through tree levels (only for finite primitives)
-    for (int l = 0; l < L; ++l) {
-        int dim = l % 3;  // Split dimension for this level
-
-        // Create index array for sorting (only finite primitives)
-        std::vector<int> indices(treeN);
-        std::iota(indices.begin(), indices.end(), 0);
-
-        // Sort by (tag, centroid[dim], index) - proper strict weak ordering
-        std::sort(indices.begin(), indices.end(), [&](int a, int b) {
-            int ta = tags[a];
-            int tb = tags[b];
-            if (ta < tb) return true;
-            if (tb < ta) return false;
-
-            float ca = getCentroid(a, dim);
-            float cb = getCentroid(b, dim);
-            if (ca < cb) return true;
-            if (cb < ca) return false;
-
-            return a < b;  // tiebreaker
-        });
-
-        // Apply permutation to primitives and tags
-        std::vector<std::shared_ptr<Primitive>> newPrimitives(treeN);
-        std::vector<int> newTags(treeN);
-        for (int i = 0; i < treeN; ++i) {
-            newPrimitives[i] = m_Primitives[indices[i]];
-            newTags[i] = tags[indices[i]];
-        }
-        for (int i = 0; i < treeN; ++i) {
-            m_Primitives[i] = newPrimitives[i];
-        }
-        tags = std::move(newTags);
-
-        // Update tags for elements not yet fixed
-        int F_l = fullTreeSize(l);  // Elements already at final positions
-        for (int i = F_l; i < treeN; ++i) {
-            int s = tags[i];  // Current subtree this element is in
-
-            // Calculate pivot position for subtree s
-            int leftChildSize = subtreeSize(lChild(s), treeN);
-            int pivotPos = segmentBegin(s, l, treeN) + leftChildSize;
-
-            if (i < pivotPos) {
-                // Goes to left subtree
-                tags[i] = lChild(s);
-            } else if (i > pivotPos) {
-                // Goes to right subtree
-                tags[i] = rChild(s);
-            }
-            // else: stays at s (this element becomes the root of subtree s)
-        }
-    }
-
-    RT_INFO("{0} primitives organized into left-balanced KD-tree", N);
+    m_KDTree.Build(m_Primitives);
 }
 
 void Scene::ClearScene() {

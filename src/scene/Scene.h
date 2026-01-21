@@ -6,6 +6,7 @@
 #include "shaders/Shader.h"
 #include "lights/Light.h"
 #include "vulkan/Buffer.h"
+#include "scene/KDTree.h"
 #include <cstring>
 
 struct alignas(16) UBO {
@@ -20,11 +21,6 @@ struct alignas(16) UBO {
     glm::vec4 u_CameraRight = glm::vec4(1.0f, 0.0f, 0.0f, 0.0f);
     glm::vec4 u_CameraUp = glm::vec4(0.0f, 1.0f, 0.0f, 0.0f);
 };
-
-// Left-balanced KD-tree: tree topology is implicit from array indices
-// No explicit node structure needed - primitives are sorted in level-order
-// For node i: lChild = 2i+1, rChild = 2i+2, parent = (i-1)/2
-// Split axis = level(i) % 3, split value = primitive[i].centroid[axis]
 
 class Scene {
 public:
@@ -97,7 +93,8 @@ public:
 
 private:
     inline static std::shared_ptr<UniformBuffer> uniformBuffer;
-    inline static std::shared_ptr<SSBO> kdTreeSSBO;
+    inline static std::shared_ptr<SSBO> kdTreeSSBO;        // KD-tree nodes
+    inline static std::shared_ptr<SSBO> kdTreeIndicesSSBO; // Primitive indices for leaves
 
     inline static std::shared_ptr<SSBO> primitiveSSBO;
     inline static std::shared_ptr<SSBO> sphereSSBO;
@@ -123,7 +120,7 @@ private:
     std::vector<std::shared_ptr<Shader>> m_Shaders;
     std::vector<std::shared_ptr<Light>> m_Lights;
 
-    Vec4 absoluteMinimum, absoluteMaximum; // scene AABB (xyz + padding)
+    KDTree m_KDTree;
 
     bool m_IsBufferDirty = true;
 };
