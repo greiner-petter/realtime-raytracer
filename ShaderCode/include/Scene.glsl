@@ -2,7 +2,7 @@
 #include "light/Light.h.glsl"
 
 bool intersect(inout Ray ray, in Primitive primitive);
-vec3 shade(inout Ray ray, inout vec3 throughput, inout uint rngState);
+vec3 shade(inout Ray ray, inout vec3 throughput);
 
 // Forward declarations for KD-tree functions (defined in KDTree.glsl)
 bool intersectKDTree(inout Ray ray);
@@ -35,7 +35,7 @@ vec3 getSkyColor(vec3 direction) {
     }
 }
 
-vec3 traceRay(inout Ray ray, inout uint rngState) {    
+vec3 traceRay(inout Ray ray) {
     vec3 radiance = vec3(0);
     vec3 throughput = vec3(1);
 
@@ -43,7 +43,9 @@ vec3 traceRay(inout Ray ray, inout uint rngState) {
         if (!intersectScene(ray)) {
             return radiance + throughput * getSkyColor(ray.direction);
         }
-        radiance += throughput * shade(ray, throughput, rngState) / lightCount;
+        vec3 currentThroughput = throughput;
+        vec3 emission = shade(ray, throughput);
+        radiance += currentThroughput * emission;
     }
     return radiance;
 }

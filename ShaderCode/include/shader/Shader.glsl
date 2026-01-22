@@ -16,7 +16,7 @@ layout(binding = 20, std430) buffer Shaders {
     Shader shaders[];
 };
 
-vec3 shade(inout Ray ray, inout vec3 throughput, inout uint rngState) {
+vec3 shade(inout Ray ray, inout vec3 throughput) {
     switch (ray.primitive.shaderType) {
         case 1: return shadeFlatShader(ray, throughput);
         case 2: return shadeRefractionShader(ray, throughput);

@@ -7,7 +7,7 @@ layout(binding = 25, std430) buffer LambertShaders {
     LambertShader lambertShaders[];
 };
 
-float rand(inout uint state);
+float rand(); // Global rand() defined in Raytracer.comp.glsl
 
 vec3 uniformSampleHemisphere(float r1, float r2) {
     float sinTheta = sqrt(1.0 - r1 * r1);
@@ -17,29 +17,13 @@ vec3 uniformSampleHemisphere(float r1, float r2) {
     return vec3(x, r1, z);
 }
 
-vec3 shadeLambertShader(inout Ray ray, in vec3 throughput) {
+vec3 shadeLambertShaderGI(inout Ray ray, inout vec3 throughput) {
     const LambertShader shader = lambertShaders[ray.primitive.shaderIndex];
     const vec3 diffuseColor = shader.diffuseColor.xyz;
-    ray.remainingBounces = 0;
-    
+
     vec3 fragmentColor = vec3(0);
 
-    for (int i = 0; i < lightCount; i++) {
-        const Illumination illum = illuminate(ray, lights[i]);
-        // Diffuse term
-        const vec3 diffuse = diffuseColor * max(dot(-illum.direction, ray.normal), 0);
-        fragmentColor += diffuse * illum.color;
-    }
-    return throughput * fragmentColor;
-}
-
-vec3 shadeLambertShaderGI(inout Ray ray, inout vec3 throughput, inout uint rngState) {
-    const LambertShader shader = lambertShaders[ray.primitive.shaderIndex];
-    const vec3 diffuseColor = shader.diffuseColor.xyz;
-    
-    vec3 fragmentColor = vec3(0);
-
-    float random = rand(rngState); 
+    float random = rand();
     const int randomLightIndex = int(min(random * float(lightCount), float(lightCount) - 1.0));
     const Light randomLight = lights[randomLightIndex];
     const Illumination illum = illuminate(ray, randomLight);
@@ -47,7 +31,7 @@ vec3 shadeLambertShaderGI(inout Ray ray, inout vec3 throughput, inout uint rngSt
     const vec3 diffuse = diffuseColor * max(dot(-illum.direction, ray.normal), 0);
     fragmentColor += diffuse * illum.color * lightCount;
 
-    float r1 = rand(rngState); float r2 = rand(rngState);
+    float r1 = rand(); float r2 = rand();
     const vec3 sampleLocal = uniformSampleHemisphere(r1, r2);
 
     const vec3 normal = ray.normal;
@@ -60,9 +44,29 @@ vec3 shadeLambertShaderGI(inout Ray ray, inout vec3 throughput, inout uint rngSt
     const vec3 hitpoint = ray.origin + (ray.rayLength - EPSILON) * ray.direction;
     Ray indirectRay = createRay(hitpoint, sampleWorld, ray.remainingBounces - 1);
     ray = indirectRay;
-    
+
     float cosTheta = max(dot(normal, sampleWorld), 0.0);
     throughput *= diffuseColor * cosTheta * 2.0;
 
     return fragmentColor;
+}
+
+vec3 shadeLambertShader(inout Ray ray, inout vec3 throughput) {
+    // TODO add flag for GI
+    if (true)
+        return shadeLambertShaderGI(ray, throughput);
+
+    const LambertShader shader = lambertShaders[ray.primitive.shaderIndex];
+    const vec3 diffuseColor = shader.diffuseColor.xyz;
+    ray.remainingBounces = 0;
+
+    vec3 fragmentColor = vec3(0);
+
+    for (int i = 0; i < lightCount; i++) {
+        const Illumination illum = illuminate(ray, lights[i]);
+        // Diffuse term
+        const vec3 diffuse = diffuseColor * max(dot(-illum.direction, ray.normal), 0);
+        fragmentColor += diffuse * illum.color;
+    }
+    return throughput * fragmentColor;
 }

@@ -80,10 +80,10 @@ void InitScene() {
     s_Scene->AddPrimitive(std::make_shared<Box>(Vec3(2.5f, -3.0f, 1.0f), Vec3(3.0f, 4.0f, 3.0f), red));
     s_Scene->AddPrimitive(std::make_shared<Box>(Vec3(-3.0f, -2.0f, 0.0f), Vec3(1.0f, 6.0f, 1.0f), blue));
     s_Scene->AddPrimitive(std::make_shared<Box>(Vec3(-0.5f, -4.0f, -2.0f), Vec3(2.0f, 2.0f, 2.0f), orange));
-    auto loadedPrimitives = Mesh::LoadObj("data/teapot.obj", red, Vec3(1.0f), Vec3(-3.0f, 0.0f, -8.0f), false, false);
-    for (const auto& prim : loadedPrimitives) {
-        s_Scene->AddPrimitive(prim);
-    }
+    // auto loadedPrimitives = Mesh::LoadObj("data/teapot.obj", red, Vec3(1.0f), Vec3(-3.0f, 0.0f, -8.0f), false, false);
+    // for (const auto& prim : loadedPrimitives) {
+    //     s_Scene->AddPrimitive(prim);
+    // }
 
     if (Params::GetInputSceneFilename() != "") {
         SceneLoader::LoadScene(*s_Scene, Params::GetInputSceneFilename());
