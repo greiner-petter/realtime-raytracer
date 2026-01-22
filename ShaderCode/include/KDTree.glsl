@@ -61,6 +61,9 @@ bool intersectKDTree(inout Ray ray) {
         float t0 = stackT0[sp];
         float t1 = stackT1[sp];
 
+        // Skip this subtree if we already found a closer hit
+        if (t0 > ray.rayLength) continue;
+
         if (isLeaf(nodeIdx)) {
             // Leaf node - intersect all primitives
             int start = getPrimStart(nodeIdx);
@@ -153,6 +156,9 @@ bool occludeKDTree(inout Ray ray) {
         int nodeIdx = stackNode[sp];
         float t0 = stackT0[sp];
         float t1 = stackT1[sp];
+
+        // Skip this subtree if beyond shadow ray length
+        if (t0 > ray.rayLength) continue;
 
         if (isLeaf(nodeIdx)) {
             // Leaf node - intersect all primitives, early out on hit

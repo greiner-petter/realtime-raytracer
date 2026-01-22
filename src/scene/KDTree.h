@@ -48,8 +48,7 @@ private:
     int FlattenTree(Node* node);
 
     // Build-time reference to primitives
-    int maximumDepth = 10;
-    int minimumNumberOfPrimitives = 2;
+    int maximumDepth, minimumNumberOfPrimitives;
 
     // Scene bounds
     Vec3 absoluteMinimum, absoluteMaximum;
