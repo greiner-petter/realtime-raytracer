@@ -285,49 +285,52 @@ void Renderer::SaveCurrentFrameToDisk(const std::string& filePath) {
     auto width = OffscreenResources::GetWidth();
     auto height = OffscreenResources::GetHeight();
     auto image = OffscreenResources::GetImage();
-    VkDeviceSize size = width * height * 4;
+    VkDeviceSize size = VkDeviceSize(width) * height * sizeof(float) * 4;
 
-    // 1. Create Host-Visible Staging Buffer
     VkBuffer buffer;
     VkDeviceMemory memory;
     Buffer::Create(size, VK_BUFFER_USAGE_TRANSFER_DST_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, buffer, memory);
 
-    // 2. Command Buffer: Transition & Copy
     VkCommandBuffer cmd = VulkanContext::BeginSingleTimeCommands();
-    
-    // Transition offscreen image to TRANSFER_SRC_OPTIMAL
-    VkImageMemoryBarrier barrier = { VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER };
-    barrier.oldLayout = VK_IMAGE_LAYOUT_GENERAL; // or UNDEFINED if you don't care about previous content
+
+    VkImageMemoryBarrier barrier{ VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER };
+    barrier.oldLayout = VK_IMAGE_LAYOUT_GENERAL;
     barrier.newLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
     barrier.srcAccessMask = VK_ACCESS_SHADER_WRITE_BIT;
     barrier.dstAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
     barrier.image = image;
     barrier.subresourceRange = { VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1 };
-    
+
     vkCmdPipelineBarrier(cmd, VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, nullptr, 0, nullptr, 1, &barrier);
 
-    VkBufferImageCopy region = {};
+    VkBufferImageCopy region{};
     region.imageSubresource = { VK_IMAGE_ASPECT_COLOR_BIT, 0, 0, 1 };
     region.imageExtent = { width, height, 1 };
-    
+
     vkCmdCopyImageToBuffer(cmd, image, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, buffer, 1, &region);
 
-    // Transition back to GENERAL (optional, but good practice if used again immediately)
     barrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
     barrier.newLayout = VK_IMAGE_LAYOUT_GENERAL;
     barrier.srcAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
     barrier.dstAccessMask = VK_ACCESS_SHADER_WRITE_BIT;
+
     vkCmdPipelineBarrier(cmd, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT, 0, 0, nullptr, 0, nullptr, 1, &barrier);
 
     VulkanContext::EndSingleTimeCommands(cmd);
 
-    // 3. Map & Save
-    void* data;
-    vkMapMemory(device, memory, 0, size, 0, &data);
-    stbi_write_png(filePath.c_str(), width, height, 4, data, width * 4);
-    vkUnmapMemory(device, memory);
+    float* srcPixels = nullptr;
+    vkMapMemory(device, memory, 0, size, 0, reinterpret_cast<void**>(&srcPixels));
 
-    // 4. Cleanup
+    std::vector<uint8_t> ldr(width * height * 4);
+    for (uint32_t i = 0; i < width * height; ++i) {
+        ldr[4*i+0] = uint8_t(std::clamp(srcPixels[4*i+0], 0.0f, 1.0f) * 255.0f); 
+        ldr[4*i+1] = uint8_t(std::clamp(srcPixels[4*i+1], 0.0f, 1.0f) * 255.0f); 
+        ldr[4*i+2] = uint8_t(std::clamp(srcPixels[4*i+2], 0.0f, 1.0f) * 255.0f); 
+        ldr[4*i+3] = 255; 
+    }
+
+    vkUnmapMemory(device, memory);
+    stbi_write_png(filePath.c_str(), width, height, 4, ldr.data(), width * 4);
     vkDestroyBuffer(device, buffer, nullptr);
     vkFreeMemory(device, memory, nullptr);
 }
