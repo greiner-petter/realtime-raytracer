@@ -74,7 +74,7 @@ void main() {
         u_FocusDistance * u_CameraForward
     );
 
-    Ray ray = createRay(origin, direction, MAX_BOUNCES);
+    Ray ray = createRay(origin, direction, int(u_RayBounces));
 
     // Raytrace
     vec3 pixelColor = traceRay(ray);

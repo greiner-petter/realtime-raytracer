@@ -52,8 +52,7 @@ vec3 shadeLambertShaderGI(inout Ray ray, inout vec3 throughput) {
 }
 
 vec3 shadeLambertShader(inout Ray ray, inout vec3 throughput) {
-    // TODO add flag for GI
-    if (true)
+    if (u_EnableGI > 0)
         return shadeLambertShaderGI(ray, throughput);
 
     const LambertShader shader = lambertShaders[ray.primitive.shaderIndex];

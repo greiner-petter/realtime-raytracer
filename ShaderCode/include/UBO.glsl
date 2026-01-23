@@ -4,6 +4,8 @@ layout(std140, binding = 0) uniform UBO {
     float u_FocusDistance;
     uint u_SampleIndex;
     float u_Seed;
+    uint u_RayBounces;
+    uint u_EnableGI;
     vec3 u_CameraPosition;
     vec3 u_CameraForward;
     vec3 u_CameraRight;

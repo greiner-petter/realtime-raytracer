@@ -69,7 +69,11 @@ void CameraUpdate(Scene& scene, float deltaTime) {
         UpdateCameraDirection(Input::GetMouseDelta().x, Input::GetMouseDelta().y);
         UpdateCameraPosition(deltaTime);
         uniformBufferData.u_SampleIndex = 0; // reset accumulation on camera move
+        uniformBufferData.u_Raybounces = 2;
+        uniformBufferData.u_EnableGI = 0;
     } else {
         Input::SetCursorLocked(false);
+        uniformBufferData.u_Raybounces = 4;
+        uniformBufferData.u_EnableGI = 1;
     }
 }

@@ -1,5 +1,4 @@
 // ---------- Constants ----------
-const int MAX_BOUNCES = 8;
 const float EPSILON = 1e-4;
 const float SPLT_EPS = 4 * EPSILON;
 const float LGT_EPS = 5e-5;
