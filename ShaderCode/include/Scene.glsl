@@ -21,7 +21,7 @@ bool intersectScene(inout Ray ray) {
 bool occludeScene(inout Ray ray) {
     return occludeKDTree(ray);
     for (int i = 0; i < primitiveCount; ++i) {
-        if (intersect(ray, primitives[i]))
+        if (intersect(ray, primitives[i]) && ray.primitive.shaderType != 2)
             return true;
     }
     return false;

@@ -166,7 +166,7 @@ bool occludeKDTree(inout Ray ray) {
             int count = getPrimCount(nodeIdx);
             for (int i = 0; i < count; i++) {
                 int primIdx = primIndices[start + i];
-                if (intersect(ray, primitives[primIdx])) {
+                if (intersect(ray, primitives[primIdx]) && ray.primitive.shaderType != 2) {
                     return true;
                 }
             }
