@@ -10,6 +10,7 @@ enum class PrimitiveType : uint32_t {
     Triangle = 2,
     InfinitePlane = 3,
     Box = 4,
+    Mesh = 5,
 };
 
 struct Primitive {

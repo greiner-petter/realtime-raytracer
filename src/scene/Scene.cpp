@@ -2,6 +2,8 @@
 #include "common/Log.h"
 #include "common/Window.h"
 #include "common/Params.h"
+#include "primitives/Mesh.h"
+#include "primitives/Triangle.h"
 #include <algorithm>
 #include <cassert>
 #include <cstring>
@@ -12,12 +14,14 @@ void Scene::CreateGPUBuffers() {
     uniformBuffer = UniformBuffer::Create(0, sizeof(uniformBufferData));
     kdTreeSSBO = SSBO::Create(1);
     kdTreeIndicesSSBO = SSBO::Create(2);
+    meshTrianglesSSBO = SSBO::Create(3);
 
     primitiveSSBO = SSBO::Create(10);
     sphereSSBO = SSBO::Create(11);
     triangleSSBO = SSBO::Create(12);
     planeSSBO = SSBO::Create(13);
     boxSSBO = SSBO::Create(14);
+    meshSSBO = SSBO::Create(15);
 
     shaderSSBO = SSBO::Create(20);
     flatSSBO = SSBO::Create(21);
@@ -34,11 +38,25 @@ void Scene::CreateGPUBuffers() {
     spotSSBO = SSBO::Create(33);
 }
 
+void Scene::UploadMeshTrianglesToGPU() {
+    std::vector<std::shared_ptr<Triangle>> allMeshTris;
+    for (const auto& It : m_Primitives) {
+        if (It->type == PrimitiveType::Mesh) {
+            Mesh* mesh = (Mesh*)It.get();
+            mesh->minBounds_index.w = allMeshTris.size();
+            mesh->maxBounds_count.w = mesh->m_Triangles.size();
+            allMeshTris.insert(allMeshTris.end(), mesh->m_Triangles.begin(), mesh->m_Triangles.end());
+        }
+    }
+    WriteBufferForType(allMeshTris, PrimitiveType::Triangle, *meshTrianglesSSBO);
+}
+
 void Scene::ConvertSceneToGPUData() {
     WriteBufferForType(m_Primitives, PrimitiveType::Sphere, *sphereSSBO);
     WriteBufferForType(m_Primitives, PrimitiveType::Triangle, *triangleSSBO);
     WriteBufferForType(m_Primitives, PrimitiveType::InfinitePlane, *planeSSBO);
     WriteBufferForType(m_Primitives, PrimitiveType::Box, *boxSSBO);
+    WriteBufferForType(m_Primitives, PrimitiveType::Mesh, *meshSSBO);
 
     WriteBufferForType(m_Shaders, ShaderType::FlatShader, *flatSSBO);
     WriteBufferForType(m_Shaders, ShaderType::MirrorShader, *mirrorSSBO);
@@ -196,6 +214,7 @@ void Scene::UpdateGPUBuffers() {
     uniformBufferData.u_SampleIndex++;
 
     if (IsBufferDirty()) {
+        UploadMeshTrianglesToGPU();
         ConvertSceneToGPUData();  // Must set primitive indices before building KD-tree
         BuildKDTree();
         UploadKDTreeToGPU();
