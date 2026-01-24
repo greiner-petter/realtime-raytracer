@@ -84,9 +84,9 @@ void UpdateCameraPosition(float deltaTime, float& deltaRoll) {
     // Roll controls
     deltaRoll = 0.0f;
     if (Input::IsKeyPressed(Key::Q))
-        deltaRoll -= deltaTime;
-    if (Input::IsKeyPressed(Key::E))
         deltaRoll += deltaTime;
+    if (Input::IsKeyPressed(Key::E))
+        deltaRoll -= deltaTime;
 
     // FOV controls (via focus distance - larger = narrower FOV, smaller = wider FOV)
     const float FOV_SPEED = 1.0f;
