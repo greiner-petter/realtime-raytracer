@@ -48,9 +48,15 @@ void UpdateCameraPosition(float deltaTime) {
         direction -= glm::vec3(uniformBufferData.u_CameraRight);
     if (Input::IsKeyPressed(Key::D) || Input::IsKeyPressed(Key::Right))
         direction += glm::vec3(uniformBufferData.u_CameraRight);
+
     if (Input::IsKeyPressed(Key::E))
-        direction += glm::vec3(uniformBufferData.u_CameraUp);
+        // TODO roll right
     if (Input::IsKeyPressed(Key::Q))
+        // TODO roll left
+
+    if (Input::IsKeyPressed(Key::Space))
+        direction += glm::vec3(uniformBufferData.u_CameraUp);
+    if (Input::IsKeyPressed(Key::LeftShift))
         direction -= glm::vec3(uniformBufferData.u_CameraUp);
 
     const float CAMERA_SPEED = 5.0f;
