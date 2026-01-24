@@ -17,6 +17,12 @@ layout(binding = 20, std430) buffer Shaders {
     Shader shaders[];
 };
 
+bool isTransparent(in Ray ray) {
+    if (ray.primitive.shaderType == 2) return true;
+    if (ray.primitive.shaderType == 9) return true;
+    return false; 
+}
+
 float rand();
 
 vec3 uniformSampleHemisphere(float r1, float r2) {

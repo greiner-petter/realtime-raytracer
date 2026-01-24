@@ -2,6 +2,7 @@
 #include "light/Light.h.glsl"
 
 bool intersect(inout Ray ray, in Primitive primitive);
+bool isTransparent(in Ray ray);
 vec3 shade(inout Ray ray, inout vec3 throughput);
 vec3 shadeGI(inout Ray ray, inout vec3 throughput);
 
@@ -22,7 +23,7 @@ bool intersectScene(inout Ray ray) {
 bool occludeScene(inout Ray ray) {
     // return occludeKDTree(ray);
     for (int i = 0; i < primitiveCount; ++i) {
-        if (intersect(ray, primitives[i]) && ray.primitive.shaderType != 2)
+        if (intersect(ray, primitives[i]) && !isTransparent(ray))
             return true;
     }
     return false;

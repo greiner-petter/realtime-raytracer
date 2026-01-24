@@ -15,6 +15,9 @@ layout(binding = 2, std430) buffer kdTreeIndices {
     int primIndices[];
 };
 
+bool intersect(inout Ray ray, in Primitive primitive);
+bool isTransparent(in Ray ray);
+
 // Node accessor functions (8 ints per node = 32 bytes)
 int getChildLeft(int nodeIdx) { return nodeData[nodeIdx * 8 + 0]; }
 int getChildRight(int nodeIdx) { return nodeData[nodeIdx * 8 + 1]; }
@@ -166,7 +169,7 @@ bool occludeKDTree(inout Ray ray) {
             int count = getPrimCount(nodeIdx);
             for (int i = 0; i < count; i++) {
                 int primIdx = primIndices[start + i];
-                if (intersect(ray, primitives[primIdx]) && ray.primitive.shaderType != 2) {
+                if (intersect(ray, primitives[primIdx]) && !isTransparent(ray)) {
                     return true;
                 }
             }
