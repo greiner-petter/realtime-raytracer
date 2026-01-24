@@ -2,7 +2,7 @@ struct SimpleTextureShader {
     vec4 color_texture; 
 };
 
-layout(binding = 27, std430) buffer SimpleTextureShaders {
+layout(binding = 28, std430) buffer SimpleTextureShaders {
     uint simpleTextureShaderCount;
     SimpleTextureShader simpleTextureShaders[];
 };

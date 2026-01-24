@@ -10,7 +10,7 @@ bool intersectKDTree(inout Ray ray);
 bool occludeKDTree(inout Ray ray);
 
 bool intersectScene(inout Ray ray) {
-    return intersectKDTree(ray);
+    // return intersectKDTree(ray);
     bool didHit = false;
     for (int i = 0; i < primitiveCount; ++i) {
         if (intersect(ray, primitives[i]))
@@ -20,7 +20,7 @@ bool intersectScene(inout Ray ray) {
 }
 
 bool occludeScene(inout Ray ray) {
-    return occludeKDTree(ray);
+    // return occludeKDTree(ray);
     for (int i = 0; i < primitiveCount; ++i) {
         if (intersect(ray, primitives[i]) && ray.primitive.shaderType != 2)
             return true;

@@ -13,6 +13,7 @@
 #include "shaders/RefractionShader.h"
 #include "shaders/MirrorShader.h"
 #include "shaders/SimpleShadowShader.h"
+#include "shaders/CookTorranceShader.h"
 #include "shaders/SimpleTextureShader.h"
 #include "shaders/LambertShader.h"
 #include "lights/PointLight.h"
@@ -52,7 +53,7 @@ void InitScene() {
     s_Scene = std::make_shared<Scene>();
 
     // add some lights
-    s_Scene->AddLight(std::make_shared<PointLight>(Vec3(0.0f, 4.0f, 0.0f), 10.0f, 1.0f));
+    s_Scene->AddLight(std::make_shared<PointLight>(Vec3(0.0f, 4.0f, 0.0f), 10.0f));
     // s_Scene->AddLight(std::make_shared<AmbientLight>(0.15f));
     // s_Scene->AddLight(std::make_shared<SpotLight>(Vec3(1.0f, 0.0f, -4.0f), Vec3(0.0f, 0.0f, 1.0f), 50.0f, 70.0f, 20.0f));
 
@@ -65,6 +66,8 @@ void InitScene() {
     auto glass = std::make_shared<RefractionShader>(0.92, 0.84f);
     auto simpleShadow = std::make_shared<SimpleShadowShader>(Vec3(1.0f, 0, 0.8f));
     auto texture = std::make_shared<SimpleTextureShader>((new Texture("data/space.png"))->GetId());
+    auto redCook = std::make_shared<CookTorranceShader>(Vec3(1.0f, 0.0f, 0.0f), Vec3(1.0f, 1.0f, 1.0f), 1.0f, 0.3f);
+    auto goldCook = std::make_shared<CookTorranceShader>(Vec3(0.83f, 0.69f, 0.22f), Vec3(1.0f, 1.0f, 0.0f), 1.2f, 0.2f);
 
     s_Scene->AddShader(red);
     s_Scene->AddShader(white);
@@ -74,6 +77,8 @@ void InitScene() {
     s_Scene->AddShader(glass);
     s_Scene->AddShader(mirror);
     s_Scene->AddShader(simpleShadow);
+    s_Scene->AddShader(redCook);
+    s_Scene->AddShader(goldCook);
 
     // Add objects
     s_Scene->AddPrimitive(std::make_shared<InfinitePlane>(Vec3(0.0f, 0.0f, +5.0f), Vec3(0.0f, 0.0f, -1.0f), white));
@@ -83,9 +88,10 @@ void InitScene() {
     s_Scene->AddPrimitive(std::make_shared<InfinitePlane>(Vec3(+5.0f, 0.0f, 0.0f), Vec3(-1.0f, 0.0f, 0.0f), blue));
     s_Scene->AddPrimitive(std::make_shared<InfinitePlane>(Vec3(-5.0f, 0.0f, 0.0f), Vec3(+1.0f, 0.0f, 0.0f), red));
 
-    s_Scene->AddPrimitive(std::make_shared<Box>(Vec3(2.5f, -3.0f, 1.0f), Vec3(3.0f, 4.0f, 3.0f), simpleShadow));
-    s_Scene->AddPrimitive(std::make_shared<Box>(Vec3(-3.0f, -1.99f, 0.0f), Vec3(1.0f, 6.0f, 1.0f), simpleShadow));
-    s_Scene->AddPrimitive(std::make_shared<Box>(Vec3(-0.5f, -4.0f, -2.0f), Vec3(2.0f, 2.0f, 2.0f), simpleShadow));
+    s_Scene->AddPrimitive(std::make_shared<Box>(Vec3(2.5f, -3.0f, 1.0f), Vec3(3.0f, 4.0f, 3.0f), redCook));
+    s_Scene->AddPrimitive(std::make_shared<Box>(Vec3(-3.0f, -1.99f, 0.0f), Vec3(1.0f, 6.0f, 1.0f), redCook));
+    s_Scene->AddPrimitive(std::make_shared<Box>(Vec3(-0.5f, -4.0f, -2.0f), Vec3(2.0f, 2.0f, 2.0f), glass));
+    s_Scene->AddPrimitive(std::make_shared<Sphere>(Vec3(), 1.2f, goldCook));
     // s_Scene->AddPrimitive(std::make_shared<Mesh>("data/teapot.obj", blue, Vec3(1.0f), Vec3(2.5f, -0.65f, 1.0f)));
     
     if (Params::GetInputSceneFilename() != "") {

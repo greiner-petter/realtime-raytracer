@@ -34,3 +34,4 @@ namespace VecUtils {
 }
 
 constexpr float EPSILON = 1e-4f;
+constexpr float PI = 3.1415926535897932384f;
