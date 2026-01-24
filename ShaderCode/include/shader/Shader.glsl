@@ -66,7 +66,7 @@ vec3 shadeGI(inout Ray ray, inout vec3 throughput) {
         case 3: return shadeMirrorShader(ray, throughput);
         case 4: return shadeSimpleShadowShaderGI(ray, throughput);
         case 5: return shadeLambertShaderGI(ray, throughput);
-        // case 6: return shadePhongShaderGI(ray, throughput);
+        case 6: return shadePhongShaderGI(ray, throughput);
         // case 10: return shadeSimpleTextureShaderGI(ray, throughput);
     }
     return vec3(0);

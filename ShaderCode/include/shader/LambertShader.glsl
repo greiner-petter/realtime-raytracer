@@ -7,7 +7,6 @@ layout(binding = 25, std430) buffer LambertShaders {
     LambertShader lambertShaders[];
 };
 
-float rand();
 Ray shadeIndirectLight(in Ray ray, in vec3 diffuseColor, inout vec3 throughput);
 Light getRandomLight();
 
