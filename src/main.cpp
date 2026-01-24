@@ -52,7 +52,7 @@ void InitScene() {
     s_Scene = std::make_shared<Scene>();
 
     // add some lights
-    s_Scene->AddLight(std::make_shared<PointLight>(Vec3(0.0f, 4.0f, 0.0f), 10.0f));
+    s_Scene->AddLight(std::make_shared<PointLight>(Vec3(0.0f, 4.0f, 0.0f), 10.0f, 1.0f));
     // s_Scene->AddLight(std::make_shared<AmbientLight>(0.15f));
     // s_Scene->AddLight(std::make_shared<SpotLight>(Vec3(1.0f, 0.0f, -4.0f), Vec3(0.0f, 0.0f, 1.0f), 50.0f, 70.0f, 20.0f));
 
@@ -63,6 +63,7 @@ void InitScene() {
     auto orange = std::make_shared<LambertShader>(Vec3(1.0f, 0.5f, 0.0f));
     auto mirror = std::make_shared<MirrorShader>(Vec3(0.95f));
     auto glass = std::make_shared<RefractionShader>(0.92, 0.84f);
+    auto simpleShadow = std::make_shared<SimpleShadowShader>(Vec3(1.0f, 0, 0.8f));
     auto texture = std::make_shared<SimpleTextureShader>((new Texture("data/space.png"))->GetId());
 
     s_Scene->AddShader(red);
@@ -72,6 +73,7 @@ void InitScene() {
     s_Scene->AddShader(texture);
     s_Scene->AddShader(glass);
     s_Scene->AddShader(mirror);
+    s_Scene->AddShader(simpleShadow);
 
     // Add objects
     s_Scene->AddPrimitive(std::make_shared<InfinitePlane>(Vec3(0.0f, 0.0f, +5.0f), Vec3(0.0f, 0.0f, -1.0f), white));
@@ -81,10 +83,10 @@ void InitScene() {
     s_Scene->AddPrimitive(std::make_shared<InfinitePlane>(Vec3(+5.0f, 0.0f, 0.0f), Vec3(-1.0f, 0.0f, 0.0f), blue));
     s_Scene->AddPrimitive(std::make_shared<InfinitePlane>(Vec3(-5.0f, 0.0f, 0.0f), Vec3(+1.0f, 0.0f, 0.0f), red));
 
-    s_Scene->AddPrimitive(std::make_shared<Box>(Vec3(2.5f, -3.0f, 1.0f), Vec3(3.0f, 4.0f, 3.0f), red));
-    s_Scene->AddPrimitive(std::make_shared<Box>(Vec3(-3.0f, -1.99f, 0.0f), Vec3(1.0f, 6.0f, 1.0f), glass));
-    s_Scene->AddPrimitive(std::make_shared<Box>(Vec3(-0.5f, -4.0f, -2.0f), Vec3(2.0f, 2.0f, 2.0f), mirror));
-    s_Scene->AddPrimitive(std::make_shared<Mesh>("data/teapot.obj", blue, Vec3(1.0f), Vec3(2.5f, -0.65f, 1.0f)));
+    s_Scene->AddPrimitive(std::make_shared<Box>(Vec3(2.5f, -3.0f, 1.0f), Vec3(3.0f, 4.0f, 3.0f), simpleShadow));
+    s_Scene->AddPrimitive(std::make_shared<Box>(Vec3(-3.0f, -1.99f, 0.0f), Vec3(1.0f, 6.0f, 1.0f), simpleShadow));
+    s_Scene->AddPrimitive(std::make_shared<Box>(Vec3(-0.5f, -4.0f, -2.0f), Vec3(2.0f, 2.0f, 2.0f), simpleShadow));
+    // s_Scene->AddPrimitive(std::make_shared<Mesh>("data/teapot.obj", blue, Vec3(1.0f), Vec3(2.5f, -0.65f, 1.0f)));
     
     if (Params::GetInputSceneFilename() != "") {
         SceneLoader::LoadScene(*s_Scene, Params::GetInputSceneFilename());
