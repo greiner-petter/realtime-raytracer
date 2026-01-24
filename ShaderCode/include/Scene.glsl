@@ -3,6 +3,7 @@
 
 bool intersect(inout Ray ray, in Primitive primitive);
 vec3 shade(inout Ray ray, inout vec3 throughput);
+vec3 shadeGI(inout Ray ray, inout vec3 throughput);
 
 // Forward declarations for KD-tree functions (defined in KDTree.glsl)
 bool intersectKDTree(inout Ray ray);
@@ -44,7 +45,7 @@ vec3 traceRay(inout Ray ray) {
             return radiance + throughput * getSkyColor(ray.direction);
         }
         vec3 currentThroughput = throughput;
-        vec3 emission = shade(ray, throughput);
+        vec3 emission = (u_EnableGI > 0) ? shadeGI(ray, throughput) : shade(ray, throughput);
         radiance += currentThroughput * emission;
     }
     return radiance;

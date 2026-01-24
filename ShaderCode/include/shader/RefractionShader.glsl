@@ -49,7 +49,6 @@ vec3 shadeRefractionShader(inout Ray ray, inout vec3 throughput) {
     }
 
     // Send out a new refracted ray into the scene
-    Ray refractionRay = createRay(origin, direction, ray.remainingBounces);
-    ray = refractionRay;
+    ray = createRay(origin, direction, ray.remainingBounces);
     return vec3(0);
 }

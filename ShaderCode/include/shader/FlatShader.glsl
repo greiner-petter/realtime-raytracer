@@ -12,5 +12,5 @@ vec3 shadeFlatShader(inout Ray ray, in vec3 throughput) {
     const vec3 objectColor = shader.objectColor.xyz;
     ray.remainingBounces = 0;
     
-    return throughput * objectColor;
+    return objectColor;
 }

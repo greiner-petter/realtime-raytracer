@@ -16,11 +16,19 @@ layout(binding = 30, std430) buffer Lights {
     Light lights[];
 };
 
+float rand();
+
 Illumination createIllumination(in vec3 direction) {
     Illumination illum;
     illum.color = vec3(0);
     illum.direction = normalize(direction);
     return illum;
+}
+
+Light getRandomLight() {
+    float random = rand();
+    const int randomLightIndex = int(min(random * float(lightCount), float(lightCount) - 1.0));
+    return lights[randomLightIndex];
 }
 
 #endif
