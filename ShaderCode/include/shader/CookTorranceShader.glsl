@@ -63,6 +63,8 @@ vec3 shadeCookTorranceShaderGI(inout Ray ray, inout vec3 throughput) {
         }
         
         ray = shadeIndirectLight(ray, diffuseColor, throughput);
+    } else {
+        ray.remainingBounces = 0;
     }
 
     return fragmentColor;
