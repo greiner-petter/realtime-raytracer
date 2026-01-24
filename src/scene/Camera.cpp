@@ -29,8 +29,8 @@ void UpdateCameraDirection(float deltaX, float deltaY) {
     RT_INFO("Forward: ({0}, {1}, {2})", cameraForward.x, cameraForward.y, cameraForward.z);
 
     glm::vec3 worldUp = glm::vec3(0.0f, 1.0f, 0.0f);
-    glm::vec3 cameraRight = glm::normalize(glm::cross(cameraForward, worldUp));
-    glm::vec3 cameraUp = glm::normalize(glm::cross(cameraRight, cameraForward));
+    glm::vec3 cameraRight = glm::normalize(glm::cross(worldUp, cameraForward));
+    glm::vec3 cameraUp = glm::normalize(glm::cross(cameraForward, cameraRight));
 
     uniformBufferData.u_CameraForward = glm::vec4(cameraForward, 0.0f);
     uniformBufferData.u_CameraRight = glm::vec4(cameraRight, 0.0f);
@@ -66,7 +66,7 @@ void CameraUpdate(Scene& scene, float deltaTime) {
     if (Input::IsMouseButtonPressed(Mouse::ButtonRight)) {
         // default FPS camera behavior
         Input::SetCursorLocked(true);
-        UpdateCameraDirection(Input::GetMouseDelta().x, Input::GetMouseDelta().y);
+        UpdateCameraDirection(-1 * Input::GetMouseDelta().x, Input::GetMouseDelta().y);
         UpdateCameraPosition(deltaTime);
         uniformBufferData.u_SampleIndex = 0; // reset accumulation on camera move
         uniformBufferData.u_Raybounces = 2;
