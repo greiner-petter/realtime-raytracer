@@ -1,0 +1,89 @@
+{
+    "settings": {
+        "camera": {
+            "position": [-2.5, 2.5, -10.0],
+            "forward": [0.4, -0.33, 1.0],
+            "up": [0.0, 1.0, 0.0],
+            "fov": 70.0
+        },
+        "gi": false
+    },
+    "shaders": [
+        {
+            "type": "mirror",
+            "name": "mirror",
+            "throughput": [1.0, 1.0, 1.0]
+        },
+        {
+            "type": "refraction",
+            "name": "glass",
+            "indexInside": 1.31,
+            "indexOutside": 1.0
+        },
+        {
+            "type": "simpleShadow",
+            "name": "orange",
+            "objectColor": [1.0, 0.5, 0.0]
+        },
+        {
+            "type": "simpleShadow",
+            "name": "red",
+            "objectColor": [1.0, 0.3, 0.2]
+        }
+    ],
+    "lights": [
+        {
+            "type": "point",
+            "position": [0.0, 10.0, -10.0],
+            "intensity": 250.0,
+            "color": [1.0, 1.0, 1.0]
+        },
+        {
+            "type": "point",
+            "position": [0.0, 10.0, 10.0],
+            "intensity": 250.0,
+            "color": [1.0, 1.0, 1.0]
+        }
+    ],
+    "primitives": [
+        {
+            "type": "sphere",
+            "shader": "glass",
+            "center": [-3.0, 0.0, 0.0],
+            "radius": 1.5
+        },
+        {
+            "type": "box",
+            "shader": "mirror",
+            "center": [3.5, -1.0, 0.0],
+            "size": [3.0, 3.0, 3.0]
+        },
+        {
+            "type": "triangle",
+            "shader": "orange",
+            "vertices": [
+                [5.0, -5.0, 5.0],
+                [-10.0, -5.0, 10.0],
+                [-2.0, -5.0, -2.0]
+            ]
+        },
+        {
+            "type": "triangle",
+            "shader": "orange",
+            "vertices": [
+                [-2.0, -5.0, -2.0],
+                [10.0, -5.0, -10.0],
+                [5.0, -5.0, 5.0]
+            ]
+        },
+        {
+            "type": "triangle",
+            "shader": "red",
+            "vertices": [
+                [0.0, -2.0, 0.0],
+                [2.0, -2.0, 0.0],
+                [0.0, 0.0, 0.0]
+            ]
+        }
+    ]
+}

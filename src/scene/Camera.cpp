@@ -2,6 +2,7 @@
 #include "common/Input.h"
 #include "common/Log.h"
 #include "common/Types.h"
+#include "common/Params.h"
 #include "scene/Scene.h"
 
 extern UBO uniformBufferData;
@@ -19,6 +20,28 @@ void SetCameraOrientation(const Vec3& forward, const Vec3& up) {
 
     // Update stored orientation
     cameraForward = forward;
+    cameraUp = up;
+}
+
+void SetCameraForward(const Vec3& forward) {
+    Vec3 right = glm::normalize(glm::cross(cameraUp, forward));
+
+    uniformBufferData.u_CameraForward = Vec4(forward, 0.0f);
+    uniformBufferData.u_CameraRight = Vec4(right, 0.0f);
+    uniformBufferData.u_CameraUp = Vec4(cameraUp, 0.0f);
+
+    // Update stored orientation
+    cameraForward = forward;
+}
+
+void SetCameraUp(const Vec3& up) {
+    Vec3 right = glm::normalize(glm::cross(up, cameraForward));
+
+    uniformBufferData.u_CameraForward = Vec4(cameraForward, 0.0f);
+    uniformBufferData.u_CameraRight = Vec4(right, 0.0f);
+    uniformBufferData.u_CameraUp = Vec4(up, 0.0f);
+
+    // Update stored orientation
     cameraUp = up;
 }
 
@@ -122,6 +145,6 @@ void CameraUpdate(Scene& scene, float deltaTime) {
     } else {
         Input::SetCursorLocked(false);
         uniformBufferData.u_Raybounces = 4;
-        uniformBufferData.u_EnableGI = 1;
+        uniformBufferData.u_EnableGI = Params::s_EnableGI ? 1 : 0;
     }
 }

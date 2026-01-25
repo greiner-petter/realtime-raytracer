@@ -1,0 +1,129 @@
+{
+    "settings": {
+        "camera": {
+            "position": [0.0, 0.0, -10.0],
+            "forward": [0.0, 0.0, 1.0],
+            "up": [0.0, 1.0, 0.0],
+            "fov": 90.0
+        },
+        "gi": false
+    },
+    "shaders": [
+        {
+            "type": "simpleShadow",
+            "name": "red",
+            "objectColor": [1.0, 0.3, 0.2]
+        },
+        {
+            "type": "simpleShadow",
+            "name": "white",
+            "objectColor": [1.0, 1.0, 1.0]
+        },
+        {
+            "type": "simpleShadow",
+            "name": "blue",
+            "objectColor": [0.2, 0.3, 1.0]
+        },
+        {
+            "type": "simpleShadow",
+            "name": "orange",
+            "objectColor": [1.0, 0.5, 0.0]
+        }
+    ],
+    "lights": [
+        {
+            "type": "ambient",
+            "intensity": 0.15
+        },
+        {
+            "type": "point",
+            "position": [0.0, 4.0, 0.0],
+            "intensity": 0.0
+        },
+        {
+            "type": "spot",
+            "position": [1, 0, -4],
+            "direction": [0, 0, 1],
+            "alphaMin": 50,
+            "alphaMax": 70,
+            "intensity": 10.0
+        }
+    ],
+    "primitives": [
+        {
+            "type": "plane",
+            "shader": "white",
+            "origin": [0.0, 0.0, 5.0],
+            "normal": [0.0, 0.0, -1.0]
+        },
+        {
+            "type": "plane",
+            "shader": "white",
+            "origin": [0.0, 0.0, -5.0],
+            "normal": [0.0, 0.0, 1.0]
+        },
+        {
+            "type": "plane",
+            "shader": "white",
+            "origin": [0.0, 5.0, 0.0],
+            "normal": [0.0, -1.0, 0.0]
+        },
+        {
+            "type": "plane",
+            "shader": "white",
+            "origin": [0.0, -5.0, 0.0],
+            "normal": [0.0, 1.0, 0.0]
+        },
+        {
+            "type": "plane",
+            "shader": "blue",
+            "origin": [5.0, 0.0, 0.0],
+            "normal": [-1.0, 0.0, 0.0]
+        },
+        {
+            "type": "plane",
+            "shader": "red",
+            "origin": [-5.0, 0.0, 0.0],
+            "normal": [1.0, 0.0, 0.0]
+        },
+        {
+            "type": "box",
+            "shader": "red",
+            "center": [2.5, -3.0, 1.0],
+            "size": [3.0, 4.0, 3.0]
+        },
+        {
+            "type": "box",
+            "shader": "blue",
+            "center": [-3.0, -2.0, 0.0],
+            "size": [1.0, 6.0, 1.0]
+        },
+        {
+            "type": "box",
+            "shader": "orange",
+            "center": [-0.5, -4.0, -2.0],
+            "size": [2.0, 2.0, 2.0]
+        },
+        {
+            "type": "mesh",
+            "shader": "orange",
+            "filename": "data/teapot.obj",
+            "scale": [2.0, 2.0, 2.0],
+            "translation": [2.5, -1.0, 1.0]
+        },
+        {
+            "type": "mesh",
+            "shader": "red",
+            "filename": "data/teapot.obj",
+            "scale": [2.0, 2.0, 2.0],
+            "translation": [-3.0, 1.0, 0.0]
+        },
+        {
+            "type": "mesh",
+            "shader": "blue",
+            "filename": "data/teapot.obj",
+            "scale": [2.0, 2.0, 2.0],
+            "translation": [-0.5, -3.0, -2.0]
+        }
+    ]
+}

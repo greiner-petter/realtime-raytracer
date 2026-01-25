@@ -1,8 +1,12 @@
 {
     "settings": {
         "camera": {
-            "position": [-2.5, 2.5, -10]
-        }
+            "position": [-2.5, 2.5, -10],
+            "forward": [0.25, -0.33, 1],
+            "up": [0.2, 1, 0],
+            "fov": 70
+        },
+        "gi": false
     },
     "shaders": [
         {
