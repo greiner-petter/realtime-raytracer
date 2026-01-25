@@ -10,7 +10,7 @@ enum class ShaderType : uint32_t {
     LambertShader = 5,
     PhongShader = 6,
     CookTorranceShader = 7,
-    BRDFShader = 8,
+    BrdfShader = 8,
     MaterialShader = 9,
     SimpleTextureShader = 10,
 };

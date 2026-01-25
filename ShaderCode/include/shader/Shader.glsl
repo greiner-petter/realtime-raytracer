@@ -5,6 +5,7 @@
 #include "LambertShader.glsl"
 #include "PhongShader.glsl"
 #include "CookTorranceShader.glsl"
+#include "BRDFShader.glsl"
 #include "SimpleTextureShader.glsl"
 
 struct Shader {
@@ -62,6 +63,7 @@ vec3 shade(inout Ray ray, inout vec3 throughput) {
         case 5: return shadeLambertShader(ray, throughput);
         case 6: return shadePhongShader(ray, throughput);
         case 7: return shadeCookTorranceShader(ray, throughput);
+        case 8: return shadeBRDFShader(ray, throughput);
         case 10: return shadeSimpleTextureShader(ray, throughput);
     }
     ray.remainingBounces = 0;
@@ -77,6 +79,7 @@ vec3 shadeGI(inout Ray ray, inout vec3 throughput) {
         case 5: return shadeLambertShaderGI(ray, throughput);
         case 6: return shadePhongShaderGI(ray, throughput);
         case 7: return shadeCookTorranceShaderGI(ray, throughput);
+        case 8: return shadeBRDFShaderGI(ray, throughput);
         // case 10: return shadeSimpleTextureShaderGI(ray, throughput);
     }
     ray.remainingBounces = 0;

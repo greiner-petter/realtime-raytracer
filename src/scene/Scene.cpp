@@ -4,6 +4,7 @@
 #include "common/Params.h"
 #include "primitives/Mesh.h"
 #include "primitives/Triangle.h"
+#include "shaders/BRDFShader.h"
 #include <algorithm>
 #include <cassert>
 #include <cstring>
@@ -15,6 +16,7 @@ void Scene::CreateGPUBuffers() {
     kdTreeSSBO = SSBO::Create(1);
     kdTreeIndicesSSBO = SSBO::Create(2);
     meshTrianglesSSBO = SSBO::Create(3);
+    brdfDataSSBO = SSBO::Create(4);
 
     primitiveSSBO = SSBO::Create(10);
     sphereSSBO = SSBO::Create(11);
@@ -32,6 +34,7 @@ void Scene::CreateGPUBuffers() {
     phongSSBO = SSBO::Create(26);
     cookTorranceSSBO = SSBO::Create(27);
     simpleTextureSSBO = SSBO::Create(28);
+    brdfShaderSSBO = SSBO::Create(29);
 
     lightSSBO = SSBO::Create(30);
     pointSSBO = SSBO::Create(31);
@@ -67,6 +70,36 @@ void Scene::ConvertSceneToGPUData() {
     WriteBufferForType(m_Shaders, ShaderType::PhongShader, *phongSSBO);
     WriteBufferForType(m_Shaders, ShaderType::CookTorranceShader, *cookTorranceSSBO);
     WriteBufferForType(m_Shaders, ShaderType::SimpleTextureShader, *simpleTextureSSBO);
+    // Upload all BRDF data - collect all BrdfShaders and append their data
+    std::vector<BrdfShader*> brdfShaders;
+    size_t totalBrdfFloats = 0;
+    for (const auto& shader : m_Shaders) {
+        if (shader->type == ShaderType::BrdfShader) {
+            BrdfShader* brdfShader = static_cast<BrdfShader*>(shader.get());
+            if (brdfShader->IsLoaded()) {
+                brdfShader->dataOffset.x = static_cast<float>(totalBrdfFloats);
+                totalBrdfFloats += brdfShader->GetFloatDataSize();
+                brdfShaders.push_back(brdfShader);
+            }
+        }
+    }
+
+    if (!brdfShaders.empty()) {
+        size_t totalDataSize = totalBrdfFloats * sizeof(float);
+        void* gpuData = brdfDataSSBO->MapData(totalDataSize);
+        byte* dst = static_cast<byte*>(gpuData);
+
+        for (BrdfShader* brdfShader : brdfShaders) {
+            std::vector<float> floatData = brdfShader->GetFloatData();
+            size_t dataSize = floatData.size() * sizeof(float);
+            std::memcpy(dst, floatData.data(), dataSize);
+            dst += dataSize;
+        }
+
+        brdfDataSSBO->UnmapData();
+    }
+
+    WriteBufferForType(m_Shaders, ShaderType::BrdfShader, *brdfShaderSSBO);
 
     WriteBufferForType(m_Lights, LightType::PointLight, *pointSSBO);
     WriteBufferForType(m_Lights, LightType::AmbientLight, *ambientSSBO);

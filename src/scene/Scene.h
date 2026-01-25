@@ -115,6 +115,8 @@ private:
     inline static std::shared_ptr<SSBO> phongSSBO;
     inline static std::shared_ptr<SSBO> cookTorranceSSBO;
     inline static std::shared_ptr<SSBO> simpleTextureSSBO;
+    inline static std::shared_ptr<SSBO> brdfShaderSSBO;
+    inline static std::shared_ptr<SSBO> brdfDataSSBO;
 
     inline static std::shared_ptr<SSBO> lightSSBO;
     inline static std::shared_ptr<SSBO> pointSSBO;
