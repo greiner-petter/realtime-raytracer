@@ -12,20 +12,14 @@
 #define BRDF_SAMPLING_RES_PHI_D 360
 
 // Total number of samples: 90 * 90 * 180 = 1,458,000 per channel
-// 3 channels (RGB) = 4,374,000 doubles in total
+// 3 channels (RGB) = 4,374,000 floats in total
 #define BRDF_TOTAL_SAMPLES (BRDF_SAMPLING_RES_THETA_H * BRDF_SAMPLING_RES_THETA_D * BRDF_SAMPLING_RES_PHI_D / 2)
+#define BRDF_DATA_SIZE (BRDF_TOTAL_SAMPLES * 3)
 
 struct BrdfShader : public TypedShader<ShaderType::BrdfShader> {
     BrdfShader(const char* brdfFilePath, Vec3 const& colorScale = Vec3(1.0f))
-        : scale(Vec4(colorScale, 0.0f)) {
+        : scaleIndex(Vec4(colorScale, 0.0f)) {
         LoadFromFile(brdfFilePath);
-    }
-
-    ~BrdfShader() {
-        if (rawData) {
-            free(rawData);
-            rawData = nullptr;
-        }
     }
 
     bool LoadFromFile(const char* filename) {
@@ -50,43 +44,31 @@ struct BrdfShader : public TypedShader<ShaderType::BrdfShader> {
             return false;
         }
 
-        rawData = (double*)malloc(sizeof(double) * 3 * n);
-        numbytes = fread(rawData, sizeof(double), 3 * n, f);
-        if (numbytes != static_cast<size_t>(3 * n)) {
+        // Read as double, convert to float to save GPU memory
+        std::vector<double> tempData(3 * n);
+        size_t itemsRead = fread(tempData.data(), sizeof(double), 3 * n, f);
+        if (itemsRead != static_cast<size_t>(3 * n)) {
             fprintf(stderr, "Failed to read BRDF data\n");
-            free(rawData);
-            rawData = nullptr;
             fclose(f);
             return false;
         }
 
+        // Convert double to float
+        data.resize(3 * n);
+        for (size_t i = 0; i < tempData.size(); ++i) {
+            data[i] = static_cast<float>(tempData[i]);
+        }
+
         fclose(f);
-        rawDataSize = 3 * n;
         return true;
     }
 
-    // Convert double data to float for GPU upload
-    std::vector<float> GetFloatData() const {
-        if (!rawData) return {};
+    // Metadata only (scaleIndex) - data uploaded separately
+    virtual void* GetDataLayoutBeginPtr() override { return &scaleIndex; }
+    virtual size_t GetDataSize() const override { return sizeof(Vec4); }
 
-        std::vector<float> floatData(rawDataSize);
-        for (size_t i = 0; i < rawDataSize; ++i) {
-            floatData[i] = static_cast<float>(rawData[i]);
-        }
-        return floatData;
-    }
-
-    bool IsLoaded() const { return rawData != nullptr; }
-    size_t GetFloatDataSize() const { return rawDataSize; }
-
-    // For the shader metadata - stores offset and scale
-    virtual void* GetDataLayoutBeginPtr() override { return &dataOffset; }
-    virtual size_t GetDataSize() const override { return sizeof(dataOffset) + sizeof(scale); }
-
-    Vec4 dataOffset = Vec4(0.0f);  // x = offset into brdfData buffer (in floats)
-    Vec4 scale = Vec4(1.0f);       // xyz = color scale
-    double* rawData = nullptr;
-    size_t rawDataSize = 0;
+    Vec4 scaleIndex;           // xyz = color scale, w = offset into data buffer
+    std::vector<float> data;   // BRDF data (converted from double)
 };
 
 #endif

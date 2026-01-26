@@ -16,7 +16,7 @@
 #include "shaders/CookTorranceShader.h"
 #include "shaders/SimpleTextureShader.h"
 #include "shaders/LambertShader.h"
-#include "shaders/BRDFShader.h"
+#include "shaders/BrdfShader.h"
 #include "lights/PointLight.h"
 #include "lights/AmbientLight.h"
 #include "lights/SpotLight.h"

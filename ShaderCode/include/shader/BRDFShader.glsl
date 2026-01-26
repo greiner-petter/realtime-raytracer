@@ -4,151 +4,148 @@
 #define BRDF_SAMPLING_RES_THETA_H 90
 #define BRDF_SAMPLING_RES_THETA_D 90
 #define BRDF_SAMPLING_RES_PHI_D 360
+#define BRDF_DATA_SIZE (BRDF_SAMPLING_RES_THETA_H * BRDF_SAMPLING_RES_THETA_D * BRDF_SAMPLING_RES_PHI_D / 2 * 3)
 
 #define RED_SCALE   (1.0 / 1500.0)
 #define GREEN_SCALE (1.15 / 1500.0)
 #define BLUE_SCALE  (1.66 / 1500.0)
 
-struct BRDFShaderData {
-    vec4 dataOffset;  // x = offset into brdfData buffer (in floats)
-    vec4 scale;       // xyz = color scale
+struct BrdfShader {
+    vec4 scaleIndex;  // xyz = color scale, w = index into brdfData
 };
 
-layout(binding = 29, std430) buffer BRDFShaders {
+layout(binding = 29, std430) buffer BrdfShaders {
     uint brdfShaderCount;
-    uint brdfPadding[3];
-    BRDFShaderData brdfShaders[];
+    BrdfShader brdfShaders[];
 };
 
-// BRDF data buffer - contains all BRDF data appended together
-layout(binding = 4, std430) buffer BRDFDataBuffer {
+// Separate buffer for BRDF data (all entries concatenated)
+layout(binding = 4, std430) buffer BrdfDataBuffer {
     float brdfData[];
 };
 
 Ray shadeIndirectLight(in Ray ray, in vec3 diffuseColor, inout vec3 throughput);
 Light getRandomLight();
 
-// Rotate vector around axis by angle (Rodrigues' rotation formula)
-vec3 rotateVector(vec3 v, vec3 axis, float angle) {
-    float cosAng = cos(angle);
-    float sinAng = sin(angle);
+vec3 rotate_vector(vec3 vector, vec3 axis, float angle) {
+    float cos_ang = cos(angle);
+    float sin_ang = sin(angle);
 
-    vec3 result = v * cosAng;
-    float temp = dot(axis, v) * (1.0 - cosAng);
-    result += axis * temp;
-    result += cross(axis, v) * sinAng;
+    vec3 out_vec = vector * cos_ang;
+    float temp = dot(axis, vector) * (1.0 - cos_ang);
+    out_vec += axis * temp;
+    out_vec += cross(axis, vector) * sin_ang;
 
-    return result;
+    return out_vec;
 }
 
-// Convert standard coordinates to half-vector/difference-vector coordinates
-void stdCoordsToHalfDiffCoords(
-    float thetaIn, float phiIn,
-    float thetaOut, float phiOut,
-    out float thetaHalf, out float phiHalf,
-    out float thetaDiff, out float phiDiff
-) {
+void std_coords_to_half_diff_coords(float theta_in, float phi_in, float theta_out, float phi_out,
+                                    out float theta_half, out float phi_half, out float theta_diff,
+                                    out float phi_diff) {
     // Compute in vector
-    float inVecZ = cos(thetaIn);
-    float projInVec = sin(thetaIn);
-    float inVecX = projInVec * cos(phiIn);
-    float inVecY = projInVec * sin(phiIn);
-    vec3 inVec = normalize(vec3(inVecX, inVecY, inVecZ));
+    float in_vec_z = cos(theta_in);
+    float proj_in_vec = sin(theta_in);
+    float in_vec_x = proj_in_vec * cos(phi_in);
+    float in_vec_y = proj_in_vec * sin(phi_in);
+    vec3 in_vec = normalize(vec3(in_vec_x, in_vec_y, in_vec_z));
 
     // Compute out vector
-    float outVecZ = cos(thetaOut);
-    float projOutVec = sin(thetaOut);
-    float outVecX = projOutVec * cos(phiOut);
-    float outVecY = projOutVec * sin(phiOut);
-    vec3 outVec = normalize(vec3(outVecX, outVecY, outVecZ));
+    float out_vec_z = cos(theta_out);
+    float proj_out_vec = sin(theta_out);
+    float out_vec_x = proj_out_vec * cos(phi_out);
+    float out_vec_y = proj_out_vec * sin(phi_out);
+    vec3 out_vec = normalize(vec3(out_vec_x, out_vec_y, out_vec_z));
 
     // Compute halfway vector
-    vec3 halfVec = normalize((inVec + outVec) * 0.5);
+    float half_x = (in_vec_x + out_vec_x) / 2.0;
+    float half_y = (in_vec_y + out_vec_y) / 2.0;
+    float half_z = (in_vec_z + out_vec_z) / 2.0;
+    vec3 half_vec = normalize(vec3(half_x, half_y, half_z));
 
     // Compute theta_half, phi_half
-    thetaHalf = acos(clamp(halfVec.z, -1.0, 1.0));
-    phiHalf = atan(halfVec.y, halfVec.x);
+    theta_half = acos(half_vec.z);
+    phi_half = atan(half_vec.y, half_vec.x);
 
-    // Compute diff vector by rotating in vector
-    vec3 biNormal = vec3(0.0, 1.0, 0.0);
+    // Compute diff vector
+    vec3 bi_normal = vec3(0.0, 1.0, 0.0);
     vec3 normal = vec3(0.0, 0.0, 1.0);
 
-    vec3 temp = rotateVector(inVec, normal, -phiHalf);
-    vec3 diff = rotateVector(temp, biNormal, -thetaHalf);
+    vec3 temp = rotate_vector(in_vec, normal, -phi_half);
+    vec3 diff = rotate_vector(temp, bi_normal, -theta_half);
 
     // Compute theta_diff, phi_diff
-    thetaDiff = acos(clamp(diff.z, -1.0, 1.0));
-    phiDiff = atan(diff.y, diff.x);
+    theta_diff = acos(diff.z);
+    phi_diff = atan(diff.y, diff.x);
 }
 
-// Non-linear theta_half index lookup
-// In: [0 .. pi/2], Out: [0 .. 89]
-int thetaHalfIndex(float thetaHalf) {
-    if (thetaHalf <= 0.0) return 0;
-
-    float thetaHalfDeg = (thetaHalf / (PI * 0.5)) * float(BRDF_SAMPLING_RES_THETA_H);
-    float temp = thetaHalfDeg * float(BRDF_SAMPLING_RES_THETA_H);
+int theta_half_index(float theta_half) {
+    if (theta_half <= 0.0)
+        return 0;
+    float theta_half_deg = ((theta_half / (PI / 2.0)) * BRDF_SAMPLING_RES_THETA_H);
+    float temp = theta_half_deg * BRDF_SAMPLING_RES_THETA_H;
     temp = sqrt(temp);
-    int retVal = int(temp);
+    int ret_val = int(temp);
+    if (ret_val < 0)
+        ret_val = 0;
+    if (ret_val >= BRDF_SAMPLING_RES_THETA_H)
+        ret_val = BRDF_SAMPLING_RES_THETA_H - 1;
 
-    if (retVal < 0) retVal = 0;
-    if (retVal >= BRDF_SAMPLING_RES_THETA_H) retVal = BRDF_SAMPLING_RES_THETA_H - 1;
-
-    return retVal;
+    return ret_val;
 }
 
-// Linear theta_diff index lookup
-// In: [0 .. pi/2], Out: [0 .. 89]
-int thetaDiffIndex(float thetaDiff) {
-    int tmp = int(thetaDiff / (PI * 0.5) * float(BRDF_SAMPLING_RES_THETA_D));
-    if (tmp < 0) return 0;
-    if (tmp < BRDF_SAMPLING_RES_THETA_D - 1) return tmp;
-    return BRDF_SAMPLING_RES_THETA_D - 1;
+int theta_diff_index(float theta_diff) {
+    int tmp = int(theta_diff / (PI * 0.5) * BRDF_SAMPLING_RES_THETA_D);
+    if (tmp < 0)
+        return 0;
+    else if (tmp < BRDF_SAMPLING_RES_THETA_D - 1)
+        return tmp;
+    else
+        return BRDF_SAMPLING_RES_THETA_D - 1;
 }
 
-// Phi_diff index lookup
-// In: [-pi .. pi], Out: [0 .. 179]
-int phiDiffIndex(float phiDiff) {
-    // Because of reciprocity, the BRDF is unchanged under phi_diff -> phi_diff + pi
-    if (phiDiff < 0.0) phiDiff += PI;
+int phi_diff_index(float phi_diff) {
+    // Because of reciprocity, the BRDF is unchanged under
+    // phi_diff -> phi_diff + M_PI
+    if (phi_diff < 0.0)
+        phi_diff += PI;
 
-    int tmp = int(phiDiff / PI * float(BRDF_SAMPLING_RES_PHI_D / 2));
-    if (tmp < 0) return 0;
-    if (tmp < BRDF_SAMPLING_RES_PHI_D / 2 - 1) return tmp;
-    return BRDF_SAMPLING_RES_PHI_D / 2 - 1;
+    // In: phi_diff in [0 .. pi]
+    // Out: tmp in [0 .. 179]
+    int tmp = int(phi_diff / PI * BRDF_SAMPLING_RES_PHI_D / 2);
+    if (tmp < 0)
+        return 0;
+    else if (tmp < BRDF_SAMPLING_RES_PHI_D / 2 - 1)
+        return tmp;
+    else
+        return BRDF_SAMPLING_RES_PHI_D / 2 - 1;
 }
 
-// Lookup BRDF values given incoming/outgoing angles and data offset
-vec3 lookupBRDF(float thetaIn, float phiIn, float thetaOut, float phiOut, int baseOffset) {
-    // Convert to half-angle / difference-angle coordinates
-    float thetaHalf, phiHalf, thetaDiff, phiDiff;
-    stdCoordsToHalfDiffCoords(thetaIn, phiIn, thetaOut, phiOut,
-                              thetaHalf, phiHalf, thetaDiff, phiDiff);
+vec3 lookup_brdf_values(float theta_in, float phi_in, float theta_out, float phi_out, int baseOffset) {
+    // Convert to halfangle / difference angle coordinates
+    float theta_half, phi_half, theta_diff, phi_diff;
+    std_coords_to_half_diff_coords(theta_in, phi_in, theta_out, phi_out, theta_half, phi_half, theta_diff, phi_diff);
 
-    // Find index (phi_half is ignored since isotropic BRDFs are assumed)
-    int ind = phiDiffIndex(phiDiff)
-            + thetaDiffIndex(thetaDiff) * (BRDF_SAMPLING_RES_PHI_D / 2)
-            + thetaHalfIndex(thetaHalf) * (BRDF_SAMPLING_RES_PHI_D / 2) * BRDF_SAMPLING_RES_THETA_D;
-
-    // Channel offsets in the data array
-    int channelOffset = BRDF_SAMPLING_RES_THETA_H * BRDF_SAMPLING_RES_THETA_D * (BRDF_SAMPLING_RES_PHI_D / 2);
+    // Find index.
+    // Note that phi_half is ignored, since isotropic BRDFs are assumed
+    int ind = phi_diff_index(phi_diff) + theta_diff_index(theta_diff) * BRDF_SAMPLING_RES_PHI_D / 2 +
+              theta_half_index(theta_half) * BRDF_SAMPLING_RES_PHI_D / 2 * BRDF_SAMPLING_RES_THETA_D;
 
     vec3 color;
-    color.r = brdfData[baseOffset + ind] * float(RED_SCALE);
-    color.g = brdfData[baseOffset + ind + channelOffset] * float(GREEN_SCALE);
-    color.b = brdfData[baseOffset + ind + 2 * channelOffset] * float(BLUE_SCALE);
+    color.r = brdfData[baseOffset + ind] * RED_SCALE;
+    color.g = brdfData[baseOffset + ind + BRDF_SAMPLING_RES_THETA_H * BRDF_SAMPLING_RES_THETA_D * BRDF_SAMPLING_RES_PHI_D / 2] * GREEN_SCALE;
+    color.b = brdfData[baseOffset + ind + BRDF_SAMPLING_RES_THETA_H * BRDF_SAMPLING_RES_THETA_D * BRDF_SAMPLING_RES_PHI_D] * BLUE_SCALE;
 
-    return max(color, vec3(0.0));
+    return color;
 }
 
 vec3 shadeBRDFShaderGI(inout Ray ray, inout vec3 throughput) {
-    const BRDFShaderData shader = brdfShaders[ray.primitive.shaderIndex];
-    int baseOffset = int(shader.dataOffset.x);
-    vec3 scale = shader.scale.xyz;
+    BrdfShader shader = brdfShaders[ray.primitive.shaderIndex];
+    vec3 scale = shader.scaleIndex.xyz;
+    int index = int(shader.scaleIndex.w);
 
     // Calculate theta_in (angle between view direction and normal)
-    float thetaIn = acos(dot(-ray.normal, ray.direction));
-    float phiIn = 0;
+    float theta_in = acos(dot(-ray.normal, ray.direction));
+    float phi_in = 0;
 
     // Derive local coordinate system
     vec3 x = cross(-ray.direction, ray.normal);
@@ -156,7 +153,7 @@ vec3 shadeBRDFShaderGI(inout Ray ray, inout vec3 throughput) {
 
     vec3 illuminationColor = vec3(0);
     Illumination illum = illuminate(ray, getRandomLight());
-    
+
     // Diffuse term
     float cosine = dot(-illum.direction, ray.normal);
     if (cosine > 0) {
@@ -164,15 +161,15 @@ vec3 shadeBRDFShaderGI(inout Ray ray, inout vec3 throughput) {
 
         // Avoid numeric instability
         if (cosine < 1) {
-            float thetaOut = acos(cosine);
+            float theta_out = acos(cosine);
 
             // Project outgoing vector into local coordinate system
             vec3 c = cross(-illum.direction, ray.normal);
-            float phiOut = 2 * atan(dot(c, y), dot(c, x));
+            float phi_out = 2 * atan(dot(c, y), dot(c, x));
 
-            color = lookupBRDF(thetaIn, phiIn, thetaOut, phiOut, baseOffset);
+            color = lookup_brdf_values(theta_in, phi_in, theta_out, phi_out, index);
         } else {
-            color = lookupBRDF(thetaIn, phiIn, 0, 0, baseOffset);
+            color = lookup_brdf_values(theta_in, phi_in, 0, 0, index);
         }
 
         // Calculate colors
@@ -188,14 +185,14 @@ vec3 shadeBRDFShaderGI(inout Ray ray, inout vec3 throughput) {
 }
 
 vec3 shadeBRDFShader(inout Ray ray, inout vec3 throughput) {
-    const BRDFShaderData shader = brdfShaders[ray.primitive.shaderIndex];
-    int baseOffset = int(shader.dataOffset.x);
-    vec3 scale = shader.scale.xyz;
+    BrdfShader shader = brdfShaders[ray.primitive.shaderIndex];
+    vec3 scale = shader.scaleIndex.xyz;
+    int index = int(shader.scaleIndex.w);
     ray.remainingBounces = 0;
 
     // Calculate theta_in (angle between view direction and normal)
-    float thetaIn = acos(dot(-ray.normal, ray.direction));
-    float phiIn = 0;
+    float theta_in = acos(dot(-ray.normal, ray.direction));
+    float phi_in = 0;
 
     // Derive local coordinate system
     vec3 x = cross(-ray.direction, ray.normal);
@@ -205,7 +202,7 @@ vec3 shadeBRDFShader(inout Ray ray, inout vec3 throughput) {
     // Accumulate the light over all light sources
     for (int i = 0; i < lightCount; i++) {
         Illumination illum = illuminate(ray, lights[i]);
-        
+
         // Diffuse term
         float cosine = dot(-illum.direction, ray.normal);
         if (cosine > 0) {
@@ -213,15 +210,15 @@ vec3 shadeBRDFShader(inout Ray ray, inout vec3 throughput) {
 
             // Avoid numeric instability
             if (cosine < 1) {
-                float thetaOut = acos(cosine);
+                float theta_out = acos(cosine);
 
                 // Project outgoing vector into local coordinate system
                 vec3 c = cross(-illum.direction, ray.normal);
-                float phiOut = 2 * atan(dot(c, y), dot(c, x));
+                float phi_out = 2 * atan(dot(c, y), dot(c, x));
 
-                color = lookupBRDF(thetaIn, phiIn, thetaOut, phiOut, baseOffset);
+                color = lookup_brdf_values(theta_in, phi_in, theta_out, phi_out, index);
             } else {
-                color = lookupBRDF(thetaIn, phiIn, 0, 0, baseOffset);
+                color = lookup_brdf_values(theta_in, phi_in, 0, 0, index);
             }
 
             // Calculate colors
