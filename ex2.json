@@ -6,7 +6,8 @@
             "up": [0.0, 1.0, 0.0],
             "fov": 70.0
         },
-        "gi": false
+        "gi": false,
+        "env_map": "data/lion_env.png"
     },
     "shaders": [
         {

@@ -5,6 +5,7 @@ bool intersect(inout Ray ray, in Primitive primitive);
 bool isTransparent(in Ray ray);
 vec3 shade(inout Ray ray, inout vec3 throughput);
 vec3 shadeGI(inout Ray ray, inout vec3 throughput);
+vec4 sampleTex(int ID, vec2 uv);
 
 // Forward declarations for KD-tree functions (defined in KDTree.glsl)
 bool intersectKDTree(inout Ray ray);
@@ -42,12 +43,20 @@ vec3 traceRay(inout Ray ray) {
     vec3 throughput = vec3(1);
 
     while (ray.remainingBounces > 0) {
-        if (!intersectScene(ray)) {
+        if (intersectScene(ray)) {
+            // If the ray has hit an object, call the shader ...
+            vec3 currentThroughput = throughput;
+            vec3 emission = (u_EnableGI > 0) ? shadeGI(ray, throughput) : shade(ray, throughput);
+            radiance += currentThroughput * emission;
+        } else if (u_EnvMapTexture != 0xFFFFFFFF) {
+            // ... otherwise look up the environment map ...
+            const float phi = acos(ray.direction.y);
+            const float rho = 2 * atan(ray.direction.z, ray.direction.x) + float(PI);
+            return sampleTex(int(u_EnvMapTexture), vec2(rho / (2.0f * float(PI)), phi / float(PI))).xyz;
+        } else {
+            // ... if all else fails, just return the background color
             return radiance + throughput * getSkyColor(ray.direction);
         }
-        vec3 currentThroughput = throughput;
-        vec3 emission = (u_EnableGI > 0) ? shadeGI(ray, throughput) : shade(ray, throughput);
-        radiance += currentThroughput * emission;
     }
     return radiance;
 }

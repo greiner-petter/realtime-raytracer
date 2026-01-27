@@ -6,6 +6,7 @@
 #include "shaders/Shader.h"
 #include "lights/Light.h"
 #include "vulkan/Buffer.h"
+#include "vulkan/Texture.h"
 #include "scene/KDTree.h"
 #include <cstring>
 
@@ -17,6 +18,8 @@ struct alignas(16) UBO {
     float u_Seed = 0.0f;
     uint32_t u_Raybounces = 4;
     uint32_t u_EnableGI = 0;
+    TextureID u_environmentMapIndex = 0xFFFFFFFF;
+    uint32_t _padding[3];
     glm::vec4 u_CameraPosition = glm::vec4(0.0f, 0.0f, 0.0f, 0.0f);
     glm::vec4 u_CameraForward = glm::vec4(0.0f, 0.0f, -1.0f, 0.0f);
     glm::vec4 u_CameraRight = glm::vec4(1.0f, 0.0f, 0.0f, 0.0f);

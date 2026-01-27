@@ -4,6 +4,7 @@
 #include "common/Params.h"
 #include "scene/Camera.h"
 
+#include "vulkan/Texture.h"
 #include "primitives/Sphere.h"
 #include "primitives/Triangle.h"
 #include "primitives/InfinitePlane.h"
@@ -61,6 +62,9 @@ bool LoadSettings(class Scene& scene, const json& settings) {
         if (settings["camera"].contains("fov")) SetCameraFOV(GetJsonFloat(settings["camera"]["fov"]));
     } 
     if (settings.contains("gi")) Params::s_EnableGI = settings["gi"].get<bool>();
+    if (settings.contains("env_map")) {
+        uniformBufferData.u_environmentMapIndex = (new Texture(settings["env_map"]))->GetId();
+    }
 
     return true;
 }
