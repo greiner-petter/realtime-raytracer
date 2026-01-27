@@ -25,20 +25,12 @@ void SetCameraOrientation(const Vec3& forward, const Vec3& up) {
 
 void SetCameraForward(const Vec3& forward) {
     cameraForward = glm::normalize(forward);
-    Vec3 right = glm::normalize(glm::cross(cameraUp, cameraForward));
-
-    uniformBufferData.u_CameraForward = Vec4(cameraForward, 0.0f);
-    uniformBufferData.u_CameraRight = Vec4(right, 0.0f);
-    uniformBufferData.u_CameraUp = Vec4(cameraUp, 0.0f);
+    SetCameraOrientation(cameraForward, cameraUp);
 }
 
 void SetCameraUp(const Vec3& up) {
     cameraUp = glm::normalize(up);
-    Vec3 right = glm::normalize(glm::cross(cameraUp, cameraForward));
-
-    uniformBufferData.u_CameraForward = Vec4(cameraForward, 0.0f);
-    uniformBufferData.u_CameraRight = Vec4(right, 0.0f);
-    uniformBufferData.u_CameraUp = Vec4(cameraUp, 0.0f);
+    SetCameraOrientation(cameraForward, cameraUp);
 }
 
 void SetCameraPosition(const Vec3& position) {
