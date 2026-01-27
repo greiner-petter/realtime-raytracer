@@ -8,41 +8,37 @@
 extern UBO uniformBufferData;
 
 // Store camera orientation as basis vectors instead of Euler angles
-Vec3 cameraForward = Vec3(0.0f, 0.0f, 1.0f);
+Vec3 cameraForward = VecUtils::Forward;
 Vec3 cameraUp = VecUtils::Up;
 
 void SetCameraOrientation(const Vec3& forward, const Vec3& up) {
-    Vec3 right = glm::normalize(glm::cross(up, forward));
+    Vec3 right = glm::cross(glm::normalize(up), glm::normalize(forward));
 
-    uniformBufferData.u_CameraForward = Vec4(forward, 0.0f);
-    uniformBufferData.u_CameraRight = Vec4(right, 0.0f);
-    uniformBufferData.u_CameraUp = Vec4(up, 0.0f);
+    uniformBufferData.u_CameraForward = Vec4(glm::normalize(forward), 0.0f);
+    uniformBufferData.u_CameraRight = Vec4(glm::normalize(right), 0.0f);
+    uniformBufferData.u_CameraUp = Vec4(glm::normalize(up), 0.0f);
 
     // Update stored orientation
-    cameraForward = forward;
-    cameraUp = up;
+    cameraForward = glm::normalize(forward);
+    cameraUp = glm::normalize(up);
 }
 
 void SetCameraForward(const Vec3& forward) {
-    Vec3 right = glm::normalize(glm::cross(cameraUp, forward));
-
-    uniformBufferData.u_CameraForward = Vec4(forward, 0.0f);
-    uniformBufferData.u_CameraRight = Vec4(right, 0.0f);
-    uniformBufferData.u_CameraUp = Vec4(cameraUp, 0.0f);
-
-    // Update stored orientation
-    cameraForward = forward;
-}
-
-void SetCameraUp(const Vec3& up) {
-    Vec3 right = glm::normalize(glm::cross(up, cameraForward));
+    cameraForward = glm::normalize(forward);
+    Vec3 right = glm::normalize(glm::cross(cameraUp, cameraForward));
 
     uniformBufferData.u_CameraForward = Vec4(cameraForward, 0.0f);
     uniformBufferData.u_CameraRight = Vec4(right, 0.0f);
-    uniformBufferData.u_CameraUp = Vec4(up, 0.0f);
+    uniformBufferData.u_CameraUp = Vec4(cameraUp, 0.0f);
+}
 
-    // Update stored orientation
-    cameraUp = up;
+void SetCameraUp(const Vec3& up) {
+    cameraUp = glm::normalize(up);
+    Vec3 right = glm::normalize(glm::cross(cameraUp, cameraForward));
+
+    uniformBufferData.u_CameraForward = Vec4(cameraForward, 0.0f);
+    uniformBufferData.u_CameraRight = Vec4(right, 0.0f);
+    uniformBufferData.u_CameraUp = Vec4(cameraUp, 0.0f);
 }
 
 void SetCameraPosition(const Vec3& position) {
