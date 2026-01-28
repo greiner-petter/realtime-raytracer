@@ -12,6 +12,8 @@ layout(binding = 33, std430) buffer SpotLights {
     SpotLight spotLights[];
 };
 
+vec3 traceTransmission(Ray shadowRay);
+
 Illumination illuminateSpotLight(inout Ray ray, in SpotLight spotLight) {
     const vec3 target = ray.origin + (ray.rayLength - LGT_EPS) * ray.direction;
 
@@ -31,13 +33,12 @@ Illumination illuminateSpotLight(inout Ray ray, in SpotLight spotLight) {
     // If the target is within the cone...
     if (spotLight.alphaMin_Max.y > alpha) {
         // ... and not in shadow ...
-        if (!occludeScene(lightRay)) {
-            // ... compute the attenuation and light color ...
-            illum.color = 1.0f / (dist * dist) * spotLight.color_intensity.xyz * spotLight.color_intensity.w;
-            // ... then compute the falloff towards the edge of the cone
-            if (spotLight.alphaMin_Max.x < alpha)
-                illum.color *= 1.0f - (alpha - spotLight.alphaMin_Max.x) / (spotLight.alphaMin_Max.y - spotLight.alphaMin_Max.x);
-        }
+        vec3 transmission = traceTransmission(lightRay);
+        // ... compute the attenuation and light color ...
+        illum.color = transmission * (1.0f / (dist * dist)) * spotLight.color_intensity.xyz * spotLight.color_intensity.w;
+        // ... then compute the falloff towards the edge of the cone
+        if (spotLight.alphaMin_Max.x < alpha)
+            illum.color *= 1.0f - (alpha - spotLight.alphaMin_Max.x) / (spotLight.alphaMin_Max.y - spotLight.alphaMin_Max.x);
     }
     return illum;
 }

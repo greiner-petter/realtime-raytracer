@@ -38,14 +38,17 @@
             "type": "refraction",
             "name": "glass",
             "indexInside": 0.92,
-            "indexOutside": 0.84
+            "indexOutside": 0.84,
+            "color": [1.0, 0.2, 0.2],
+            "absorption": 0.5
         }
     ],
     "lights": [
         {
             "type": "point",
             "position": [0.0, 4.0, 0.0],
-            "intensity": 10.0
+            "intensity": 10.0,
+            "radius": 1
         }
     ],
     "primitives": [
@@ -100,8 +103,14 @@
         {
             "type": "box",
             "shader": "glass",
-            "center": [-0.5, -4.0, -2.0],
+            "center": [-0.5, -3.99, -2.0],
             "size": [2.0, 2.0, 2.0]
+        },
+        {
+            "type": "sphere",
+            "shader": "glass",
+            "center": [-0.5, -3.99, 2.0],
+            "radius": 1
         }
     ]
 }

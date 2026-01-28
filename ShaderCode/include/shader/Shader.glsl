@@ -18,10 +18,23 @@ layout(binding = 20, std430) buffer Shaders {
     Shader shaders[];
 };
 
-bool isTransparent(in Ray ray) {
-    if (ray.primitive.shaderType == 2) return true;
-    if (ray.primitive.shaderType == 9) return true;
-    return false; 
+vec3 getGlassTransmission(in Ray ray) {
+    if (ray.primitive.shaderType == 2) {
+        // RefractionShader
+        const RefractionShader shader = refractionShaders[ray.primitive.shaderIndex];
+        const vec3 glassColor = shader.color_absorption.xyz;
+        const float absorptionCoeff = shader.color_absorption.w;
+
+        // Apply Beer's law based on distance through glass
+        vec3 absorption = (vec3(1) - glassColor) * absorptionCoeff * ray.rayLength;
+        return glassColor * exp(-absorption);
+    } else if (ray.primitive.shaderType == 9) {
+        // TODO MaterialShader alpha level
+        return vec3(1);
+    } else {
+        // Opaque
+        return vec3(0);
+    }
 }
 
 float rand();
@@ -45,7 +58,7 @@ Ray shadeIndirectLight(in Ray ray, in vec3 diffuseColor, inout vec3 throughput) 
 
     const vec3 sampleWorld = normalize(sampleLocal.x * bitangent + sampleLocal.y * normal + sampleLocal.z * tangent);
 
-    const vec3 hitpoint = ray.origin + (ray.rayLength - EPSILON) * ray.direction;
+    const vec3 hitpoint = ray.origin + (ray.rayLength - LGT_EPS) * ray.direction;
     Ray indirectRay = createRay(hitpoint, sampleWorld, ray.remainingBounces - 1);
 
     float cosTheta = max(dot(normal, sampleWorld), 0.0);

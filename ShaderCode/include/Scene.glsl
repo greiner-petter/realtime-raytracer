@@ -2,14 +2,14 @@
 #include "light/Light.h.glsl"
 
 bool intersect(inout Ray ray, in Primitive primitive);
-bool isTransparent(in Ray ray);
+vec3 getGlassTransmission(in Ray ray);
 vec3 shade(inout Ray ray, inout vec3 throughput);
 vec3 shadeGI(inout Ray ray, inout vec3 throughput);
 vec4 sampleTex(int ID, vec2 uv);
 
 // Forward declarations for KD-tree functions (defined in KDTree.glsl)
 bool intersectKDTree(inout Ray ray);
-bool occludeKDTree(inout Ray ray);
+vec3 traceTransmissionKDTree(Ray ray);
 
 bool intersectScene(inout Ray ray) {
     // return intersectKDTree(ray);
@@ -21,13 +21,44 @@ bool intersectScene(inout Ray ray) {
     return didHit;
 }
 
-bool occludeScene(inout Ray ray) {
-    // return occludeKDTree(ray);
-    for (int i = 0; i < primitiveCount; ++i) {
-        if (intersect(ray, primitives[i]) && !isTransparent(ray))
-            return true;
+vec3 traceTransmission(Ray shadowRay) {
+    // vec3 traceTransmissionKDTree(Ray ray);
+    vec3 transmission = vec3(1);
+    const vec3 startOrigin = shadowRay.origin;
+    const float maxDist = shadowRay.rayLength;
+
+    for (int bounce = 0; bounce < int(u_RayBounces); bounce++) {
+        bool didHit = false;
+        for (int i = 0; i < primitiveCount; ++i) {
+            if (intersect(shadowRay, primitives[i])) {
+                didHit = true;
+            }
+        }
+
+        if (!didHit) {
+            // Ray reached the light without further obstruction
+            break;
+        }
+
+        // Get transmission (returns vec3(0) for opaque, positive for glass)
+        vec3 glassTransmission = getGlassTransmission(shadowRay);
+        if (glassTransmission == vec3(0)) {
+            // Hit opaque object - fully blocked
+            return vec3(0);
+        }
+        transmission *= glassTransmission;
+
+        // Continue ray from the other side of the glass
+        shadowRay.origin = shadowRay.origin + (shadowRay.rayLength + REFR_EPS * 2) * shadowRay.direction;
+        shadowRay.rayLength = maxDist - length(shadowRay.origin - startOrigin);
+
+        // Early exit if transmission is too low or we've traveled past the light
+        if (shadowRay.rayLength <= 0 || max(transmission.r, max(transmission.g, transmission.b)) < 0.001) {
+            break;
+        }
     }
-    return false;
+
+    return transmission;
 }
 
 vec3 getSkyColor(vec3 direction) {

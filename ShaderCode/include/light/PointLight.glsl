@@ -11,7 +11,7 @@ layout(binding = 31, std430) buffer PointLights {
 };
 
 float rand();
-bool occludeScene(inout Ray ray);
+vec3 traceTransmission(Ray shadowRay);
 
 vec3 getPointLightPosition(vec4 position_radius) {
     vec3 randomDir = normalize(vec3(rand() - 0.5, rand() - 0.5, rand() - 0.5));
@@ -34,9 +34,9 @@ Illumination illuminatePointLight(inout Ray ray, in PointLight pointLight) {
     lightRay.rayLength = dist - LGT_EPS;
 
     // If the target is not in shadow...
-    if (!occludeScene(lightRay)){
-        // ... compute the attenuation and light color
-        illum.color = 1.0f / (dist * dist) * pointLight.color_intensity.xyz * pointLight.color_intensity.w;
-    }
+    vec3 transmission = traceTransmission(lightRay);
+    // ... compute the attenuation and light color
+    illum.color = transmission * (1.0f / (dist * dist)) * pointLight.color_intensity.xyz * pointLight.color_intensity.w;
+    
     return illum;
 }

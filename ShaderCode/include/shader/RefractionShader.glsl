@@ -1,5 +1,6 @@
 struct RefractionShader {
-    vec4 indexInside_Outside;
+    vec4 indexInside_Outside;  // x=indexInside, y=indexOutside
+    vec4 color_absorption;     // xyz=tint color, w=absorption coefficient
 };
 
 layout(binding = 22, std430) buffer RefractionShaders {
@@ -11,6 +12,8 @@ vec3 shadeRefractionShader(inout Ray ray, inout vec3 throughput) {
     const RefractionShader shader = refractionShaders[ray.primitive.shaderIndex];
     const float indexInside = shader.indexInside_Outside.x;
     const float indexOutside = shader.indexInside_Outside.y;
+    const vec3 glassColor = shader.color_absorption.xyz;
+    const float absorptionCoeff = shader.color_absorption.w;
 
     // Get the normal of the primitive which was hit
     vec3 normalVector = ray.normal;
@@ -22,6 +25,11 @@ vec3 shadeRefractionShader(inout Ray ray, inout vec3 throughput) {
     if (dot(normalVector, ray.direction) > 0) {
         normalVector = -normalVector;
         refractiveIndex = indexInside / indexOutside;
+
+        // Apply Beer's law absorption when exiting the material
+        // The color channels absorb at different rates based on (1 - color)
+        vec3 absorption = (vec3(1.0) - glassColor) * absorptionCoeff * ray.rayLength;
+        throughput *= exp(-absorption);
     }
 
     // Use built-in refract function (returns zero vector on total internal reflection)
