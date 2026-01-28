@@ -1,5 +1,5 @@
 // ---------- Constants ----------
-const float EPSILON = 1e-4;
+const float EPSILON = 1e-6;
 const float SPLT_EPS = 4 * EPSILON;
 const float LGT_EPS = 5e-5;
 const float REFR_EPS = 1e-4;
