@@ -1,5 +1,5 @@
 struct MirrorShader {
-    vec4 throughput;
+    vec4 through;
 };
 
 layout(binding = 23, std430) buffer MirrorShaders {
@@ -9,14 +9,14 @@ layout(binding = 23, std430) buffer MirrorShaders {
 
 vec3 shadeMirrorShader(inout Ray ray, inout vec3 throughput) {
     const MirrorShader shader = mirrorShaders[ray.primitive.shaderIndex];
-    const vec3 thrpt = shader.throughput.xyz;
-    const vec3 reflectionOrigin = ray.origin + (ray.rayLength - REFR_EPS) * ray.direction;
-    const vec3 reflectionDirection = reflect(ray.direction, ray.normal);
+    const vec3 through = shader.through.xyz;
+
+    const vec3 origin = ray.origin + (ray.rayLength - REFR_EPS) * ray.direction;
+    const vec3 direction = reflect(ray.direction, ray.normal);
 
     // Create a new reflection ray
-    Ray reflectionRay = createRay(reflectionOrigin, reflectionDirection, ray.remainingBounces - 1);
+    ray = createRay(origin, direction, ray.remainingBounces - 1);
 
-    ray = reflectionRay;
-    throughput *= thrpt;
+    throughput *= through;
     return vec3(0);
 }
