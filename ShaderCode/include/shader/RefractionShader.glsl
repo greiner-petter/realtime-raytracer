@@ -24,27 +24,20 @@ vec3 shadeRefractionShader(inout Ray ray, inout vec3 throughput) {
         refractiveIndex = indexInside / indexOutside;
     }
 
-    // Using the notation from the lecture
-    float cosineTheta = dot(normalVector, -ray.direction);
-    float cosinePhi = sqrt(1 + refractiveIndex * refractiveIndex * (cosineTheta * cosineTheta - 1)); // NaN if radicant is < 0
-    // Calculate t, the new ray direction
-    vec3 t = refractiveIndex * ray.direction + (refractiveIndex * cosineTheta - cosinePhi) * normalVector;
+    // Use built-in refract function (returns zero vector on total internal reflection)
+    const vec3 refraction = refract(ray.direction, normalVector, refractiveIndex);
 
     // Create the refraction ray
     vec3 origin = vec3(0);
-    vec3 direction = vec3(1);  
+    vec3 direction = vec3(1);
 
-    // Check whether it is a refraction. NaN enters the else branch.
-    if (dot(t, normalVector) <= 0.0) {
+    // Check whether it is a refraction (refract returns zero on TIR)
+    if (refraction != vec3(0)) {
         origin = ray.origin + (ray.rayLength + REFR_EPS) * ray.direction;
-        direction = normalize(t);
-    } else { // Otherwise, it is a total reflection.
+        direction = refraction;
+    } else {
         origin = ray.origin + (ray.rayLength - REFR_EPS) * ray.direction;
-        // Next we get the reflection vector
-        const vec3 reflectionVector = reflect(ray.direction, normalVector);
-
-        // Change the ray direction and origin
-        direction = normalize(reflectionVector);
+        direction = reflect(ray.direction, normalVector);
         ray.remainingBounces--;
     }
 
