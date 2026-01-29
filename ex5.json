@@ -1,0 +1,65 @@
+{
+    "settings": {
+        "camera": {
+            "position": [0.0, -2.5, 10.0],
+            "forward": [0.0, 0.6, -1.0],
+            "up": [0.0, 1.0, 0.0],
+            "fov": 90.0
+        },
+        "gi": false,
+        "env_map": "data/space.png"
+    },
+    "shaders": [
+        {
+            "type": "cooktorrance",
+            "name": "redCook",
+            "diffuseColor": [1.0, 0.0, 0.0],
+            "ctColor": [1.0, 1.0, 1.0],
+            "IOR": 1.0,
+            "roughness": 0.3
+        },
+        {
+            "type": "cooktorrance",
+            "name": "goldCook",
+            "diffuseColor": [0.83, 0.69, 0.22],
+            "ctColor": [1.0, 1.0, 0.0],
+            "IOR": 1.2,
+            "roughness": 0.2
+        }
+    ],
+    "lights": [
+        {
+            "type": "ambient",
+            "intensity": 0.1
+        },
+        {
+            "type": "point",
+            "position": [-0.25, 20.0, -3.0],
+            "intensity": 60.0
+        },
+        {
+            "type": "spot",
+            "position": [-0.25, 7.0, -4.0],
+            "direction": [0.0, -1.0, 0.0],
+            "alphaMin": 10.0,
+            "alphaMax": 30.0,
+            "intensity": 25.0
+        }
+    ],
+    "primitives": [
+        {
+            "type": "mesh",
+            "shader": "goldCook",
+            "filename": "data/teapot_stadium.obj",
+            "scale": [40.0, 40.0, 40.0],
+            "translation": [-0.25, -0.5, -2.5]
+        },
+        {
+            "type": "mesh",
+            "shader": "redCook",
+            "filename": "data/stadium.obj",
+            "scale": [70.0, 70.0, 70.0],
+            "translation": [-0.5, -1.0, -3.0]
+        }
+    ]
+}

@@ -1,0 +1,141 @@
+{
+    "settings": {
+        "camera": {
+            "position": [0.0, 0.0, -10.0],
+            "forward": [0.0, 0.0, 1.0],
+            "up": [0.0, 1.0, 0.0],
+            "fov": 90.0
+        },
+        "gi": false
+    },
+    "shaders": [
+        {
+            "type": "mirror",
+            "name": "mirror",
+            "throughput": [1.0, 1.0, 1.0]
+        },
+        {
+            "type": "lambert",
+            "name": "white",
+            "diffuseColor": [0.9, 0.9, 0.9]
+        },
+        {
+            "type": "lambert",
+            "name": "red",
+            "diffuseColor": [1.0, 0.3, 0.2]
+        },
+        {
+            "type": "lambert",
+            "name": "blue",
+            "diffuseColor": [0.2, 0.3, 1.0]
+        },
+        {
+            "type": "phong",
+            "name": "orange",
+            "diffuseColor": [1.0, 0.64, 0.0],
+            "diffuseCoefficient": 1.0,
+            "specularColor": [1.0, 1.0, 1.0],
+            "specularCoefficient": 1.0,
+            "shininessExponent": 25.0
+        },
+        {
+            "type": "cooktorrance",
+            "name": "gold",
+            "diffuseColor": [0.83, 0.69, 0.22],
+            "ctColor": [1.0, 1.0, 0.0],
+            "IOR": 1.2,
+            "roughness": 0.2
+        },
+        {
+            "type": "brdf",
+            "name": "blueMetallic",
+            "filename": "data/blue-metallic-paint.binary",
+            "colorScale": [7.0, 7.0, 7.0]
+        },
+        {
+            "type": "brdf",
+            "name": "darkRed",
+            "filename": "data/dark-red-paint.binary",
+            "colorScale": [7.0, 7.0, 7.0]
+        }
+    ],
+    "lights": [
+        {
+            "type": "ambient",
+            "intensity": 0.15
+        },
+        {
+            "type": "point",
+            "position": [0.0, 4.0, -4.0],
+            "intensity": 15.0
+        },
+        {
+            "type": "point",
+            "position": [0.0, 4.0, 4.0],
+            "intensity": 15.0
+        }
+    ],
+    "primitives": [
+        {
+            "type": "plane",
+            "shader": "mirror",
+            "origin": [0.0, 0.0, 5.0],
+            "normal": [0.0, 0.0, -1.0]
+        },
+        {
+            "type": "plane",
+            "shader": "mirror",
+            "origin": [0.0, 0.0, -5.0],
+            "normal": [0.0, 0.0, 1.0]
+        },
+        {
+            "type": "plane",
+            "shader": "white",
+            "origin": [0.0, 5.0, 0.0],
+            "normal": [0.0, -1.0, 0.0]
+        },
+        {
+            "type": "plane",
+            "shader": "white",
+            "origin": [0.0, -5.0, 0.0],
+            "normal": [0.0, 1.0, 0.0]
+        },
+        {
+            "type": "plane",
+            "shader": "blue",
+            "origin": [5.0, 0.0, 0.0],
+            "normal": [-1.0, 0.0, 0.0]
+        },
+        {
+            "type": "plane",
+            "shader": "red",
+            "origin": [-5.0, 0.0, 0.0],
+            "normal": [1.0, 0.0, 0.0]
+        },
+        {
+            "type": "sphere",
+            "shader": "blueMetallic",
+            "center": [-3.0, 0.0, 0.0],
+            "radius": 1.0
+        },
+        {
+            "type": "sphere",
+            "shader": "orange",
+            "center": [0.0, 2.0, 0.0],
+            "radius": 1.0
+        },
+        {
+            "type": "sphere",
+            "shader": "darkRed",
+            "center": [3.0, 0.0, 0.0],
+            "radius": 1.0
+        },
+        {
+            "type": "mesh",
+            "shader": "gold",
+            "filename": "data/teapot.obj",
+            "scale": [3.0, 3.0, 3.0],
+            "translation": [0.0, -5.0, 0.0]
+        }
+    ]
+}
