@@ -5,7 +5,9 @@
 #include <vector>
 #include "common/Types.h"
 
-using TextureID = uint32_t;
+using TextureID = int32_t;
+
+static constexpr TextureID NULL_TEXTURE = -1;
 
 class Texture {
 public:

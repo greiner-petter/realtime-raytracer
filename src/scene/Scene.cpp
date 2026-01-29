@@ -35,11 +35,12 @@ void Scene::CreateGPUBuffers() {
     cookTorranceSSBO = SSBO::Create(27);
     simpleTextureSSBO = SSBO::Create(28);
     brdfSSBO = SSBO::Create(29);
+    materialSSBO = SSBO::Create(30);
 
-    lightSSBO = SSBO::Create(30);
-    pointSSBO = SSBO::Create(31);
-    ambientSSBO = SSBO::Create(32);
-    spotSSBO = SSBO::Create(33);
+    lightSSBO = SSBO::Create(40);
+    pointSSBO = SSBO::Create(41);
+    ambientSSBO = SSBO::Create(42);
+    spotSSBO = SSBO::Create(43);
 }
 
 void Scene::UploadMeshTrianglesToGPU() {
@@ -70,36 +71,26 @@ void Scene::ConvertSceneToGPUData() {
     WriteBufferForType(m_Shaders, ShaderType::PhongShader, *phongSSBO);
     WriteBufferForType(m_Shaders, ShaderType::CookTorranceShader, *cookTorranceSSBO);
     WriteBufferForType(m_Shaders, ShaderType::SimpleTextureShader, *simpleTextureSSBO);
+    WriteBufferForType(m_Shaders, ShaderType::MaterialShader, *materialSSBO);
 
     // BRDF shaders: set data offsets and upload data to separate buffer
-    printf("[BRDF] Processing BRDF shaders...\n");
     uint32_t dataOffset = 0;
     for (const auto& shader : m_Shaders) {
         if (shader->type == ShaderType::BrdfShader) {
             BrdfShader* brdfShader = static_cast<BrdfShader*>(shader.get());
-            printf("[BRDF] Found BRDF shader, data size: %zu, scale: (%.2f, %.2f, %.2f)\n",
-                   brdfShader->data.size(),
-                   brdfShader->scaleIndex.x, brdfShader->scaleIndex.y, brdfShader->scaleIndex.z);
             if (brdfShader->data.size() == BRDF_DATA_SIZE) {
                 brdfShader->scaleIndex.w = static_cast<float>(dataOffset);
-                printf("[BRDF]   -> offset: %u\n", dataOffset);
                 dataOffset += BRDF_DATA_SIZE;
             }
         }
     }
-    printf("[BRDF] Total data offset: %u\n", dataOffset);
 
-    // Upload BRDF metadata (scaleIndex) via WriteBufferForType
-    printf("[BRDF] Uploading metadata to brdfSSBO...\n");
     WriteBufferForType(m_Shaders, ShaderType::BrdfShader, *brdfSSBO);
-    printf("[BRDF] Metadata uploaded\n");
 
     // Upload BRDF data to separate buffer
     if (dataOffset > 0) {
         size_t totalDataSize = dataOffset * sizeof(float);
-        printf("[BRDF] Uploading data: %zu floats (%.2f MB)\n", (size_t)dataOffset, totalDataSize / (1024.0 * 1024.0));
         void* gpuData = brdfDataSSBO->MapData(totalDataSize);
-        printf("[BRDF] Data buffer mapped at %p\n", gpuData);
         byte* dst = static_cast<byte*>(gpuData);
 
         int brdfCount = 0;
@@ -107,18 +98,12 @@ void Scene::ConvertSceneToGPUData() {
             if (shader->type == ShaderType::BrdfShader) {
                 BrdfShader* brdfShader = static_cast<BrdfShader*>(shader.get());
                 if (brdfShader->data.size() == BRDF_DATA_SIZE) {
-                    printf("[BRDF] Copying BRDF %d data...\n", brdfCount++);
                     std::memcpy(dst, brdfShader->data.data(), BRDF_DATA_SIZE * sizeof(float));
                     dst += BRDF_DATA_SIZE * sizeof(float);
                 }
             }
         }
-
-        printf("[BRDF] Unmapping data buffer...\n");
         brdfDataSSBO->UnmapData();
-        printf("[BRDF] Data upload complete\n");
-    } else {
-        printf("[BRDF] No BRDF data to upload\n");
     }
 
     WriteBufferForType(m_Lights, LightType::PointLight, *pointSSBO);

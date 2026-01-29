@@ -4,7 +4,7 @@ struct AmbientLight {
     vec4 color_intensity;
 };
 
-layout(binding = 32, std430) buffer AmbientLights {
+layout(binding = 42, std430) buffer AmbientLights {
     uint ambientLightCount;
     AmbientLight ambientLights[];
 };

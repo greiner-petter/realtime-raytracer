@@ -11,7 +11,7 @@ struct Light {
     int lightIndex;
 };
 
-layout(binding = 30, std430) buffer Lights {
+layout(binding = 40, std430) buffer Lights {
     uint lightCount;
     Light lights[];
 };

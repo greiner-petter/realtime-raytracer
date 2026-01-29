@@ -5,7 +5,7 @@ struct PointLight {
     vec4 position_radius;
 };
 
-layout(binding = 31, std430) buffer PointLights {
+layout(binding = 41, std430) buffer PointLights {
     uint pointLightCount;
     PointLight pointLights[];
 };

@@ -38,8 +38,8 @@ void initRng(uvec2 pixel, uint sampleIndex) {
     g_rngCounter = 0u;
 }
 
-vec3 clamp(vec3 c) {
-  return vec3(max(0.0f, min(c.x, 1.0f)), max(0.0f, min(c.y, 1.0f)), max(0.0f, min(c.z, 1.0f)));
+vec3 clamp32(vec3 c) {
+  return vec3(max(0.0, min(c.x, 32.0)), max(0.0, min(c.y, 32.0)), max(0.0, min(c.z, 32.0)));
 }
 
 void main() {
@@ -77,7 +77,7 @@ void main() {
     Ray ray = createRay(origin, direction, int(u_RayBounces));
 
     // Raytrace
-    vec3 pixelColor = traceRay(ray);
+    vec3 pixelColor = clamp32(traceRay(ray));
 
     // Write Output over multiple samples
     // Format must match the image layout (rgba8 -> vec4)

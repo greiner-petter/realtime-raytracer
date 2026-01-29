@@ -1,0 +1,76 @@
+{
+    "settings": {
+        "camera": {
+            "position": [0.0, -0.2, 0.0],
+            "forward": [-0.8507, -0.1276, 0.5104],
+            "up": [0.0, -1.0, 0.0],
+            "fov": 90.0
+        },
+        "env_map": "data/TychoSkymapII.t5_04096x02048.png"
+    },
+    "shaders": [
+        {
+            "type": "material",
+            "name": "earthClouds",
+            "diffuseMap": "data/earth_clouds.ppm",
+            "alphaMap": "data/earth_clouds.ppm",
+            "diffuseCoefficient": 0.9,
+            "specularCoefficient": 0.1
+        },
+        {
+            "type": "material",
+            "name": "earth",
+            "diffuseMap": "data/earth_diffuse.ppm",
+            "diffuseCoefficient": 0.5,
+            "specularMap": "data/earth_specular.ppm",
+            "specularCoefficient": 0.5,
+            "shininessExponent": 15.0,
+            "normalMap": "data/earth_normal.ppm"
+        },
+        {
+            "type": "material",
+            "name": "spaceship",
+            "diffuseMap": "data/space_frigate_6_diffuse.ppm",
+            "diffuseCoefficient": 0.75,
+            "specularMap": "data/space_frigate_6_specular.ppm",
+            "specularCoefficient": 0.25,
+            "shininessExponent": 30.0,
+            "normalMap": "data/space_frigate_6_normal.ppm",
+            "normalCoefficient": 0.8,
+            "reflectionMap": "data/space_frigate_6_specular.ppm",
+            "reflectance": 0.75
+        }
+    ],
+    "lights": [
+        {
+            "type": "point",
+            "position": [0.0, 0.0, 30.0],
+            "intensity": 1000.0
+        },
+        {
+            "type": "ambient",
+            "intensity": 0.3
+        }
+    ],
+    "primitives": [
+        {
+            "type": "sphere",
+            "shader": "earth",
+            "center": [-50.0, 0.0, 60.0],
+            "radius": 20.0
+        },
+        {
+            "type": "sphere",
+            "shader": "earthClouds",
+            "center": [-50.0, 0.0, 60.0],
+            "radius": 20.05
+        },
+        {
+            "type": "mesh",
+            "shader": "spaceship",
+            "filename": "data/space_frigate_6.obj",
+            "scale": [-0.05, 0.05, 0.05],
+            "translation": [-1.3, -0.3, 0.7]
+        }
+    ]
+}

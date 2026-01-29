@@ -18,6 +18,7 @@
 #include "shaders/RefractionShader.h"
 #include "shaders/SimpleTextureShader.h"
 #include "shaders/CookTorranceShader.h"
+#include "shaders/MaterialShader.h"
 #include "lights/PointLight.h"
 #include "lights/AmbientLight.h"
 #include "lights/SpotLight.h"
@@ -128,6 +129,52 @@ bool LoadShader(class Scene& scene, const json& shader) {
             diffuseCoefficient,
             ctCoefficient
         );
+    } else if (type == "material" || type == "materialshader") {
+        shaderPtr = std::make_shared<MaterialShader>();
+        MaterialShader* matShader = static_cast<MaterialShader*>(shaderPtr.get());
+
+        // Alpha map and opacity
+        if (shader.contains("alphaMap")) {
+            matShader->setAlphaMap((new Texture(shader["alphaMap"]))->GetId());
+        }
+        if (shader.contains("opacity")) {
+            matShader->setOpacity(GetJsonFloat(shader["opacity"]));
+        }
+
+        // Normal map and coefficient
+        if (shader.contains("normalMap")) {
+            matShader->setNormalMap((new Texture(shader["normalMap"]))->GetId());
+        }
+        if (shader.contains("normalCoefficient")) {
+            matShader->setNormalCoefficient(GetJsonFloat(shader["normalCoefficient"]));
+        }
+
+        // Diffuse map and coefficient
+        if (shader.contains("diffuseMap")) {
+            matShader->setDiffuseMap((new Texture(shader["diffuseMap"]))->GetId());
+        }
+        if (shader.contains("diffuseCoefficient")) {
+            matShader->setDiffuseCoefficient(GetJsonFloat(shader["diffuseCoefficient"]));
+        }
+
+        // Specular map, coefficient, and exponent
+        if (shader.contains("specularMap")) {
+            matShader->setSpecularMap((new Texture(shader["specularMap"]))->GetId());
+        }
+        if (shader.contains("specularCoefficient")) {
+            matShader->setSpecularCoefficient(GetJsonFloat(shader["specularCoefficient"]));
+        }
+        if (shader.contains("shininessExponent")) {
+            matShader->setShininessExponent(GetJsonFloat(shader["shininessExponent"]));
+        }
+
+        // Reflection map and reflectance
+        if (shader.contains("reflectionMap")) {
+            matShader->setReflectionMap((new Texture(shader["reflectionMap"]))->GetId());
+        }
+        if (shader.contains("reflectance")) {
+            matShader->setReflectance(GetJsonFloat(shader["reflectance"]));
+        }
     }
     // else if (type == "simpleTexture") {
     //     LOAD_ASSERT(shader.contains("texture"), "SimpleTextureShader must have a 'texture' field");

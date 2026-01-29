@@ -7,7 +7,7 @@ struct SpotLight {
     vec4 alphaMin_Max;
 };
 
-layout(binding = 33, std430) buffer SpotLights {
+layout(binding = 43, std430) buffer SpotLights {
     uint spotLightCount;
     SpotLight spotLights[];
 };
