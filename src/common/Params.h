@@ -11,8 +11,8 @@ struct Params {
     static std::string GetResultImageName() { return s_ResultImageName; }
     static std::string GetInputSceneFilename() { return s_InputScene; }
 
-    inline static uint32_t s_Width = 3840;
-    inline static uint32_t s_Height = 2160;
+    inline static uint32_t s_Width = 1920;
+    inline static uint32_t s_Height = 1080;
     inline static bool s_InteractiveMode = true;
     inline static bool s_EnableGI = true;
     inline static uint32_t s_Samples = 1024;

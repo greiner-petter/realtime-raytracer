@@ -11,6 +11,7 @@ public:
     static void Cleanup();
     static void Draw();
     static void OnWindowSizeChanged();
+    static void OnRenderResolutionChanged();
     static void SaveCurrentFrameToDisk(const std::string& filePath);
 
 private:

@@ -58,12 +58,18 @@ void Renderer::OnWindowSizeChanged() {
     VulkanContext::DeviceWaitIdle();
 
     Swapchain::Recreate();
-    OffscreenResources::Resize();
-    ComputePipeline::UpdateDescriptorSets();
     ImGuiLayer::OnWindowResize();
 
     FreeCommandBuffers();
     CreateCommandBuffers();
+}
+
+void Renderer::OnRenderResolutionChanged() {
+    RT_ASSERT(Params::IsInteractiveMode(), "OnRenderResolutionChanged can only be called in interactive mode");
+    VulkanContext::DeviceWaitIdle();
+
+    OffscreenResources::Resize();
+    ComputePipeline::UpdateDescriptorSets();
 }
 
 void Renderer::Draw() {
@@ -166,6 +172,12 @@ void Renderer::RecordCommandBuffer(uint32_t imageIndex) {
     VkCommandBuffer cmd = commandBuffers[imageIndex];
     vkBeginCommandBuffer(cmd, &beginInfo);
 
+    // Get render and display dimensions
+    uint32_t renderWidth = OffscreenResources::GetWidth();
+    uint32_t renderHeight = OffscreenResources::GetHeight();
+    uint32_t displayWidth = Swapchain::GetExtent().width;
+    uint32_t displayHeight = Swapchain::GetExtent().height;
+
     // Transition offscreen image to GENERAL for compute shader
     VkImageMemoryBarrier barrier = { VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER };
     barrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
@@ -176,11 +188,11 @@ void Renderer::RecordCommandBuffer(uint32_t imageIndex) {
     barrier.subresourceRange = { VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1 };
     vkCmdPipelineBarrier(cmd, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT, 0, 0, nullptr, 0, nullptr, 1, &barrier);
 
-    // Dispatch ray tracing compute shader
+    // Dispatch ray tracing compute shader (use render resolution)
     vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_COMPUTE, ComputePipeline::GetPipeline());
     VkDescriptorSet ds = ComputePipeline::GetDescriptorSet();
     vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_COMPUTE, ComputePipeline::GetLayout(), 0, 1, &ds, 0, nullptr);
-    vkCmdDispatch(cmd, (Swapchain::GetExtent().width + 15) / 16, (Swapchain::GetExtent().height + 15) / 16, 1);
+    vkCmdDispatch(cmd, (renderWidth + 15) / 16, (renderHeight + 15) / 16, 1);
 
     // Prepare for blit: offscreen -> TRANSFER_SRC, swapchain -> TRANSFER_DST
     VkImageMemoryBarrier barriers[2] = {};
@@ -202,15 +214,40 @@ void Renderer::RecordCommandBuffer(uint32_t imageIndex) {
 
     vkCmdPipelineBarrier(cmd, VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, nullptr, 0, nullptr, 2, barriers);
 
-    // Blit offscreen image to swapchain
+    // Clear swapchain to black first (for letterboxing)
+    VkClearColorValue clearColor = { { 0.0f, 0.0f, 0.0f, 1.0f } };
+    VkImageSubresourceRange clearRange = { VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1 };
+    vkCmdClearColorImage(cmd, Swapchain::GetImages()[imageIndex], VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, &clearColor, 1, &clearRange);
+
+    // Calculate letterbox/pillarbox destination rectangle
+    float renderAspect = (float)renderWidth / (float)renderHeight;
+    float displayAspect = (float)displayWidth / (float)displayHeight;
+
+    int32_t dstX0 = 0, dstY0 = 0, dstX1 = displayWidth, dstY1 = displayHeight;
+
+    if (renderAspect > displayAspect) {
+        // Render is wider - pillarbox (black bars top/bottom)
+        int32_t newHeight = (int32_t)(displayWidth / renderAspect);
+        dstY0 = (displayHeight - newHeight) / 2;
+        dstY1 = dstY0 + newHeight;
+    } else if (renderAspect < displayAspect) {
+        // Render is taller - letterbox (black bars left/right)
+        int32_t newWidth = (int32_t)(displayHeight * renderAspect);
+        dstX0 = (displayWidth - newWidth) / 2;
+        dstX1 = dstX0 + newWidth;
+    }
+
+    // Blit offscreen image to swapchain with letterboxing
     VkImageBlit blit = {};
     blit.srcSubresource = { VK_IMAGE_ASPECT_COLOR_BIT, 0, 0, 1 };
-    blit.srcOffsets[1] = { (int32_t)Swapchain::GetExtent().width, (int32_t)Swapchain::GetExtent().height, 1 };
+    blit.srcOffsets[0] = { 0, 0, 0 };
+    blit.srcOffsets[1] = { (int32_t)renderWidth, (int32_t)renderHeight, 1 };
     blit.dstSubresource = { VK_IMAGE_ASPECT_COLOR_BIT, 0, 0, 1 };
-    blit.dstOffsets[1] = { (int32_t)Swapchain::GetExtent().width, (int32_t)Swapchain::GetExtent().height, 1 };
+    blit.dstOffsets[0] = { dstX0, dstY0, 0 };
+    blit.dstOffsets[1] = { dstX1, dstY1, 1 };
 
     vkCmdBlitImage(cmd, OffscreenResources::GetImage(), VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
-                   Swapchain::GetImages()[imageIndex], VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &blit, VK_FILTER_NEAREST);
+                   Swapchain::GetImages()[imageIndex], VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &blit, VK_FILTER_LINEAR);
 
     // Transition swapchain image for ImGui render pass
     VkImageMemoryBarrier toColorAttachment = { VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER };

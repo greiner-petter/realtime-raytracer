@@ -69,13 +69,9 @@ void OffscreenResources::Resize() {
 }
 
 uint32_t OffscreenResources::GetWidth() {
-    return Params::IsInteractiveMode() 
-        ? Swapchain::GetExtent().width
-        : Params::GetWidth();
+    return Params::GetWidth();
 }
 
 uint32_t OffscreenResources::GetHeight() {
-    return Params::IsInteractiveMode() 
-        ? Swapchain::GetExtent().height
-        : Params::GetHeight();
+    return Params::GetHeight();
 }

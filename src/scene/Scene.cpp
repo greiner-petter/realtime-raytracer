@@ -257,11 +257,8 @@ void Scene::UploadKDTreeToGPU() {
 }
 
 void Scene::UpdateGPUBuffers() {
-    // Always update uniform buffer
-    uniformBufferData.u_resolution = Params::IsInteractiveMode()
-        ? glm::vec2(Window::GetInstance()->GetWidth(), Window::GetInstance()->GetHeight())
-        : glm::vec2(Params::GetWidth(), Params::GetHeight());
-
+    // Always update uniform buffer with render resolution (independent of window size)
+    uniformBufferData.u_resolution = glm::vec2(Params::GetWidth(), Params::GetHeight());
     uniformBufferData.u_aspectRatio = uniformBufferData.u_resolution.y / uniformBufferData.u_resolution.x;
     uniformBufferData.u_Seed = static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
     uniformBuffer->UploadData(&uniformBufferData, sizeof(uniformBufferData));

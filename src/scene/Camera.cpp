@@ -119,7 +119,22 @@ void UpdateCameraPosition(float deltaTime, float& deltaRoll) {
 }
 
 void CameraUpdate(Scene& scene, float deltaTime) {
+    static bool wasMoving = false;
+    static uint32_t savedBounces = 4;
+    static uint32_t savedGI = 0;
+
     if (Input::IsMouseButtonPressed(Mouse::ButtonRight)) {
+        // Save original settings when starting to move
+        if (!wasMoving) {
+            savedBounces = uniformBufferData.u_Raybounces;
+            savedGI = uniformBufferData.u_EnableGI;
+            wasMoving = true;
+        }
+
+        // Temporarily reduce quality while moving
+        uniformBufferData.u_Raybounces = 2;
+        uniformBufferData.u_EnableGI = 0;
+
         // default FPS camera behavior
         Input::SetCursorLocked(true);
 
@@ -128,11 +143,15 @@ void CameraUpdate(Scene& scene, float deltaTime) {
         UpdateCameraDirection(-1 * Input::GetMouseDelta().x, -1 * Input::GetMouseDelta().y, deltaRoll);
 
         uniformBufferData.u_SampleIndex = 0; // reset accumulation on camera move
-        uniformBufferData.u_Raybounces = 2;
-        uniformBufferData.u_EnableGI = 0;
     } else {
+        // Restore original settings when done moving
+        if (wasMoving) {
+            uniformBufferData.u_Raybounces = savedBounces;
+            uniformBufferData.u_EnableGI = savedGI;
+            uniformBufferData.u_SampleIndex = 0; // reset to re-render with full quality
+            wasMoving = false;
+        }
+
         Input::SetCursorLocked(false);
-        uniformBufferData.u_Raybounces = 4;
-        uniformBufferData.u_EnableGI = Params::s_EnableGI ? 1 : 0;
     }
 }
