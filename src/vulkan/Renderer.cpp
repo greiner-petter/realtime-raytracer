@@ -9,6 +9,8 @@
 #include "scene/Scene.h"
 #include "common/Log.h"
 #include "common/Params.h"
+#include "common/Window.h"
+#include <GLFW/glfw3.h>
 
 void Renderer::Init() {
     VulkanContext::Init();
@@ -75,6 +77,20 @@ void Renderer::OnRenderResolutionChanged() {
 void Renderer::Draw() {
     if (!Params::IsInteractiveMode()) {
         DrawHeadless();
+        return;
+    }
+
+    // Check if window was resized (some drivers don't return VK_ERROR_OUT_OF_DATE_KHR reliably)
+    Window* window = Window::GetInstance();
+    if (window->WasWindowResized()) {
+        window->SetResizedFlag(false);
+
+        // Wait for valid window size (handles minimized windows)
+        while (window->GetWidth() == 0 || window->GetHeight() == 0) {
+            glfwWaitEvents();
+        }
+
+        OnWindowSizeChanged();
         return;
     }
 
