@@ -12,6 +12,7 @@ void Swapchain::Init() {
 
 void Swapchain::Cleanup() {
     RT_ASSERT(Params::IsInteractiveMode(), "Swapchain can only be destroyed in interactive mode");
+    DestroyImageViews();
     if (swapChain != VK_NULL_HANDLE) {
         vkDestroySwapchainKHR(VulkanContext::GetDevice(), swapChain, nullptr);
         swapChain = VK_NULL_HANDLE;
@@ -62,4 +63,36 @@ void Swapchain::Create() {
     vkGetSwapchainImagesKHR(VulkanContext::GetDevice(), swapChain, &count, nullptr);
     swapChainImages.resize(count);
     vkGetSwapchainImagesKHR(VulkanContext::GetDevice(), swapChain, &count, swapChainImages.data());
+
+    CreateImageViews();
+}
+
+void Swapchain::CreateImageViews() {
+    swapChainImageViews.resize(swapChainImages.size());
+    for (size_t i = 0; i < swapChainImages.size(); i++) {
+        VkImageViewCreateInfo viewInfo = { VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO };
+        viewInfo.image = swapChainImages[i];
+        viewInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
+        viewInfo.format = SWAPCHAIN_FORMAT;
+        viewInfo.components = { VK_COMPONENT_SWIZZLE_IDENTITY, VK_COMPONENT_SWIZZLE_IDENTITY,
+                                VK_COMPONENT_SWIZZLE_IDENTITY, VK_COMPONENT_SWIZZLE_IDENTITY };
+        viewInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+        viewInfo.subresourceRange.baseMipLevel = 0;
+        viewInfo.subresourceRange.levelCount = 1;
+        viewInfo.subresourceRange.baseArrayLayer = 0;
+        viewInfo.subresourceRange.layerCount = 1;
+
+        if (vkCreateImageView(VulkanContext::GetDevice(), &viewInfo, nullptr, &swapChainImageViews[i]) != VK_SUCCESS) {
+            RT_ERROR("failed to create swapchain image view");
+        }
+    }
+}
+
+void Swapchain::DestroyImageViews() {
+    for (auto imageView : swapChainImageViews) {
+        if (imageView != VK_NULL_HANDLE) {
+            vkDestroyImageView(VulkanContext::GetDevice(), imageView, nullptr);
+        }
+    }
+    swapChainImageViews.clear();
 }

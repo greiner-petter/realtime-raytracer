@@ -16,7 +16,7 @@ public:
 private:
     static void CreateSyncObjects();
     static void CreateCommandBuffers();
-    static void RecordCommandBuffers();
+    static void RecordCommandBuffer(uint32_t imageIndex);
     static void FreeCommandBuffers();
 
     static void DrawHeadless();

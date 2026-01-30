@@ -13,7 +13,8 @@ ShaderCache/
 !/data/subdiv
 !/data/parallax
 !/data/fractal.obj
-/result*
+result*
+*.ini
 
 # Latex stuff
 *.aux

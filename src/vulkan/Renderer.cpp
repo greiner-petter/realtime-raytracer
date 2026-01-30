@@ -3,6 +3,7 @@
 #include "Swapchain.h"
 #include "OffscreenResources.h"
 #include "ComputePipeline.h"
+#include "ImGuiLayer.h"
 #include "Buffer.h"
 #include "Texture.h"
 #include "scene/Scene.h"
@@ -24,7 +25,7 @@ void Renderer::Init() {
     if (Params::IsInteractiveMode()) {
         CreateSyncObjects();
         CreateCommandBuffers();
-        RecordCommandBuffers();
+        ImGuiLayer::Init();
     } else {
         CreateHeadlessCommandBuffer();
         RecordHeadlessCommandBuffer();
@@ -37,6 +38,7 @@ void Renderer::Cleanup() {
     Buffer::DestroyAllBuffers();
 
     if (Params::IsInteractiveMode()) {
+        ImGuiLayer::Cleanup();
         vkDestroySemaphore(VulkanContext::GetDevice(), imageAvailableSemaphore, nullptr);
         vkDestroySemaphore(VulkanContext::GetDevice(), renderingFinishedSemaphore, nullptr);
         vkDestroyFence(VulkanContext::GetDevice(), inFlightFence, nullptr);
@@ -58,10 +60,10 @@ void Renderer::OnWindowSizeChanged() {
     Swapchain::Recreate();
     OffscreenResources::Resize();
     ComputePipeline::UpdateDescriptorSets();
-    
+    ImGuiLayer::OnWindowResize();
+
     FreeCommandBuffers();
     CreateCommandBuffers();
-    RecordCommandBuffers();
 }
 
 void Renderer::Draw() {
@@ -84,6 +86,10 @@ void Renderer::Draw() {
     }
 
     vkResetFences(VulkanContext::GetDevice(), 1, &inFlightFence);
+
+    // Reset and record command buffer for this frame (dynamic recording for ImGui)
+    vkResetCommandBuffer(commandBuffers[imageIndex], 0);
+    RecordCommandBuffer(imageIndex);
 
     VkSubmitInfo submit = { VK_STRUCTURE_TYPE_SUBMIT_INFO };
     VkSemaphore waitSems[] = { imageAvailableSemaphore };
@@ -155,67 +161,73 @@ void Renderer::CreateHeadlessCommandBuffer() {
     vkAllocateCommandBuffers(VulkanContext::GetDevice(), &allocInfo, &headlessCommandBuffer);
 }
 
-void Renderer::RecordCommandBuffers() {
+void Renderer::RecordCommandBuffer(uint32_t imageIndex) {
     VkCommandBufferBeginInfo beginInfo = { VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO };
+    VkCommandBuffer cmd = commandBuffers[imageIndex];
+    vkBeginCommandBuffer(cmd, &beginInfo);
 
-    for (size_t i = 0; i < commandBuffers.size(); i++) {
-        VkCommandBuffer cmd = commandBuffers[i];
-        vkBeginCommandBuffer(cmd, &beginInfo);
+    // Transition offscreen image to GENERAL for compute shader
+    VkImageMemoryBarrier barrier = { VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER };
+    barrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
+    barrier.newLayout = VK_IMAGE_LAYOUT_GENERAL;
+    barrier.srcAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
+    barrier.dstAccessMask = VK_ACCESS_SHADER_WRITE_BIT;
+    barrier.image = OffscreenResources::GetImage();
+    barrier.subresourceRange = { VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1 };
+    vkCmdPipelineBarrier(cmd, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT, 0, 0, nullptr, 0, nullptr, 1, &barrier);
 
-        VkImageMemoryBarrier barrier = { VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER };
-        barrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
-        barrier.newLayout = VK_IMAGE_LAYOUT_GENERAL;
-        barrier.srcAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
-        barrier.dstAccessMask = VK_ACCESS_SHADER_WRITE_BIT;
-        barrier.image = OffscreenResources::GetImage();
-        barrier.subresourceRange = { VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1 };
-        vkCmdPipelineBarrier(cmd, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT, 0, 0, nullptr, 0, nullptr, 1, &barrier);
+    // Dispatch ray tracing compute shader
+    vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_COMPUTE, ComputePipeline::GetPipeline());
+    VkDescriptorSet ds = ComputePipeline::GetDescriptorSet();
+    vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_COMPUTE, ComputePipeline::GetLayout(), 0, 1, &ds, 0, nullptr);
+    vkCmdDispatch(cmd, (Swapchain::GetExtent().width + 15) / 16, (Swapchain::GetExtent().height + 15) / 16, 1);
 
-        vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_COMPUTE, ComputePipeline::GetPipeline());
-        VkDescriptorSet ds = ComputePipeline::GetDescriptorSet();
-        vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_COMPUTE, ComputePipeline::GetLayout(), 0, 1, &ds, 0, nullptr);
-        
-        vkCmdDispatch(cmd, (Swapchain::GetExtent().width + 15) / 16, (Swapchain::GetExtent().height + 15) / 16, 1);
+    // Prepare for blit: offscreen -> TRANSFER_SRC, swapchain -> TRANSFER_DST
+    VkImageMemoryBarrier barriers[2] = {};
+    barriers[0].sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+    barriers[0].oldLayout = VK_IMAGE_LAYOUT_GENERAL;
+    barriers[0].newLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
+    barriers[0].srcAccessMask = VK_ACCESS_SHADER_WRITE_BIT;
+    barriers[0].dstAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
+    barriers[0].image = OffscreenResources::GetImage();
+    barriers[0].subresourceRange = { VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1 };
 
-        VkImageMemoryBarrier barriers[2] = {};
-        barriers[0].sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-        barriers[0].oldLayout = VK_IMAGE_LAYOUT_GENERAL;
-        barriers[0].newLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
-        barriers[0].srcAccessMask = VK_ACCESS_SHADER_WRITE_BIT;
-        barriers[0].dstAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
-        barriers[0].image = OffscreenResources::GetImage();
-        barriers[0].subresourceRange = { VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1 };
+    barriers[1].sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+    barriers[1].oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+    barriers[1].newLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+    barriers[1].srcAccessMask = 0;
+    barriers[1].dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+    barriers[1].image = Swapchain::GetImages()[imageIndex];
+    barriers[1].subresourceRange = { VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1 };
 
-        barriers[1].sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-        barriers[1].oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-        barriers[1].newLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
-        barriers[1].srcAccessMask = 0;
-        barriers[1].dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
-        barriers[1].image = Swapchain::GetImages()[i];
-        barriers[1].subresourceRange = { VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1 };
+    vkCmdPipelineBarrier(cmd, VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, nullptr, 0, nullptr, 2, barriers);
 
-        vkCmdPipelineBarrier(cmd, VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, nullptr, 0, nullptr, 2, barriers);
+    // Blit offscreen image to swapchain
+    VkImageBlit blit = {};
+    blit.srcSubresource = { VK_IMAGE_ASPECT_COLOR_BIT, 0, 0, 1 };
+    blit.srcOffsets[1] = { (int32_t)Swapchain::GetExtent().width, (int32_t)Swapchain::GetExtent().height, 1 };
+    blit.dstSubresource = { VK_IMAGE_ASPECT_COLOR_BIT, 0, 0, 1 };
+    blit.dstOffsets[1] = { (int32_t)Swapchain::GetExtent().width, (int32_t)Swapchain::GetExtent().height, 1 };
 
-        VkImageBlit blit = {};
-        blit.srcSubresource = { VK_IMAGE_ASPECT_COLOR_BIT, 0, 0, 1 };
-        blit.srcOffsets[1] = { (int32_t)Swapchain::GetExtent().width, (int32_t)Swapchain::GetExtent().height, 1 };
-        blit.dstSubresource = { VK_IMAGE_ASPECT_COLOR_BIT, 0, 0, 1 };
-        blit.dstOffsets[1] = { (int32_t)Swapchain::GetExtent().width, (int32_t)Swapchain::GetExtent().height, 1 };
+    vkCmdBlitImage(cmd, OffscreenResources::GetImage(), VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+                   Swapchain::GetImages()[imageIndex], VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &blit, VK_FILTER_NEAREST);
 
-        vkCmdBlitImage(cmd, OffscreenResources::GetImage(), VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, Swapchain::GetImages()[i], VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &blit, VK_FILTER_NEAREST);
+    // Transition swapchain image for ImGui render pass
+    VkImageMemoryBarrier toColorAttachment = { VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER };
+    toColorAttachment.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+    toColorAttachment.newLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+    toColorAttachment.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+    toColorAttachment.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+    toColorAttachment.image = Swapchain::GetImages()[imageIndex];
+    toColorAttachment.subresourceRange = { VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1 };
 
-        VkImageMemoryBarrier presentBarrier = { VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER };
-        presentBarrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
-        presentBarrier.newLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
-        presentBarrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
-        presentBarrier.dstAccessMask = 0;
-        presentBarrier.image = Swapchain::GetImages()[i];
-        presentBarrier.subresourceRange = { VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1 };
-        
-        vkCmdPipelineBarrier(cmd, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, 0, 0, nullptr, 0, nullptr, 1, &presentBarrier);
+    vkCmdPipelineBarrier(cmd, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+                         0, 0, nullptr, 0, nullptr, 1, &toColorAttachment);
 
-        vkEndCommandBuffer(cmd);
-    }
+    // Render ImGui (render pass handles final transition to PRESENT_SRC_KHR)
+    ImGuiLayer::RecordCommands(cmd, imageIndex);
+
+    vkEndCommandBuffer(cmd);
 }
 
 void Renderer::RecordHeadlessCommandBuffer() {

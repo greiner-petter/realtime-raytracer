@@ -8,6 +8,7 @@ public:
     static void Init();
     static void Cleanup();
     
+    static VkInstance GetInstance() { return instance; }
     static VkDevice GetDevice() { return device; }
     static VkPhysicalDevice GetPhysicalDevice() { return physicalDevice; }
     static VkQueue GetGraphicsQueue() { return graphicsQueue; }

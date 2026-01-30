@@ -1,6 +1,7 @@
 #include "vulkan/Renderer.h"
 #include "vulkan/ShaderCompiler.h"
 #include "vulkan/Texture.h"
+#include "vulkan/ImGuiLayer.h"
 #include "scene/Camera.h"
 #include "scene/Scene.h"
 #include "scene/SceneLoader.h"
@@ -16,6 +17,7 @@
 #include "common/Params.h"
 #include "common/ProgressBar.h"
 #include "common/ArgParse.h"
+#include "third-party/imgui/imgui.h"
 #include <GLFW/glfw3.h>
 
 std::shared_ptr<Texture> s_SkyboxTexture;
@@ -66,12 +68,65 @@ void InitVulkan() {
     Renderer::Init();
 }
 
+void RenderImGuiSettings() {
+    ImGui::Begin("Raytracer Settings");
+
+    // Ray bounces
+    int bounces = static_cast<int>(uniformBufferData.u_Raybounces);
+    if (ImGui::SliderInt("Max Bounces", &bounces, 1, 16)) {
+        uniformBufferData.u_Raybounces = static_cast<uint32_t>(bounces);
+        uniformBufferData.u_SampleIndex = 0;  // Reset accumulation
+    }
+
+    // Global Illumination
+    bool gi = uniformBufferData.u_EnableGI != 0;
+    if (ImGui::Checkbox("Enable GI", &gi)) {
+        uniformBufferData.u_EnableGI = gi ? 1 : 0;
+        uniformBufferData.u_SampleIndex = 0;
+    }
+
+    // Focus distance
+    float focusDist = uniformBufferData.u_FocusDistance;
+    if (ImGui::SliderFloat("Focus Distance", &focusDist, 0.1f, 100.0f)) {
+        uniformBufferData.u_FocusDistance = focusDist;
+        uniformBufferData.u_SampleIndex = 0;
+    }
+
+    ImGui::Separator();
+
+    // Sample count target
+    int samples = static_cast<int>(Params::s_Samples);
+    if (ImGui::InputInt("Target Samples", &samples)) {
+        Params::s_Samples = static_cast<uint32_t>(std::max(1, samples));
+    }
+
+    // Current progress
+    ImGui::Text("Current Samples: %u", uniformBufferData.u_SampleIndex);
+    ImGui::Text("FPS: %.1f", s_DeltaTime > 0 ? 1.0 / s_DeltaTime : 0.0);
+
+    ImGui::Separator();
+
+    // Reset button
+    if (ImGui::Button("Reset Accumulation")) {
+        uniformBufferData.u_SampleIndex = 0;
+    }
+
+    ImGui::End();
+}
+
 void MainLoop() {
     uint32_t frameCount = 0;
     auto timer = std::chrono::steady_clock::now();
     bool is_rendering = true;
 
     while (is_rendering) {
+        // ImGui frame (only in interactive mode)
+        if (Params::IsInteractiveMode()) {
+            ImGuiLayer::BeginFrame();
+            RenderImGuiSettings();
+            ImGuiLayer::EndFrame();
+        }
+
         s_Scene->UpdateGPUBuffers();
         Renderer::Draw();
         frameCount++;

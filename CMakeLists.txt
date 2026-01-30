@@ -26,9 +26,22 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 file(GLOB_RECURSE cpp_src "src/*.cpp")
 file(GLOB intermediate_src "Intermediate/Resources/*.cpp")
 
+# --- Exclude third-party from glob, then add only what we need ---
+list(FILTER cpp_src EXCLUDE REGEX "src/third-party/.*")
+
+# --- ImGui Sources ---
+set(IMGUI_SOURCES
+    src/third-party/imgui/imgui.cpp
+    src/third-party/imgui/imgui_draw.cpp
+    src/third-party/imgui/imgui_tables.cpp
+    src/third-party/imgui/imgui_widgets.cpp
+    src/third-party/imgui/backends/imgui_impl_glfw.cpp
+    src/third-party/imgui/backends/imgui_impl_vulkan.cpp
+)
+
 # --- Executable ---
-add_executable(tracey_rt ${cpp_src} ${intermediate_src})
-target_include_directories(tracey_rt PUBLIC src Intermediate/Resources)
+add_executable(tracey_rt ${cpp_src} ${intermediate_src} ${IMGUI_SOURCES})
+target_include_directories(tracey_rt PUBLIC src Intermediate/Resources src/third-party/imgui)
 
 # --- Linking ---
 target_link_libraries(tracey_rt PRIVATE glfw glm::glm spdlog::spdlog Vulkan::Vulkan)
