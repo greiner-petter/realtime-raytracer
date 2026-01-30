@@ -25,7 +25,6 @@ std::shared_ptr<Scene> s_Scene;
 std::shared_ptr<Window> s_Window;
 std::chrono::time_point<std::chrono::steady_clock> s_PreviousTime;
 double s_DeltaTime = 0.0;
-float s_FOV = 90.0f;
 extern UBO uniformBufferData;
 
 static bool ends_with(std::string_view str, std::string_view suffix) {

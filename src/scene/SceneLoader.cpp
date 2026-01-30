@@ -37,7 +37,6 @@
 using json = nlohmann::json;
 
 extern UBO uniformBufferData;
-extern float s_FOV;
 
 #define LOAD_ASSERT(cond, msg) \
     if (!(cond)) { \
@@ -66,7 +65,6 @@ bool LoadSettings(class Scene& scene, const json& settings) {
         if (settings["camera"].contains("fov")) {
             float fov = GetJsonFloat(settings["camera"]["fov"]);
             SetCameraFOV(fov);
-            s_FOV = fov; // Sync with ImGui
         }
     }
     if (settings.contains("gi")) {

@@ -41,6 +41,11 @@ void SetCameraFOV(float fovAngle) {
     uniformBufferData.u_FocusDistance = 1.0f / std::tan((fovAngle * PI / 180) / 2.0f);
 }
 
+float GetCameraFOV() {
+    return 2.0f * std::atan(1.0f / uniformBufferData.u_FocusDistance) * 180.0f / PI;
+}
+
+
 void UpdateCameraDirection(float deltaX, float deltaY, float deltaRoll) {
     const float MOUSE_SENSITIVITY = 0.005f;
     const float ROLL_SPEED = 2.0f;

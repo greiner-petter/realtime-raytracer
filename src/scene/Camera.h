@@ -9,5 +9,6 @@ void SetCameraForward(const Vec3& forward);
 void SetCameraUp(const Vec3& up);
 void SetCameraPosition(const Vec3& position);
 void SetCameraFOV(float angleInDegrees);
+float GetCameraFOV();
 
 #endif

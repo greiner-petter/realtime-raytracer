@@ -9,7 +9,6 @@ static int s_SaveFrameDelay = 0;  // Countdown: 2 = just requested, 1 = render "
 static float s_SaveMessageTimer = 0.0f;
 
 extern double s_DeltaTime;
-extern float s_FOV;
 extern UBO uniformBufferData;
 
 void RenderImGuiSettings() {
@@ -85,8 +84,9 @@ void RenderImGuiSettings() {
 
     // FOV slider (20-200 degrees) - title style
     ImGui::Text("FOV");
-    if (ImGui::SliderFloat("##FOV", &s_FOV, 20.0f, 200.0f, "%.1f")) {
-        SetCameraFOV(s_FOV);
+    float fov = GetCameraFOV();
+    if (ImGui::SliderFloat("##FOV", &fov, 20.0f, 200.0f, "%.1f")) {
+        SetCameraFOV(fov);
         uniformBufferData.u_SampleIndex = 0;
     }
 
