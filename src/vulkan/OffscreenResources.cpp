@@ -68,6 +68,37 @@ void OffscreenResources::Resize() {
     Init();
 }
 
+void OffscreenResources::Clear() {
+    VkCommandBuffer cmd = VulkanContext::BeginSingleTimeCommands();
+
+    // Transition to TRANSFER_DST for clearing
+    VkImageMemoryBarrier toTransferDst = { VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER };
+    toTransferDst.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
+    toTransferDst.newLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+    toTransferDst.srcAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
+    toTransferDst.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+    toTransferDst.image = image;
+    toTransferDst.subresourceRange = { VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1 };
+    vkCmdPipelineBarrier(cmd, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, nullptr, 0, nullptr, 1, &toTransferDst);
+
+    // Clear to black
+    VkClearColorValue clearColor = { { 0.0f, 0.0f, 0.0f, 1.0f } };
+    VkImageSubresourceRange range = { VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1 };
+    vkCmdClearColorImage(cmd, image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, &clearColor, 1, &range);
+
+    // Transition back to TRANSFER_SRC
+    VkImageMemoryBarrier toTransferSrc = { VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER };
+    toTransferSrc.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+    toTransferSrc.newLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
+    toTransferSrc.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+    toTransferSrc.dstAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
+    toTransferSrc.image = image;
+    toTransferSrc.subresourceRange = { VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1 };
+    vkCmdPipelineBarrier(cmd, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, nullptr, 0, nullptr, 1, &toTransferSrc);
+
+    VulkanContext::EndSingleTimeCommands(cmd);
+}
+
 uint32_t OffscreenResources::GetWidth() {
     return Params::GetWidth();
 }

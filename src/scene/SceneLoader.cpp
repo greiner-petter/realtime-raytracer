@@ -6,6 +6,7 @@
 
 #include "vulkan/Texture.h"
 #include "vulkan/Brdf.h"
+#include "vulkan/OffscreenResources.h"
 #include "primitives/Sphere.h"
 #include "primitives/Triangle.h"
 #include "primitives/InfinitePlane.h"
@@ -36,6 +37,7 @@
 using json = nlohmann::json;
 
 extern UBO uniformBufferData;
+extern float s_FOV;
 
 #define LOAD_ASSERT(cond, msg) \
     if (!(cond)) { \
@@ -56,15 +58,22 @@ static float GetJsonFloat(const json& item) {
 }
 
 bool LoadSettings(class Scene& scene, const json& settings) {
-    // Currently no settings to load
     if (settings.contains("camera")) {
         LOAD_ASSERT(settings["camera"].is_object(), "'camera' must be an object");
         if (settings["camera"].contains("position")) SetCameraPosition(GetJsonVec3(settings["camera"]["position"]));
         if (settings["camera"].contains("forward")) SetCameraForward(GetJsonVec3(settings["camera"]["forward"]));
         if (settings["camera"].contains("up")) SetCameraUp(GetJsonVec3(settings["camera"]["up"]));
-        if (settings["camera"].contains("fov")) SetCameraFOV(GetJsonFloat(settings["camera"]["fov"]));
-    } 
-    if (settings.contains("gi")) Params::s_EnableGI = settings["gi"].get<bool>();
+        if (settings["camera"].contains("fov")) {
+            float fov = GetJsonFloat(settings["camera"]["fov"]);
+            SetCameraFOV(fov);
+            s_FOV = fov; // Sync with ImGui
+        }
+    }
+    if (settings.contains("gi")) {
+        bool gi = settings["gi"].get<bool>();
+        Params::s_EnableGI = gi;
+        uniformBufferData.u_EnableGI = gi ? 1 : 0; // Sync with ImGui
+    }
     if (settings.contains("env_map")) {
         uniformBufferData.u_environmentMapIndex = (new Texture(settings["env_map"]))->GetId();
     }
@@ -320,6 +329,7 @@ bool LoadPrimitive(class Scene& scene, const json& primitiveData) {
 
 bool SceneLoader::LoadScene(class Scene& scene, const std::string& filename) {
     scene.ClearScene();
+    OffscreenResources::Clear();
     s_Shaders.clear();
 
     std::ifstream f(filename);

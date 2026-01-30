@@ -8,6 +8,7 @@ public:
     static void Init();
     static void Cleanup();
     static void Resize();
+    static void Clear();
 
     static VkImageView GetImageView() { return imageView; }
     static VkImage GetImage() { return image; }
