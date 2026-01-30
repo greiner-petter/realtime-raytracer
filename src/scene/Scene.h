@@ -101,7 +101,6 @@ private:
     inline static std::shared_ptr<SSBO> kdTreeSSBO;        // KD-tree nodes
     inline static std::shared_ptr<SSBO> kdTreeIndicesSSBO; // Primitive indices for leaves
     inline static std::shared_ptr<SSBO> meshTrianglesSSBO;
-    inline static std::shared_ptr<SSBO> brdfDataSSBO;
 
     inline static std::shared_ptr<SSBO> primitiveSSBO;
     inline static std::shared_ptr<SSBO> sphereSSBO;

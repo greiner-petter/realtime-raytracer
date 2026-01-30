@@ -11,7 +11,7 @@
 #define BLUE_SCALE  (1.66 / 1500.0)
 
 struct BrdfShader {
-    vec4 scaleIndex;  // xyz = color scale, w = index into brdfData
+    vec4 scaleIndex;  // xyz = color scale, w = data offset into brdfData
 };
 
 layout(binding = 29, std430) buffer BrdfShaders {
@@ -19,7 +19,7 @@ layout(binding = 29, std430) buffer BrdfShaders {
     BrdfShader brdfShaders[];
 };
 
-// Separate buffer for BRDF data (all entries concatenated)
+// BRDF data buffer (all entries concatenated)
 layout(binding = 4, std430) buffer BrdfDataBuffer {
     float brdfData[];
 };
@@ -141,7 +141,7 @@ vec3 lookup_brdf_values(float theta_in, float phi_in, float theta_out, float phi
 vec3 shadeBRDFShaderGI(inout Ray ray, inout vec3 throughput) {
     BrdfShader shader = brdfShaders[ray.primitive.shaderIndex];
     vec3 scale = shader.scaleIndex.xyz;
-    int index = int(shader.scaleIndex.w);
+    int dataOffset = int(shader.scaleIndex.w);
 
     // Calculate theta_in (angle between view direction and normal)
     float theta_in = acos(dot(-ray.normal, ray.direction));
@@ -167,9 +167,9 @@ vec3 shadeBRDFShaderGI(inout Ray ray, inout vec3 throughput) {
             vec3 c = cross(-illum.direction, ray.normal);
             float phi_out = 2 * atan(dot(c, y), dot(c, x));
 
-            color = lookup_brdf_values(theta_in, phi_in, theta_out, phi_out, index);
+            color = lookup_brdf_values(theta_in, phi_in, theta_out, phi_out, dataOffset);
         } else {
-            color = lookup_brdf_values(theta_in, phi_in, 0, 0, index);
+            color = lookup_brdf_values(theta_in, phi_in, 0, 0, dataOffset);
         }
 
         // Calculate colors
@@ -187,7 +187,7 @@ vec3 shadeBRDFShaderGI(inout Ray ray, inout vec3 throughput) {
 vec3 shadeBRDFShader(inout Ray ray, inout vec3 throughput) {
     BrdfShader shader = brdfShaders[ray.primitive.shaderIndex];
     vec3 scale = shader.scaleIndex.xyz;
-    int index = int(shader.scaleIndex.w);
+    int dataOffset = int(shader.scaleIndex.w);
     ray.remainingBounces = 0;
 
     // Calculate theta_in (angle between view direction and normal)
@@ -216,9 +216,9 @@ vec3 shadeBRDFShader(inout Ray ray, inout vec3 throughput) {
                 vec3 c = cross(-illum.direction, ray.normal);
                 float phi_out = 2 * atan(dot(c, y), dot(c, x));
 
-                color = lookup_brdf_values(theta_in, phi_in, theta_out, phi_out, index);
+                color = lookup_brdf_values(theta_in, phi_in, theta_out, phi_out, dataOffset);
             } else {
-                color = lookup_brdf_values(theta_in, phi_in, 0, 0, index);
+                color = lookup_brdf_values(theta_in, phi_in, 0, 0, dataOffset);
             }
 
             // Calculate colors

@@ -5,6 +5,7 @@
 #include "scene/Camera.h"
 
 #include "vulkan/Texture.h"
+#include "vulkan/Brdf.h"
 #include "primitives/Sphere.h"
 #include "primitives/Triangle.h"
 #include "primitives/InfinitePlane.h"
@@ -180,7 +181,12 @@ bool LoadShader(class Scene& scene, const json& shader) {
         LOAD_ASSERT(shader.contains("filename"), "BrdfShader must have a 'filename' field");
         std::string filename = shader["filename"];
         Vec3 colorScale = shader.contains("colorScale") ? GetJsonVec3(shader["colorScale"]) : Vec3(1.0f);
-        shaderPtr = std::make_shared<BrdfShader>(filename.c_str(), colorScale);
+
+        Brdf* brdf = new Brdf(filename);
+
+        auto brdfShader = std::make_shared<BrdfShader>(colorScale);
+        brdfShader->setBrdf(brdf->GetId());
+        shaderPtr = brdfShader;
     }
     // else if (type == "simpleTexture") {
     //     LOAD_ASSERT(shader.contains("texture"), "SimpleTextureShader must have a 'texture' field");

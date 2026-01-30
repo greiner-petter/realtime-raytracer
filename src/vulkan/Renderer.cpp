@@ -6,6 +6,7 @@
 #include "ImGuiLayer.h"
 #include "Buffer.h"
 #include "Texture.h"
+#include "Brdf.h"
 #include "scene/Scene.h"
 #include "common/Log.h"
 #include "common/Params.h"
@@ -22,6 +23,7 @@ void Renderer::Init() {
     OffscreenResources::Init();
     Scene::CreateGPUBuffers();
     Texture::CreateGPUBuffers();
+    Brdf::CreateGPUBuffers();
     ComputePipeline::Init();
 
     if (Params::IsInteractiveMode()) {

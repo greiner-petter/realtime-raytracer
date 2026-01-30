@@ -5,6 +5,7 @@
 #include "primitives/Mesh.h"
 #include "primitives/Triangle.h"
 #include "shaders/BrdfShader.h"
+#include "vulkan/Brdf.h"
 #include <algorithm>
 #include <cassert>
 #include <cstring>
@@ -16,7 +17,6 @@ void Scene::CreateGPUBuffers() {
     kdTreeSSBO = SSBO::Create(1);
     kdTreeIndicesSSBO = SSBO::Create(2);
     meshTrianglesSSBO = SSBO::Create(3);
-    brdfDataSSBO = SSBO::Create(4);
 
     primitiveSSBO = SSBO::Create(10);
     sphereSSBO = SSBO::Create(11);
@@ -73,52 +73,16 @@ void Scene::ConvertSceneToGPUData() {
     WriteBufferForType(m_Shaders, ShaderType::SimpleTextureShader, *simpleTextureSSBO);
     WriteBufferForType(m_Shaders, ShaderType::MaterialShader, *materialSSBO);
 
-    // BRDF shaders: set data offsets and upload data to separate buffer
-    uint32_t dataOffset = 0;
-    int brdfIndex = 0;
+    // Resolve BRDF IDs to data offsets before uploading
     for (const auto& shader : m_Shaders) {
         if (shader->type == ShaderType::BrdfShader) {
             BrdfShader* brdfShader = static_cast<BrdfShader*>(shader.get());
-            RT_INFO("BRDF shader {}: data.size() = {}, expected = {}", brdfIndex, brdfShader->data.size(), BRDF_DATA_SIZE);
-            if (brdfShader->data.size() == BRDF_DATA_SIZE) {
-                brdfShader->scaleIndex.w = static_cast<float>(dataOffset);
-                RT_INFO("BRDF shader {}: scaleIndex.w = {}", brdfIndex, brdfShader->scaleIndex.w);
-                dataOffset += BRDF_DATA_SIZE;
-            } else {
-                RT_ERROR("BRDF shader {}: data size mismatch! Shader will not render correctly.", brdfIndex);
-            }
-            brdfIndex++;
+            BrdfID brdfId = brdfShader->getBrdf();
+            uint32_t dataOffset = Brdf::GetDataOffset(brdfId);
+            brdfShader->scaleIndex.w = static_cast<float>(dataOffset);
         }
     }
-
     WriteBufferForType(m_Shaders, ShaderType::BrdfShader, *brdfSSBO);
-
-    // Upload BRDF data to separate buffer
-    if (dataOffset > 0) {
-        size_t totalDataSize = dataOffset * sizeof(float);
-        RT_INFO("Uploading BRDF data buffer: {} floats ({} bytes)", dataOffset, totalDataSize);
-        void* gpuData = brdfDataSSBO->MapData(totalDataSize);
-        byte* dst = static_cast<byte*>(gpuData);
-
-        int brdfUploadIndex = 0;
-        for (const auto& shader : m_Shaders) {
-            if (shader->type == ShaderType::BrdfShader) {
-                BrdfShader* brdfShader = static_cast<BrdfShader*>(shader.get());
-                if (brdfShader->data.size() == BRDF_DATA_SIZE) {
-                    RT_INFO("Uploading BRDF {} data at byte offset {}", brdfUploadIndex, (dst - static_cast<byte*>(gpuData)));
-                    // Sanity check: print first few values to verify data isn't all zeros
-                    RT_INFO("  First 5 values: {}, {}, {}, {}, {}",
-                        brdfShader->data[0], brdfShader->data[1], brdfShader->data[2],
-                        brdfShader->data[3], brdfShader->data[4]);
-                    std::memcpy(dst, brdfShader->data.data(), BRDF_DATA_SIZE * sizeof(float));
-                    dst += BRDF_DATA_SIZE * sizeof(float);
-                    brdfUploadIndex++;
-                }
-            }
-        }
-        brdfDataSSBO->UnmapData();
-        RT_INFO("BRDF data upload complete: {} shaders uploaded", brdfUploadIndex);
-    }
 
     WriteBufferForType(m_Lights, LightType::PointLight, *pointSSBO);
     WriteBufferForType(m_Lights, LightType::AmbientLight, *ambientSSBO);
