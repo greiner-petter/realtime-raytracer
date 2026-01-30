@@ -3,6 +3,7 @@
 #include "scene/Scene.h"
 #include "scene/Camera.h"
 #include "vulkan/Renderer.h"
+#include "common/Window.h"
 #include "imgui.h"
 
 static int s_SaveFrameDelay = 0;  // Countdown: 2 = just requested, 1 = render "Saving...", 0 = do save
@@ -52,6 +53,16 @@ void RenderImGuiSettings() {
         resHeight = std::clamp(resHeight, 1, 16000);
         resChanged = true;
     }
+    static bool fitToWindow = false;
+    ImGui::Checkbox("Fit Resolution to Window", &fitToWindow);
+    if (fitToWindow) {
+        if (resWidth != Window::GetInstance()->GetWidth() || resHeight != Window::GetInstance()->GetHeight()) {
+            resWidth = Window::GetInstance()->GetWidth();
+            resHeight = Window::GetInstance()->GetHeight();
+            resChanged = true;
+        }
+    }
+
     ImGui::PopItemWidth();
 
     if (resChanged) {
