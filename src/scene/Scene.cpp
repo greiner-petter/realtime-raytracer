@@ -4,8 +4,6 @@
 #include "common/Params.h"
 #include "primitives/Mesh.h"
 #include "primitives/Triangle.h"
-#include "shaders/BrdfShader.h"
-#include "vulkan/Brdf.h"
 #include <algorithm>
 #include <cassert>
 #include <cstring>
@@ -72,16 +70,6 @@ void Scene::ConvertSceneToGPUData() {
     WriteBufferForType(m_Shaders, ShaderType::CookTorranceShader, *cookTorranceSSBO);
     WriteBufferForType(m_Shaders, ShaderType::SimpleTextureShader, *simpleTextureSSBO);
     WriteBufferForType(m_Shaders, ShaderType::MaterialShader, *materialSSBO);
-
-    // Resolve BRDF IDs to data offsets before uploading
-    for (const auto& shader : m_Shaders) {
-        if (shader->type == ShaderType::BrdfShader) {
-            BrdfShader* brdfShader = static_cast<BrdfShader*>(shader.get());
-            BrdfID brdfId = brdfShader->getBrdf();
-            uint32_t dataOffset = Brdf::GetDataOffset(brdfId);
-            brdfShader->scaleIndex.w = static_cast<float>(dataOffset);
-        }
-    }
     WriteBufferForType(m_Shaders, ShaderType::BrdfShader, *brdfSSBO);
 
     WriteBufferForType(m_Lights, LightType::PointLight, *pointSSBO);

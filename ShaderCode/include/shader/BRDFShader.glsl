@@ -11,8 +11,12 @@
 #define BLUE_SCALE  (1.66 / 1500.0)
 
 struct BrdfShader {
-    vec4 scaleIndex;  // xyz = color scale, w = data offset into brdfData
+    vec4 scaleIndex;  // xyz = color scale, w = BRDF ID
 };
+
+int getBrdfDataOffset(int brdfId) {
+    return brdfId * BRDF_DATA_SIZE;
+}
 
 layout(binding = 29, std430) buffer BrdfShaders {
     uint brdfShaderCount;
@@ -141,7 +145,7 @@ vec3 lookup_brdf_values(float theta_in, float phi_in, float theta_out, float phi
 vec3 shadeBRDFShaderGI(inout Ray ray, inout vec3 throughput) {
     BrdfShader shader = brdfShaders[ray.primitive.shaderIndex];
     vec3 scale = shader.scaleIndex.xyz;
-    int dataOffset = int(shader.scaleIndex.w);
+    int dataOffset = getBrdfDataOffset(int(shader.scaleIndex.w));
 
     // Calculate theta_in (angle between view direction and normal)
     float theta_in = acos(dot(-ray.normal, ray.direction));
@@ -187,7 +191,7 @@ vec3 shadeBRDFShaderGI(inout Ray ray, inout vec3 throughput) {
 vec3 shadeBRDFShader(inout Ray ray, inout vec3 throughput) {
     BrdfShader shader = brdfShaders[ray.primitive.shaderIndex];
     vec3 scale = shader.scaleIndex.xyz;
-    int dataOffset = int(shader.scaleIndex.w);
+    int dataOffset = getBrdfDataOffset(int(shader.scaleIndex.w));
     ray.remainingBounces = 0;
 
     // Calculate theta_in (angle between view direction and normal)
