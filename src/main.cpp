@@ -99,6 +99,9 @@ void MainLoop() {
         CameraUpdate(*s_Scene, s_DeltaTime);
 
         if (Input::IsKeyPressed(Key::LeftControl) && Input::IsKeyPressed(Key::S)) {
+            glfwSetWindowTitle(Window::GetGLFWwindow(), (std::string("saving image...")).c_str());
+            glfwPollEvents();
+            glfwSwapInterval(0);
             Renderer::SaveCurrentFrameToDisk(Params::GetResultImageName());
         }
 
