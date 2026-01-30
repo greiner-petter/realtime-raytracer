@@ -13,6 +13,8 @@
 #include "common/Window.h"
 #include <GLFW/glfw3.h>
 
+extern UBO uniformBufferData;
+
 void Renderer::Init() {
     VulkanContext::Init();
 
@@ -63,9 +65,12 @@ void Renderer::OnWindowSizeChanged() {
 
     Swapchain::Recreate();
     ImGuiLayer::OnWindowResize();
+    ComputePipeline::RecreatePipeline();
 
     FreeCommandBuffers();
     CreateCommandBuffers();
+
+    uniformBufferData.u_SampleIndex = 0; // Reset accumulation after shader reload
 }
 
 void Renderer::OnRenderResolutionChanged() {

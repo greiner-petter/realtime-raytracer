@@ -8,6 +8,7 @@ public:
     static void Init();
     static void Cleanup();
     static void UpdateDescriptorSets();
+    static void RecreatePipeline();
 
     static VkPipeline GetPipeline() { return pipeline; }
     static VkPipelineLayout GetLayout() { return pipelineLayout; }

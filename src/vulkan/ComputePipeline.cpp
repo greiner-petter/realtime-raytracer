@@ -19,6 +19,13 @@ void ComputePipeline::Cleanup() {
     vkDestroyDescriptorSetLayout(VulkanContext::GetDevice(), descriptorSetLayout, nullptr);
 }
 
+void ComputePipeline::RecreatePipeline() {
+    VulkanContext::DeviceWaitIdle();
+    vkDestroyPipeline(VulkanContext::GetDevice(), pipeline, nullptr);
+    vkDestroyPipelineLayout(VulkanContext::GetDevice(), pipelineLayout, nullptr);
+    CreatePipeline();
+}
+
 void ComputePipeline::CreateDescriptorPool() {
     VkDescriptorPoolSize sizes[] = { 
         { VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 10 }, 
