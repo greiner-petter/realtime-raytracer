@@ -94,11 +94,13 @@ bool LoadShader(class Scene& scene, const json& shader) {
     } else if (type == "refraction" || type == "refractionshader") {
         LOAD_ASSERT(shader.contains("indexInside"), "RefractionShader must have an 'indexInside' field");
         LOAD_ASSERT(shader.contains("indexOutside"), "RefractionShader must have an 'indexOutside' field");
+        float roughness = shader.contains("roughness") ? GetJsonFloat(shader["roughness"]) : 0.0f;
         Vec3 glassColor = shader.contains("color") ? GetJsonVec3(shader["color"]) : Vec3(1.0f);
         float absorption = shader.contains("absorption") ? GetJsonFloat(shader["absorption"]) : 0.0f;
         shaderPtr = std::make_shared<RefractionShader>(
             GetJsonFloat(shader["indexInside"]),
             GetJsonFloat(shader["indexOutside"]),
+            roughness,
             glassColor,
             absorption
         );

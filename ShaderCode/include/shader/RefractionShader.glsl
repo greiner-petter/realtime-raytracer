@@ -1,5 +1,5 @@
 struct RefractionShader {
-    vec4 indexInside_Outside;  // x=indexInside, y=indexOutside
+    vec4 indexInside_Outside_Roughness;  // x=indexInside, y=indexOutside, z=roughness
     vec4 color_absorption;     // xyz=tint color, w=absorption coefficient
 };
 
@@ -10,8 +10,9 @@ layout(binding = 22, std430) buffer RefractionShaders {
 
 vec3 shadeRefractionShader(inout Ray ray, inout vec3 throughput) {
     const RefractionShader shader = refractionShaders[ray.primitive.shaderIndex];
-    const float indexInside = shader.indexInside_Outside.x;
-    const float indexOutside = shader.indexInside_Outside.y;
+    const float indexInside = shader.indexInside_Outside_Roughness.x;
+    const float indexOutside = shader.indexInside_Outside_Roughness.y;
+    const float roughness = shader.indexInside_Outside_Roughness.z;
     const vec3 glassColor = shader.color_absorption.xyz;
     const float absorptionCoeff = shader.color_absorption.w;
 
@@ -42,7 +43,7 @@ vec3 shadeRefractionShader(inout Ray ray, inout vec3 throughput) {
     // Check whether it is a refraction (refract returns zero on TIR)
     if (refraction != vec3(0)) {
         origin = ray.origin + (ray.rayLength + REFR_EPS) * ray.direction;
-        direction = refraction;
+        direction = refraction + normalize(vec3(rand() - 0.5, rand() - 0.5, rand() - 0.5)) * roughness;
     } else {
         origin = ray.origin + (ray.rayLength - REFR_EPS) * ray.direction;
         direction = reflect(ray.direction, normalVector);

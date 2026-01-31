@@ -40,7 +40,8 @@
             "indexInside": 0.92,
             "indexOutside": 0.84,
             "color": [1.0, 0.2, 0.2],
-            "absorption": 0.5
+            "absorption": 0.5,
+            "roughness": 0.0
         },
         {
             "type": "emissive",
