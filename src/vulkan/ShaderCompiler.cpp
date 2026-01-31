@@ -29,6 +29,10 @@ std::filesystem::file_time_type GetFileModificationTime(const std::string& fileP
 
 std::filesystem::file_time_type GetShaderSourceModificationTime() {
     auto newest = std::filesystem::file_time_type::min();
+    if (!std::filesystem::exists("ShaderCode")) {
+        RT_ERROR("ShaderCode directory not found. Make sure to run the application from the project root directory.");
+        return newest;
+    }
     for (const auto& entry : std::filesystem::recursive_directory_iterator("ShaderCode")) {
         if (entry.is_regular_file() && entry.path().extension() == ".glsl") {
             auto modTime = GetFileModificationTime(entry.path().string());
@@ -96,6 +100,11 @@ void ShaderCompiler::CompileShader(const std::string& shaderPath, const std::str
 }
 
 void ShaderCompiler::CompileAllShaders() {
+    if (!std::filesystem::exists("ShaderCode")) {
+        RT_ERROR("ShaderCode directory not found. Make sure to run the application from the project root directory.");
+        return;
+    }
+
     static bool stopLogSpam = false;
     if (GetCompiledShaderModificationTime() >= GetShaderSourceModificationTime()) {
         if (!stopLogSpam) {
