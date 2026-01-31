@@ -49,7 +49,7 @@ vec3 shadeBRDFShaderGI(inout Ray ray, inout vec3 throughput) {
         vec3 diffuseColor = scale * color * cosine * lightCount;
         illuminationColor += diffuseColor * illum.color;
 
-        ray = shadeIndirectLight(ray, diffuseColor, throughput);
+        ray = shadeIndirectLight(ray, scale, throughput);
     } else {
         ray.remainingBounces = 0;
     }

@@ -68,8 +68,7 @@ Ray shadeIndirectLight(in Ray ray, in vec3 diffuseColor, inout vec3 throughput) 
     const vec3 hitpoint = ray.origin + (ray.rayLength - LGT_EPS) * ray.direction;
     Ray indirectRay = createRay(hitpoint, sampleWorld, ray.remainingBounces - 1);
 
-    float cosTheta = max(dot(normal, sampleWorld), 0.0);
-    throughput *= diffuseColor * cosTheta * 2.0;
+    throughput *= diffuseColor * r1;
 
     return indirectRay;
 }

@@ -107,13 +107,11 @@ vec3 shadeMaterialShaderGI(inout Ray ray, inout vec3 throughput) {
         ray = createRay(origin, reflection, ray.remainingBounces - 1);
         // Scale throughput by reflectance
         throughput *= reflectance;
-        // Return direct lighting scaled by non-reflective portion
-        return fragmentColor * (1.0 - reflectance);
     } else {
         // Diffuse path - use indirect lighting for GI bounces
         ray = shadeIndirectLight(ray, diffuseColor * diffuseCoefficient, throughput);
-        return fragmentColor;
     }
+    return fragmentColor * (1.0 - reflectance);
 }
 
 vec3 shadeMaterialShader(inout Ray ray, inout vec3 throughput) {
@@ -206,11 +204,9 @@ vec3 shadeMaterialShader(inout Ray ray, inout vec3 throughput) {
         ray = createRay(origin, reflection, ray.remainingBounces - 1);
         // Scale throughput by reflectance
         throughput *= reflectance;
-        // Return direct lighting scaled by non-reflective portion
-        return fragmentColor * (1.0 - reflectance);
     } else {
         // Diffuse path - no more bounces in non-GI mode
         ray.remainingBounces = 0;
-        return fragmentColor;
     }
+    return fragmentColor * (1.0 - reflectance);
 }
