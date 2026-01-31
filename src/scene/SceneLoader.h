@@ -6,6 +6,7 @@
 class SceneLoader {
 public:
     static bool LoadScene(class Scene& scene, const std::string& filename);
+    static bool HotReloadSceneIfNeeded(class Scene& scene);
 };
 
 #endif

@@ -46,8 +46,8 @@ void InitScene() {
     s_Scene = std::make_shared<Scene>();
 
     if (Params::GetInputSceneFilename() == "") {
-        if (std::filesystem::exists("default.json")) {
-            Params::s_InputScene = "default.json";
+        if (std::filesystem::exists("scenes/default.json")) {
+            Params::s_InputScene = "scenes/default.json";
         }
     } else {
         SetCameraPosition(Vec3(0, 0, 5));
@@ -87,6 +87,9 @@ void MainLoop() {
 
         if (Params::ENABLE_SHADER_HOT_RELOAD) {
             ShaderCompiler::CompileAllShaders();
+        }
+        if (Params::IsInteractiveMode()) {
+            SceneLoader::HotReloadSceneIfNeeded(*s_Scene);
         }
 
         auto currentTime = std::chrono::steady_clock::now();

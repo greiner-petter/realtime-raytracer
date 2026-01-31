@@ -333,7 +333,27 @@ bool LoadPrimitive(class Scene& scene, const json& primitiveData) {
     return true;
 }
 
+static std::string s_SceneFile;
+static std::filesystem::file_time_type s_LastSceneWriteTime = std::filesystem::file_time_type::max();
+
+std::filesystem::file_time_type GetFileModificationTime(const std::string& filePath);
+
+bool SceneLoader::HotReloadSceneIfNeeded(class Scene& scene) {
+    if (std::filesystem::exists(s_SceneFile)) {
+        if (GetFileModificationTime(s_SceneFile) > s_LastSceneWriteTime) {
+            return LoadScene(scene, s_SceneFile);
+        }
+    }
+    return false;
+}
+
 bool SceneLoader::LoadScene(class Scene& scene, const std::string& filename) {
+    if (!std::filesystem::exists(filename)) {
+        RT_ERROR("{0} does not exist", filename);
+        return false;
+    }
+    s_SceneFile = filename;
+    s_LastSceneWriteTime = GetFileModificationTime(filename);
     scene.ClearScene();
     OffscreenResources::Clear();
     s_Shaders.clear();
