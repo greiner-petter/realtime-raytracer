@@ -31,8 +31,17 @@ vec3 getGlassTransmission(in Ray ray) {
         vec3 absorption = (vec3(1) - glassColor) * absorptionCoeff * ray.rayLength;
         return glassColor * exp(-absorption);
     } else if (ray.primitive.shaderType == 9) {
-        // TODO MaterialShader alpha level
-        return vec3(1);
+        // MaterialShader
+        const MaterialShader shader = materialShaders[ray.primitive.shaderIndex];
+        float opacity = shader.alphaMap_opacity.y;
+        const int alphaMap = int(shader.alphaMap_opacity.x);
+        if (alphaMap != -1)
+            opacity *= sampleTex(alphaMap, ray.surface).r;
+        // If mostly opaque, block the shadow ray
+        if (opacity > 0.5)
+            return vec3(0);
+        // Otherwise let light through (semi-transparent)
+        return vec3(1.0 - opacity);
     } else {
         // Opaque
         return vec3(0);

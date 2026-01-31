@@ -105,10 +105,6 @@ bool intersectMeshTriangle(inout Ray ray, in Triangle triangle) {
         ray.normal = normalize(u * triangle.normal[1].xyz + v * triangle.normal[2].xyz + (1 - u - v) * triangle.normal[0].xyz);
     else
         ray.normal = normalize(cross(edge1, edge2));
-    // Ensure normal faces the ray origin (flip if pointing away)
-    if (dot(ray.normal, ray.direction) > 0.0f) {
-        ray.normal = -ray.normal;
-    }
     // calculate the tangent and bitangent vectors as well
     ray.tangent = normalize(u * triangle.tangent[1].xyz + v * triangle.tangent[2].xyz + (1 - u - v) * triangle.tangent[0].xyz);
     ray.bitangent = normalize(u * triangle.bitangent[1].xyz + v * triangle.bitangent[2].xyz + (1 - u - v) * triangle.bitangent[0].xyz);

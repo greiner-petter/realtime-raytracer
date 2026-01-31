@@ -73,7 +73,10 @@ vec3 shadeMaterialShader(inout Ray ray, inout vec3 throughput) {
     }
 
     // Calculate the reflection vector
-    const vec3 reflection = reflect(ray.direction, normal);
+    vec3 reflNormal = normal;
+    if (dot(reflNormal, ray.direction) > 0.0)
+        reflNormal = -reflNormal;
+    const vec3 reflection = reflect(ray.direction, reflNormal);
 
     // Get diffuse color from texture
     vec3 diffuseColor = vec3(1.0);
