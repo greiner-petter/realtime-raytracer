@@ -37,10 +37,6 @@ vec3 getGlassTransmission(in Ray ray) {
         const int alphaMap = int(shader.alphaMap_opacity.x);
         if (alphaMap != -1)
             opacity *= sampleTex(alphaMap, ray.surface).r;
-        // If mostly opaque, block the shadow ray
-        if (opacity > 0.5)
-            return vec3(0);
-        // Otherwise let light through (semi-transparent)
         return vec3(1.0 - opacity);
     } else {
         // Opaque
