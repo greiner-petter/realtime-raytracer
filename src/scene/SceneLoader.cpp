@@ -22,6 +22,7 @@
 #include "shaders/CookTorranceShader.h"
 #include "shaders/MaterialShader.h"
 #include "shaders/BrdfShader.h"
+#include "shaders/EmissiveShader.h"
 #include "lights/PointLight.h"
 #include "lights/AmbientLight.h"
 #include "lights/SpotLight.h"
@@ -184,6 +185,10 @@ bool LoadShader(class Scene& scene, const json& shader) {
         if (shader.contains("reflectance")) {
             matShader->setReflectance(GetJsonFloat(shader["reflectance"]));
         }
+    } else if (type == "emissive" || type == "emissiveshader") {
+        LOAD_ASSERT(shader.contains("color"), "EmissiveShader must have a 'color' field");
+        float intensity = shader.contains("intensity") ? GetJsonFloat(shader["intensity"]) : 1.0f;
+        shaderPtr = std::make_shared<EmissiveShader>(GetJsonVec3(shader["color"]), intensity);
     } else if (type == "brdf" || type == "brdfshader") {
         LOAD_ASSERT(shader.contains("filename"), "BrdfShader must have a 'filename' field");
         std::string filename = shader["filename"];

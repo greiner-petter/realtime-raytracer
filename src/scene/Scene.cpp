@@ -34,6 +34,7 @@ void Scene::CreateGPUBuffers() {
     simpleTextureSSBO = SSBO::Create(28);
     brdfSSBO = SSBO::Create(29);
     materialSSBO = SSBO::Create(30);
+    emissiveSSBO = SSBO::Create(31);
 
     lightSSBO = SSBO::Create(40);
     pointSSBO = SSBO::Create(41);
@@ -71,6 +72,7 @@ void Scene::ConvertSceneToGPUData() {
     WriteBufferForType(m_Shaders, ShaderType::SimpleTextureShader, *simpleTextureSSBO);
     WriteBufferForType(m_Shaders, ShaderType::MaterialShader, *materialSSBO);
     WriteBufferForType(m_Shaders, ShaderType::BrdfShader, *brdfSSBO);
+    WriteBufferForType(m_Shaders, ShaderType::EmissiveShader, *emissiveSSBO);
 
     WriteBufferForType(m_Lights, LightType::PointLight, *pointSSBO);
     WriteBufferForType(m_Lights, LightType::AmbientLight, *ambientSSBO);

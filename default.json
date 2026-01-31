@@ -41,6 +41,12 @@
             "indexOutside": 0.84,
             "color": [1.0, 0.2, 0.2],
             "absorption": 0.5
+        },
+        {
+            "type": "emissive",
+            "name": "green",
+            "color": [0.0, 1.0, 0.0],
+            "intensity": 3.0
         }
     ],
     "lights": [
@@ -102,7 +108,7 @@
         },
         {
             "type": "box",
-            "shader": "glass",
+            "shader": "green",
             "center": [0.5, -3.99, -2.0],
             "size": [2.0, 2.0, 2.0]
         },

@@ -8,6 +8,7 @@
 #include "BRDFShader.glsl"
 #include "MaterialShader.glsl"
 #include "SimpleTextureShader.glsl"
+#include "EmissiveShader.glsl"
 
 struct Shader {
     uint shaderType;
@@ -80,6 +81,7 @@ vec3 shade(inout Ray ray, inout vec3 throughput) {
         case 8: return shadeBRDFShader(ray, throughput);
         case 9: return shadeMaterialShader(ray, throughput);
         case 10: return shadeSimpleTextureShader(ray, throughput);
+        case 11: return shadeEmissiveShader(ray, throughput);
     }
     ray.remainingBounces = 0;
     return vec3(0);
@@ -96,7 +98,8 @@ vec3 shadeGI(inout Ray ray, inout vec3 throughput) {
         case 7: return shadeCookTorranceShaderGI(ray, throughput);
         case 8: return shadeBRDFShaderGI(ray, throughput);
         case 9: return shadeMaterialShader(ray, throughput);
-        // case 10: return shadeSimpleTextureShaderGI(ray, throughput);
+        case 10: return shadeSimpleTextureShader(ray, throughput);
+        case 11: return shadeEmissiveShader(ray, throughput);
     }
     ray.remainingBounces = 0;
     return vec3(0);
