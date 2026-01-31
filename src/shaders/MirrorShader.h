@@ -5,14 +5,12 @@
 #include "common/Types.h"
 
 struct MirrorShader : public TypedShader<ShaderType::MirrorShader> {
-    MirrorShader() : throughput(Vec4(1, 1, 1, 0)) {}
+    MirrorShader(const Vec3& color = Vec3(1.0f), float roughness = 0.0f) : throughput_roughness(Vec4(color, roughness)) {}
 
-    MirrorShader(const Vec3& color) : throughput(Vec4(color, 0)) {}
+    virtual void* GetDataLayoutBeginPtr() override { return &throughput_roughness; }
+    virtual size_t GetDataSize() const override { return sizeof(throughput_roughness); }
 
-    virtual void* GetDataLayoutBeginPtr() override { return &throughput; }
-    virtual size_t GetDataSize() const override { return sizeof(throughput); }
-
-    Vec4 throughput;
+    Vec4 throughput_roughness;
 };
 
 #endif

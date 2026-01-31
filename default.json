@@ -108,7 +108,7 @@
         },
         {
             "type": "box",
-            "shader": "green",
+            "shader": "mirror",
             "center": [0.5, -3.99, -2.0],
             "size": [2.0, 2.0, 2.0]
         },

@@ -103,8 +103,9 @@ bool LoadShader(class Scene& scene, const json& shader) {
             absorption
         );
     } else if (type == "mirror" || type == "mirrorshader") {
-        LOAD_ASSERT(shader.contains("throughput"), "MirrorShader must have a 'throughput' field");
-        shaderPtr = std::make_shared<MirrorShader>(GetJsonVec3(shader["throughput"]));
+        Vec3 throughput = shader.contains("throughput") ? GetJsonVec3(shader["throughput"]) : Vec3(1.0f);
+        float roughness = shader.contains("roughness") ? GetJsonFloat(shader["roughness"]) : 0.0f;
+        shaderPtr = std::make_shared<MirrorShader>(throughput, roughness);
     } else if (type == "lambert" || type == "lambertshader") {
         LOAD_ASSERT(shader.contains("diffuseColor"), "LambertShader must have a 'diffuseColor' field");
         shaderPtr = std::make_shared<LambertShader>(GetJsonVec3(shader["diffuseColor"]));
