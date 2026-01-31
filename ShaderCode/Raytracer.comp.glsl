@@ -4,6 +4,7 @@
 #include "Constants.glsl"
 #include "UBO.glsl"
 #include "Textures.glsl"
+#include "Brdf.glsl"
 #include "Ray.glsl"
 #include "primitive/Primitive.glsl"
 #include "KDTree.glsl"

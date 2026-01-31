@@ -17,7 +17,7 @@ static std::vector<Brdf*> s_AllBrdfs;
 static std::shared_ptr<SSBO> s_BrdfDataSSBO;  // Binding 4: BRDF sample data
 
 void Brdf::CreateGPUBuffers() {
-    s_BrdfDataSSBO = SSBO::Create(4, SSBO_BRDF_DATA_SIZE);
+    s_BrdfDataSSBO = SSBO::Create(53, SSBO_BRDF_DATA_SIZE);
 }
 
 uint32_t Brdf::GetDataOffset(BrdfID brdfId) {
