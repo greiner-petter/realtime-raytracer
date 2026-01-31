@@ -1,6 +1,7 @@
 #include "UserInterface.h"
 #include "common/Params.h"
 #include "scene/Scene.h"
+#include "scene/SceneLoader.h"
 #include "scene/Camera.h"
 #include "vulkan/Renderer.h"
 #include "common/Window.h"
@@ -89,14 +90,17 @@ void RenderImGuiSettings() {
 
     ImGui::Separator();
 
+    ImGui::Text("Camera Settings");
     // FOV slider (20-200 degrees) - title style
     ImGui::Text("FOV");
+    ImGui::SameLine();
     float fov = GetCameraFOV();
     if (ImGui::SliderFloat("##FOV", &fov, -179.0f, 179.0f, "%1.0f")) {
         SetCameraFOV(fov);
         uniformBufferData.u_SampleIndex = 0;
     }
     ImGui::PopItemWidth();
+    ImGui::Checkbox("Load Camera Settings from JSON", &SceneLoader::s_LoadCameraSettings);
 
     ImGui::Separator();
 

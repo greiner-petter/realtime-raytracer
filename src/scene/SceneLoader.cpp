@@ -58,7 +58,7 @@ static float GetJsonFloat(const json& item) {
 }
 
 bool LoadSettings(class Scene& scene, const json& settings) {
-    if (settings.contains("camera")) {
+    if (settings.contains("camera") && SceneLoader::s_LoadCameraSettings) {
         LOAD_ASSERT(settings["camera"].is_object(), "'camera' must be an object");
         if (settings["camera"].contains("position")) SetCameraPosition(GetJsonVec3(settings["camera"]["position"]));
         if (settings["camera"].contains("forward")) SetCameraForward(GetJsonVec3(settings["camera"]["forward"]));
