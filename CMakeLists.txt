@@ -46,11 +46,6 @@ target_include_directories(tracey_rt PUBLIC src Intermediate/Resources src/third
 # --- Linking ---
 target_link_libraries(tracey_rt PRIVATE glfw glm::glm spdlog::spdlog Vulkan::Vulkan)
 
-# --- GLM SIMD fix for MSVC ---
-if(MSVC)
-    target_compile_definitions(tracey_rt PRIVATE GLM_FORCE_PURE)
-endif()
-
 # --- Platform Specific Linking ---
 if (APPLE)
     # macOS frameworks

@@ -8,7 +8,9 @@
 #include <unordered_map>
 #include <algorithm>
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
+#ifndef _MSC_VER
 #define GLM_FORCE_DEFAULT_ALIGNED_GENTYPES
+#endif
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/quaternion.hpp>
 #include <glm/glm.hpp>
