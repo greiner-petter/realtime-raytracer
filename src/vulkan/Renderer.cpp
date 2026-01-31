@@ -77,6 +77,15 @@ void Renderer::OnRenderResolutionChanged() {
 
     OffscreenResources::Resize();
     ComputePipeline::UpdateDescriptorSets();
+    uniformBufferData.u_SampleIndex = 0;
+}
+
+void Renderer::OnShaderReloaded() {
+    RT_ASSERT(Params::IsInteractiveMode(), "OnShaderReloaded can only be called in interactive mode");
+
+    VulkanContext::DeviceWaitIdle();
+    ComputePipeline::RecreatePipeline();
+    uniformBufferData.u_SampleIndex = 0;
 }
 
 void Renderer::Draw() {

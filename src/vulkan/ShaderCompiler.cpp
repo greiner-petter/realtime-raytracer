@@ -1,6 +1,6 @@
 #include "ShaderCompiler.h"
+#include "Renderer.h"
 
-#include "common/Window.h"
 #include "common/Subprocess.h"
 #include "common/Log.h"
 
@@ -118,8 +118,7 @@ void ShaderCompiler::CompileAllShaders() {
         }
     }
 
-    // Mark as dirty to trigger any necessary reloads
-    Window::GetInstance()->SetResizedFlag(true);
+    Renderer::OnShaderReloaded();
 }
 
 ShaderBinary::ShaderBinary(const std::string& path) {

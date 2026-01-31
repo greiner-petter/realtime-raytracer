@@ -12,6 +12,7 @@ public:
     static void Draw();
     static void OnWindowSizeChanged();
     static void OnRenderResolutionChanged();
+    static void OnShaderReloaded();
     static void SaveCurrentFrameToDisk(const std::string& filePath);
 
 private:

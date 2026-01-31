@@ -65,7 +65,6 @@ void RenderImGuiSettings() {
         Params::s_Width = static_cast<uint32_t>(resWidth);
         Params::s_Height = static_cast<uint32_t>(resHeight);
         Renderer::OnRenderResolutionChanged();
-        uniformBufferData.u_SampleIndex = 0;
     }
 
     ImGui::Separator();
