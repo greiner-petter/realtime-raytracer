@@ -102,7 +102,7 @@ vec3 shadeGI(inout Ray ray, inout vec3 throughput) {
         case 6: return shadePhongShaderGI(ray, throughput);
         case 7: return shadeCookTorranceShaderGI(ray, throughput);
         case 8: return shadeBRDFShaderGI(ray, throughput);
-        case 9: return shadeMaterialShader(ray, throughput);
+        case 9: return shadeMaterialShaderGI(ray, throughput);
         case 10: return shadeSimpleTextureShader(ray, throughput);
         case 11: return shadeEmissiveShader(ray, throughput);
     }
