@@ -24,7 +24,7 @@ void RenderImGuiSettings() {
     }
 
     ImGui::SetNextWindowPos(ImVec2(0, 0), ImGuiCond_FirstUseEver);
-    ImGui::SetNextWindowSize(ImVec2(256, 256), ImGuiCond_FirstUseEver);
+    ImGui::SetNextWindowSize(ImVec2(160, 280), ImGuiCond_FirstUseEver);
     ImGui::Begin("Raytracer Settings");
 
     // Stats display (FPS, Samples first)
@@ -53,14 +53,10 @@ void RenderImGuiSettings() {
         resHeight = std::clamp(resHeight, 1, 16000);
         resChanged = true;
     }
-    static bool fitToWindow = false;
-    ImGui::Checkbox("Fit Resolution to Window", &fitToWindow);
-    if (fitToWindow) {
-        if (resWidth != Window::GetInstance()->GetWidth() || resHeight != Window::GetInstance()->GetHeight()) {
-            resWidth = Window::GetInstance()->GetWidth();
-            resHeight = Window::GetInstance()->GetHeight();
-            resChanged = true;
-        }
+    if (ImGui::Button("Fit to Window", ImVec2(143, 0))) {
+        resWidth = Window::GetInstance()->GetWidth();
+        resHeight = Window::GetInstance()->GetHeight();
+        resChanged = true;
     }
 
     ImGui::PopItemWidth();
@@ -76,6 +72,7 @@ void RenderImGuiSettings() {
 
     // Max bounces (1-16) - title style
     ImGui::Text("Max Bounces");
+    ImGui::PushItemWidth(143);
     int bounces = static_cast<int>(uniformBufferData.u_Raybounces);
     if (ImGui::SliderInt("##MaxBounces", &bounces, 1, 16)) {
         uniformBufferData.u_Raybounces = static_cast<uint32_t>(bounces);
@@ -96,10 +93,11 @@ void RenderImGuiSettings() {
     // FOV slider (20-200 degrees) - title style
     ImGui::Text("FOV");
     float fov = GetCameraFOV();
-    if (ImGui::SliderFloat("##FOV", &fov, 20.0f, 200.0f, "%.1f")) {
+    if (ImGui::SliderFloat("##FOV", &fov, -179.0f, 179.0f, "%1.0f")) {
         SetCameraFOV(fov);
         uniformBufferData.u_SampleIndex = 0;
     }
+    ImGui::PopItemWidth();
 
     ImGui::Separator();
 

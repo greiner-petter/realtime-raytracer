@@ -111,8 +111,6 @@ void UpdateCameraPosition(float deltaTime, float& deltaRoll) {
     if (Input::IsKeyPressed(Key::F))
         uniformBufferData.u_FocusDistance -= FOV_SPEED * deltaTime;
 
-    // Clamp focus distance to reasonable values
-    uniformBufferData.u_FocusDistance = glm::clamp(uniformBufferData.u_FocusDistance, 0.1f, 10.0f);
 
     const float CAMERA_SPEED = 5.0f;
     if (glm::length(direction) > 0.0f)

@@ -69,8 +69,6 @@ void Renderer::OnWindowSizeChanged() {
 
     FreeCommandBuffers();
     CreateCommandBuffers();
-
-    uniformBufferData.u_SampleIndex = 0; // Reset accumulation after shader reload
 }
 
 void Renderer::OnRenderResolutionChanged() {
