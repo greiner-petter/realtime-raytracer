@@ -16,6 +16,7 @@ struct Params {
     inline static bool s_InteractiveMode = true;
     inline static bool s_EnableGI = true;
     inline static uint32_t s_Samples = 1024;
+    inline static uint32_t s_Bounces = 4;
     inline static std::string s_ResultImageName = "result.png";
     inline static std::string s_InputScene = "";
 

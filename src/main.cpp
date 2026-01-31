@@ -44,6 +44,7 @@ void InitWindow() {
 
 void InitScene() {
     s_Scene = std::make_shared<Scene>();
+    uniformBufferData.u_Raybounces = Params::s_Bounces;
 
     if (Params::GetInputSceneFilename() == "") {
         if (std::filesystem::exists("scenes/default.json")) {

@@ -12,15 +12,18 @@ Vec3 cameraForward = VecUtils::Forward;
 Vec3 cameraUp = VecUtils::Up;
 
 void SetCameraOrientation(const Vec3& forward, const Vec3& up) {
-    Vec3 right = glm::cross(glm::normalize(up), glm::normalize(forward));
+    // Ensure orthonormal basis by re-orthogonalizing
+    Vec3 fwd = glm::normalize(forward);
+    Vec3 right = glm::normalize(glm::cross(up, fwd));
+    Vec3 orthogonalUp = glm::normalize(glm::cross(fwd, right));
 
-    uniformBufferData.u_CameraForward = Vec4(glm::normalize(forward), 0.0f);
-    uniformBufferData.u_CameraRight = Vec4(glm::normalize(right), 0.0f);
-    uniformBufferData.u_CameraUp = Vec4(glm::normalize(up), 0.0f);
+    uniformBufferData.u_CameraForward = Vec4(fwd, 0.0f);
+    uniformBufferData.u_CameraRight = Vec4(right, 0.0f);
+    uniformBufferData.u_CameraUp = Vec4(orthogonalUp, 0.0f);
 
     // Update stored orientation
-    cameraForward = glm::normalize(forward);
-    cameraUp = glm::normalize(up);
+    cameraForward = fwd;
+    cameraUp = orthogonalUp;
 }
 
 void SetCameraForward(const Vec3& forward) {
@@ -76,7 +79,9 @@ void UpdateCameraDirection(float deltaX, float deltaY, float deltaRoll) {
         cameraUp = glm::normalize(rollRotation * cameraUp);
     }
 
-    RT_INFO("Forward: ({0}, {1}, {2})", cameraForward.x, cameraForward.y, cameraForward.z);
+    RT_INFO("Forward: ({0}, {1}, {2}), Position: ({3}, {4}, {5})", 
+        cameraForward.x, cameraForward.y, cameraForward.z,
+        uniformBufferData.u_CameraPosition.x, uniformBufferData.u_CameraPosition.y, uniformBufferData.u_CameraPosition.z);
 
     SetCameraOrientation(cameraForward, cameraUp);
 }

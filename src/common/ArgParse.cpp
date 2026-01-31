@@ -125,8 +125,11 @@ void ArgParse::SetUpArgFunctions() {
         Params::s_InteractiveMode = false;
     }, "<width> <height> set the image dimension");
     AddArgFunction({"-s", "--samples"}, [](ArgFuncInput input) {
-        Params::s_Samples = NextArg<uint32_t>(input); 
+        Params::s_Samples = NextArg<uint32_t>(input);
     }, "<samples> set the image samples");
+    AddArgFunction({"-b", "--bounces"}, [](ArgFuncInput input) {
+        Params::s_Bounces = NextArg<uint32_t>(input);
+    }, "<bounces> set the number of ray bounces");
     AddArgFunction("--non-interactive", [](ArgFuncInput input) { Params::s_InteractiveMode = false; }, "Run tracey_rt in non-interactive mode explicitly");
     AddArgFunction("--version", PrintVersion, "Display the version");
 }
