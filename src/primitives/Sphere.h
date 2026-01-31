@@ -19,8 +19,8 @@ struct Sphere : public TypedPrimitive<PrimitiveType::Sphere> {
     void SetCenter(const Vec3& center) { center_radius.x = center.x; center_radius.y = center.y; center_radius.z = center.z; }
     void SetRadius(float radius) { center_radius.w = radius; }
 
-    float minimumBounds(int dimension) const { return this->GetCenter()[dimension] - this->GetRadius(); }
-    float maximumBounds(int dimension) const { return this->GetCenter()[dimension] + this->GetRadius(); }
+    float minimumBounds(int dimension) const override { return this->GetCenter()[dimension] - this->GetRadius(); }
+    float maximumBounds(int dimension) const override { return this->GetCenter()[dimension] + this->GetRadius(); }
 
     virtual void* GetDataLayoutBeginPtr() override { return &center_radius; }
     virtual size_t GetDataSize() const override { return sizeof(center_radius); }

@@ -34,8 +34,8 @@ struct Triangle : public TypedPrimitive<PrimitiveType::Triangle> {
     Vec3 getBitangent(size_t index) { return this->bitangent[index]; }
     Vec2 getTexCoord(size_t index) { return this->surface[index]; }
     
-    float minimumBounds(int dimension) const { return std::min(this->vertex[0][dimension], std::min(this->vertex[1][dimension], this->vertex[2][dimension])); }
-    float maximumBounds(int dimension) const { return std::max(this->vertex[0][dimension], std::max(this->vertex[1][dimension], this->vertex[2][dimension])); }
+    float minimumBounds(int dimension) const override { return std::min(this->vertex[0][dimension], std::min(this->vertex[1][dimension], this->vertex[2][dimension])); }
+    float maximumBounds(int dimension) const override { return std::max(this->vertex[0][dimension], std::max(this->vertex[1][dimension], this->vertex[2][dimension])); }
 
 
     virtual void* GetDataLayoutBeginPtr() override { return &vertex[0]; }

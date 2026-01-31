@@ -13,8 +13,8 @@ struct Box : public TypedPrimitive<PrimitiveType::Box> {
     void setCenter(Vec3 const &center) { this->center = Vec4(center, 0); }
     void setSize(Vec3 const &size) { this->size = Vec4(size, 0); }
 
-    float minimumBounds(int dimension) const { return this->center[dimension] - this->size[dimension] / 2; }
-    float maximumBounds(int dimension) const { return this->center[dimension] + this->size[dimension] / 2; }
+    float minimumBounds(int dimension) const override { return this->center[dimension] - this->size[dimension] / 2; }
+    float maximumBounds(int dimension) const override { return this->center[dimension] + this->size[dimension] / 2; }
 
     virtual void* GetDataLayoutBeginPtr() override { return &center[0]; }
     virtual size_t GetDataSize() const override { return sizeof(Vec4) * 2; }
