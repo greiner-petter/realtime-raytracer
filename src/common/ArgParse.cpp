@@ -25,13 +25,13 @@ uint32_t to_uint32(const std::string& s) {
 
 template<>
 std::string NextArg<std::string>(ArgFuncInput input) {
-    RT_ASSERT(input.second + 1 >= int(input.first.size()) - 2, "missing command line argument");
+    RT_ASSERT(input.second + 1 < int(input.first.size()), "missing command line argument");
     return input.first[++input.second];
 }
 
 template<>
 uint32_t NextArg<uint32_t>(ArgFuncInput input) {
-    RT_ASSERT(input.second + 1 >= int(input.first.size()) - 2, "missing command line argument");
+    RT_ASSERT(input.second + 1 < int(input.first.size()), "missing command line argument");
     return to_uint32(input.first[++input.second]);
 }
 
