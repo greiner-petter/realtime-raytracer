@@ -1,10 +1,15 @@
 #include "ProgressBar.h"
 #include "Params.h"
 #include <iostream>
-#include <sys/ioctl.h>
-#include <unistd.h>
 #include <string>
 #include <chrono>
+
+#ifdef _WIN32
+#include <windows.h>
+#else
+#include <sys/ioctl.h>
+#include <unistd.h>
+#endif
 
 namespace termcolor {
     const std::string reset  = "\033[0m";
@@ -48,9 +53,18 @@ void ProgressBar::print_progress_bar(double percentage,
     std::string remaining_str = format_time(remaining_seconds);
 
     // Terminal width
+    int cols = 80; // default fallback
+#ifdef _WIN32
+    CONSOLE_SCREEN_BUFFER_INFO csbi;
+    if (GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &csbi)) {
+        cols = csbi.srWindow.Right - csbi.srWindow.Left + 1;
+    }
+#else
     struct winsize w{};
-    ioctl(STDOUT_FILENO, TIOCGWINSZ, &w);
-    int cols = w.ws_col;
+    if (ioctl(STDOUT_FILENO, TIOCGWINSZ, &w) == 0 && w.ws_col > 0) {
+        cols = w.ws_col;
+    }
+#endif
 
     const int bar_width = 50;
     int pos = static_cast<int>(bar_width * percentage);
