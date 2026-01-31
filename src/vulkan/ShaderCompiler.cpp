@@ -1,5 +1,6 @@
 #include "ShaderCompiler.h"
 #include "Renderer.h"
+#include "VulkanContext.h"
 
 #include "common/Subprocess.h"
 #include "common/Log.h"
@@ -118,7 +119,9 @@ void ShaderCompiler::CompileAllShaders() {
         }
     }
 
-    Renderer::OnShaderReloaded();
+    if (VulkanContext::GetDevice() != VK_NULL_HANDLE) {
+        Renderer::OnShaderReloaded();
+    }
 }
 
 ShaderBinary::ShaderBinary(const std::string& path) {
