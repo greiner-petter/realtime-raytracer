@@ -10,7 +10,7 @@ layout(binding = 24, std430) buffer SimpleShadowShaders {
 Light getRandomLight();
 Ray shadeIndirectLight(in Ray ray, in vec3 diffuseColor, inout vec3 throughput);
 
-vec3 shadeSimpleShadowShaderGI(inout Ray ray, in vec3 throughput) {
+vec3 shadeSimpleShadowShaderGI(inout Ray ray, inout vec3 throughput) {
     const SimpleShadowShader shader = simpleShadowShaders[ray.primitive.shaderIndex];
     const vec3 objectColor = shader.objectColor.xyz;
     

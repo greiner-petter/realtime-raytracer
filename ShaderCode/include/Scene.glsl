@@ -83,7 +83,7 @@ vec3 traceRay(inout Ray ray) {
             // ... otherwise look up the environment map ...
             const float phi = acos(ray.direction.y);
             const float rho = 2 * atan(ray.direction.z, ray.direction.x) + float(PI);
-            return sampleTex(int(u_EnvMapTexture), vec2(rho / (2.0f * float(PI)), phi / float(PI))).xyz;
+            return radiance + throughput * sampleTex(int(u_EnvMapTexture), vec2(rho / (2.0f * float(PI)), phi / float(PI))).xyz;
         } else {
             // ... if all else fails, just return the background color
             return radiance + throughput * getSkyColor(ray.direction);
