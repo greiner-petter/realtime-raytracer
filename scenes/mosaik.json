@@ -1,0 +1,319 @@
+{
+    "settings": {
+        "camera": {
+            "position": [-11, -1.3, -9],
+            "forward": [0.9, 0.09, 0.3],
+            "up": [0, 1, 0],
+            "fov": 60.0
+        },
+        "gi": true
+    },
+    "shaders": [
+        {
+            "type": "lambert",
+            "name": "white",
+            "diffuseColor": [1.0, 1.0, 1.0]
+        },
+        {
+            "type": "refraction",
+            "name": "glass_red",
+            "indexInside": 1.5,
+            "indexOutside": 1.0,
+            "color": [1.0, 0.2, 0.2],
+            "absorption": 1,
+            "roughness": 0.0
+        },
+        {
+            "type": "refraction",
+            "name": "glass_orange",
+            "indexInside": 1.5,
+            "indexOutside": 1.0,
+            "color": [1.0, 0.5, 0.1],
+            "absorption": 1,
+            "roughness": 0.0
+        },
+        {
+            "type": "refraction",
+            "name": "glass_yellow",
+            "indexInside": 1.5,
+            "indexOutside": 1.0,
+            "color": [1.0, 1.0, 0.2],
+            "absorption": 1,
+            "roughness": 0.0
+        },
+        {
+            "type": "refraction",
+            "name": "glass_lime",
+            "indexInside": 1.5,
+            "indexOutside": 1.0,
+            "color": [0.5, 1.0, 0.2],
+            "absorption": 1,
+            "roughness": 0.0
+        },
+        {
+            "type": "refraction",
+            "name": "glass_green",
+            "indexInside": 1.5,
+            "indexOutside": 1.0,
+            "color": [0.2, 1.0, 0.3],
+            "absorption": 1,
+            "roughness": 0.0
+        },
+        {
+            "type": "refraction",
+            "name": "glass_teal",
+            "indexInside": 1.5,
+            "indexOutside": 1.0,
+            "color": [0.2, 1.0, 0.8],
+            "absorption": 1,
+            "roughness": 0.0
+        },
+        {
+            "type": "refraction",
+            "name": "glass_cyan",
+            "indexInside": 1.5,
+            "indexOutside": 1.0,
+            "color": [0.2, 0.9, 1.0],
+            "absorption": 1,
+            "roughness": 0.0
+        },
+        {
+            "type": "refraction",
+            "name": "glass_blue",
+            "indexInside": 1.5,
+            "indexOutside": 1.0,
+            "color": [0.2, 0.4, 1.0],
+            "absorption": 1,
+            "roughness": 0.0
+        },
+        {
+            "type": "refraction",
+            "name": "glass_indigo",
+            "indexInside": 1.5,
+            "indexOutside": 1.0,
+            "color": [0.4, 0.2, 1.0],
+            "absorption": 1,
+            "roughness": 0.0
+        },
+        {
+            "type": "refraction",
+            "name": "glass_purple",
+            "indexInside": 1.5,
+            "indexOutside": 1.0,
+            "color": [0.7, 0.2, 1.0],
+            "absorption": 1,
+            "roughness": 0.0
+        },
+        {
+            "type": "refraction",
+            "name": "glass_magenta",
+            "indexInside": 1.5,
+            "indexOutside": 1.0,
+            "color": [1.0, 0.2, 0.8],
+            "absorption": 1,
+            "roughness": 0.0
+        },
+        {
+            "type": "refraction",
+            "name": "glass_pink",
+            "indexInside": 1.5,
+            "indexOutside": 1.0,
+            "color": [1.0, 0.4, 0.6],
+            "absorption": 1,
+            "roughness": 0.0
+        },
+        {
+            "type": "refraction",
+            "name": "glass_coral",
+            "indexInside": 1.5,
+            "indexOutside": 1.0,
+            "color": [1.0, 0.5, 0.4],
+            "absorption": 1,
+            "roughness": 0.0
+        },
+        {
+            "type": "refraction",
+            "name": "glass_gold",
+            "indexInside": 1.5,
+            "indexOutside": 1.0,
+            "color": [1.0, 0.8, 0.2],
+            "absorption": 1,
+            "roughness": 0.0
+        },
+        {
+            "type": "refraction",
+            "name": "glass_chartreuse",
+            "indexInside": 1.5,
+            "indexOutside": 1.0,
+            "color": [0.7, 1.0, 0.2],
+            "absorption": 1,
+            "roughness": 0.0
+        },
+        {
+            "type": "refraction",
+            "name": "glass_spring",
+            "indexInside": 1.5,
+            "indexOutside": 1.0,
+            "color": [0.2, 1.0, 0.5],
+            "absorption": 1,
+            "roughness": 0.0
+        },
+        {
+            "type": "refraction",
+            "name": "glass_azure",
+            "indexInside": 1.5,
+            "indexOutside": 1.0,
+            "color": [0.2, 0.6, 1.0],
+            "absorption": 1,
+            "roughness": 0.0
+        },
+        {
+            "type": "refraction",
+            "name": "glass_violet",
+            "indexInside": 1.5,
+            "indexOutside": 1.0,
+            "color": [0.6, 0.2, 1.0],
+            "absorption": 1,
+            "roughness": 0.0
+        },
+        {
+            "type": "refraction",
+            "name": "glass_rose",
+            "indexInside": 1.5,
+            "indexOutside": 1.0,
+            "color": [1.0, 0.2, 0.5],
+            "absorption": 1,
+            "roughness": 0.0
+        },
+        {
+            "type": "refraction",
+            "name": "glass_salmon",
+            "indexInside": 1.5,
+            "indexOutside": 1.0,
+            "color": [1.0, 0.6, 0.5],
+            "absorption": 1,
+            "roughness": 0.0
+        },
+        {
+            "type": "refraction",
+            "name": "glass_peach",
+            "indexInside": 1.5,
+            "indexOutside": 1.0,
+            "color": [1.0, 0.7, 0.4],
+            "absorption": 1,
+            "roughness": 0.0
+        },
+        {
+            "type": "refraction",
+            "name": "glass_mint",
+            "indexInside": 1.5,
+            "indexOutside": 1.0,
+            "color": [0.4, 1.0, 0.7],
+            "absorption": 1,
+            "roughness": 0.0
+        },
+        {
+            "type": "refraction",
+            "name": "glass_sky",
+            "indexInside": 1.5,
+            "indexOutside": 1.0,
+            "color": [0.4, 0.8, 1.0],
+            "absorption": 1,
+            "roughness": 0.0
+        },
+        {
+            "type": "refraction",
+            "name": "glass_lavender",
+            "indexInside": 1.5,
+            "indexOutside": 1.0,
+            "color": [0.8, 0.5, 1.0],
+            "absorption": 1,
+            "roughness": 0.0
+        },
+        {
+            "type": "refraction",
+            "name": "glass_crimson",
+            "indexInside": 1.5,
+            "indexOutside": 1.0,
+            "color": [0.9, 0.1, 0.3],
+            "absorption": 1,
+            "roughness": 0.0
+        }
+    ],
+    "lights": [
+        {
+            "type": "point",
+            "position": [0.0, 0.0, 2.0],
+            "intensity": 25.0,
+            "radius": 2
+        }
+    ],
+    "primitives": [
+        {
+            "type": "plane",
+            "shader": "white",
+            "origin": [0.0, 0.0, 8.0],
+            "normal": [0.0, 0.0, -1.0]
+        },
+        {
+            "type": "plane",
+            "shader": "white",
+            "origin": [0.0, 0.0, -10.0],
+            "normal": [0.0, 0.0, 1.0]
+        },
+        {
+            "type": "plane",
+            "shader": "white",
+            "origin": [0.0, 6.0, 0.0],
+            "normal": [0.0, -1.0, 0.0]
+        },
+        {
+            "type": "plane",
+            "shader": "white",
+            "origin": [0.0, -6.0, 0.0],
+            "normal": [0.0, 1.0, 0.0]
+        },
+        {
+            "type": "plane",
+            "shader": "white",
+            "origin": [6.0, 0.0, 0.0],
+            "normal": [-1.0, 0.0, 0.0]
+        },
+        {
+            "type": "plane",
+            "shader": "white",
+            "origin": [-10.0, 0.0, 0.0],
+            "normal": [1.0, 0.0, 0.0]
+        },
+
+        { "type": "box", "shader": "glass_red", "center": [-2.0, 2.0, 0.1], "size": [0.9, 0.9, 0.15] },
+        { "type": "box", "shader": "glass_orange", "center": [-1.0, 2.0, 0.2], "size": [0.9, 0.9, 0.15] },
+        { "type": "box", "shader": "glass_yellow", "center": [0.0, 2.0, 0.3], "size": [0.9, 0.9, 0.15] },
+        { "type": "box", "shader": "glass_lime", "center": [1.0, 2.0, 0.4], "size": [0.9, 0.9, 0.15] },
+        { "type": "box", "shader": "glass_green", "center": [2.0, 2.0, 0.5], "size": [0.9, 0.9, 0.15] },
+
+        { "type": "box", "shader": "glass_teal", "center": [-2.0, 1.0, -0.05], "size": [0.9, 0.9, 0.15] },
+        { "type": "box", "shader": "glass_cyan", "center": [-1.0, 1.0, 0.05], "size": [0.9, 0.9, 0.15] },
+        { "type": "box", "shader": "glass_blue", "center": [0.0, 1.0, 0.15], "size": [0.9, 0.9, 0.15] },
+        { "type": "box", "shader": "glass_indigo", "center": [1.0, 1.0, 0.25], "size": [0.9, 0.9, 0.15] },
+        { "type": "box", "shader": "glass_purple", "center": [2.0, 1.0, 0.35], "size": [0.9, 0.9, 0.15] },
+
+        { "type": "box", "shader": "glass_magenta", "center": [-2.0, 0.0, -0.2], "size": [0.9, 0.9, 0.15] },
+        { "type": "box", "shader": "glass_pink", "center": [-1.0, 0.0, -0.1], "size": [0.9, 0.9, 0.15] },
+        { "type": "box", "shader": "glass_coral", "center": [0.0, 0.0, 0.0], "size": [0.9, 0.9, 0.15] },
+        { "type": "box", "shader": "glass_gold", "center": [1.0, 0.0, 0.1], "size": [0.9, 0.9, 0.15] },
+        { "type": "box", "shader": "glass_chartreuse", "center": [2.0, 0.0, 0.2], "size": [0.9, 0.9, 0.15] },
+
+        { "type": "box", "shader": "glass_spring", "center": [-2.0, -1.0, -0.35], "size": [0.9, 0.9, 0.15] },
+        { "type": "box", "shader": "glass_azure", "center": [-1.0, -1.0, -0.25], "size": [0.9, 0.9, 0.15] },
+        { "type": "box", "shader": "glass_violet", "center": [0.0, -1.0, -0.15], "size": [0.9, 0.9, 0.15] },
+        { "type": "box", "shader": "glass_rose", "center": [1.0, -1.0, -0.05], "size": [0.9, 0.9, 0.15] },
+        { "type": "box", "shader": "glass_salmon", "center": [2.0, -1.0, 0.05], "size": [0.9, 0.9, 0.15] },
+
+        { "type": "box", "shader": "glass_peach", "center": [-2.0, -2.0, -0.5], "size": [0.9, 0.9, 0.15] },
+        { "type": "box", "shader": "glass_mint", "center": [-1.0, -2.0, -0.4], "size": [0.9, 0.9, 0.15] },
+        { "type": "box", "shader": "glass_sky", "center": [0.0, -2.0, -0.3], "size": [0.9, 0.9, 0.15] },
+        { "type": "box", "shader": "glass_lavender", "center": [1.0, -2.0, -0.2], "size": [0.9, 0.9, 0.15] },
+        { "type": "box", "shader": "glass_crimson", "center": [2.0, -2.0, -0.1], "size": [0.9, 0.9, 0.15] }
+    ]
+}

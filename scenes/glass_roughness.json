@@ -1,0 +1,227 @@
+{
+    "settings": {
+        "camera": {
+            "position": [0.0, 0.0, -15.0],
+            "forward": [0.0, 0.0, 1.0],
+            "up": [0.0, 1.0, 0.0],
+            "fov": 50.0
+        },
+        "gi": true
+    },
+    "shaders": [
+        {
+            "type": "lambert",
+            "name": "red",
+            "diffuseColor": [1.0, 0.3, 0.2]
+        },
+        {
+            "type": "lambert",
+            "name": "white",
+            "diffuseColor": [1.0, 1.0, 1.0]
+        },
+        {
+            "type": "lambert",
+            "name": "blue",
+            "diffuseColor": [0.2, 0.3, 1.0]
+        },
+        {
+            "type": "material",
+            "name": "earth",
+            "diffuseMap": "data/earth_diffuse.ppm",
+            "diffuseCoefficient": 1
+        },
+        {
+            "type": "refraction",
+            "name": "glass0",
+            "indexInside": 0.92,
+            "indexOutside": 0.84,
+            "color": [1, 1, 1],
+            "absorption": 1,
+            "roughness": 0.0
+        },
+        {
+            "type": "refraction",
+            "name": "glass1",
+            "indexInside": 0.92,
+            "indexOutside": 0.84,
+            "color": [1, 1, 1],
+            "absorption": 1,
+            "roughness": 0.05
+        },
+        {
+            "type": "refraction",
+            "name": "glass2",
+            "indexInside": 0.92,
+            "indexOutside": 0.84,
+            "color": [1, 1, 1],
+            "absorption": 1,
+            "roughness": 0.1
+        },
+        {
+            "type": "refraction",
+            "name": "glass3",
+            "indexInside": 0.92,
+            "indexOutside": 0.84,
+            "color": [1, 1, 1],
+            "absorption": 1,
+            "roughness": 0.15
+        },
+        {
+            "type": "refraction",
+            "name": "glass4",
+            "indexInside": 0.92,
+            "indexOutside": 0.84,
+            "color": [1, 1, 1],
+            "absorption": 1,
+            "roughness": 0.2
+        },
+        {
+            "type": "refraction",
+            "name": "glass5",
+            "indexInside": 0.92,
+            "indexOutside": 0.84,
+            "color": [1, 1, 1],
+            "absorption": 1,
+            "roughness": 0.25
+        },
+        {
+            "type": "refraction",
+            "name": "glass6",
+            "indexInside": 0.92,
+            "indexOutside": 0.84,
+            "color": [1, 1, 1],
+            "absorption": 1,
+            "roughness": 0.3
+        },
+        {
+            "type": "refraction",
+            "name": "glass7",
+            "indexInside": 0.92,
+            "indexOutside": 0.84,
+            "color": [1, 1, 1],
+            "absorption": 1,
+            "roughness": 0.35
+        },
+        {
+            "type": "refraction",
+            "name": "glass8",
+            "indexInside": 0.92,
+            "indexOutside": 0.84,
+            "color": [1, 1, 1],
+            "absorption": 1,
+            "roughness": 0.0
+        },
+        {
+            "type": "mirror",
+            "name": "mirror0",
+            "throughput": [1,1,1],
+            "roughness": 0.02
+        }
+    ],
+    "lights": [
+        {
+            "type": "point",
+            "position": [0.0, 4.0, 0.0],
+            "intensity": 10.0,
+            "radius": 0
+        }
+    ],
+    "primitives": [
+        {
+            "type": "sphere",
+            "shader": "glass0",
+            "center": [-2.5, 2.5, 0],
+            "radius": 1
+        },
+        {
+            "type": "sphere",
+            "shader": "glass1",
+            "center": [-2.5, 0, 0],
+            "radius": 1
+        },
+        {
+            "type": "sphere",
+            "shader": "glass2",
+            "center": [-2.5, -2.5, 0],
+            "radius": 1
+        },
+        {
+            "type": "sphere",
+            "shader": "glass3",
+            "center": [0, 2.5, 0],
+            "radius": 1
+        },
+        {
+            "type": "sphere",
+            "shader": "glass4",
+            "center": [0, 0, 0],
+            "radius": 1
+        },
+        {
+            "type": "sphere",
+            "shader": "glass5",
+            "center": [0, -2.5, 0],
+            "radius": 1
+        },
+        {
+            "type": "sphere",
+            "shader": "glass6",
+            "center": [2.5, 2.5, 0],
+            "radius": 1
+        },
+        {
+            "type": "sphere",
+            "shader": "glass7",
+            "center": [2.5, 0, 0],
+            "radius": 1
+        },
+        {
+            "type": "sphere",
+            "shader": "glass8",
+            "center": [2.5, -2.5, 0],
+            "radius": 1
+        },
+        {
+            "type": "box",
+            "shader": "mirror0",
+            "center": [0, 0, 10],
+            "size": [10, 10, 0.1]
+        },
+        {
+            "type": "plane",
+            "shader": "mirror0",
+            "origin": [0.0, 0.0, 5.0],
+            "normal": [0.0, 0.0, -1.0]
+        },
+        {
+            "type": "plane",
+            "shader": "white",
+            "origin": [0.0, 0.0, -5.0],
+            "normal": [0.0, 0.0, 1.0]
+        },
+        {
+            "type": "plane",
+            "shader": "white",
+            "origin": [0.0, 5.0, 0.0],
+            "normal": [0.0, -1.0, 0.0]
+        },
+        {
+            "type": "plane",
+            "shader": "white",
+            "origin": [0.0, -5.0, 0.0],
+            "normal": [0.0, 1.0, 0.0]
+        },
+        {
+            "type": "plane",
+            "shader": "blue",
+            "origin": [5.0, 0.0, 0.0],
+            "normal": [-1.0, 0.0, 0.0]
+        },
+        {
+            "type": "plane",
+            "shader": "red",
+            "origin": [-5.0, 0.0, 0.0],
+            "normal": [1.0, 0.0, 0.0]
+        }
+    ]
+}

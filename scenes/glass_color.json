@@ -1,10 +1,10 @@
 {
     "settings": {
         "camera": {
-            "position": [-5.009121, -1.9629368, -5.1352544],
-            "forward": [0.60489273, -0.06932662, 0.7932834],
-            "up": [0.15525332, 0.98735315, -0.03209666],
-            "fov": 67.0
+            "position": [0.0, 0.0, -15.0],
+            "forward": [0.0, 0.0, 1.0],
+            "up": [0.0, 1.0, 0.0],
+            "fov": 50.0
         },
         "gi": true
     },
@@ -25,40 +25,27 @@
             "diffuseColor": [0.2, 0.3, 1.0]
         },
         {
-            "type": "lambert",
-            "name": "orange",
-            "diffuseColor": [1.0, 0.5, 0.0]
-        },
-        {
             "type": "mirror",
-            "name": "mirror",
-            "throughput": [0.95, 0.95, 0.95]
-        },
-        {
-            "type": "refraction",
-            "name": "glass",
-            "indexInside": 0.92,
-            "indexOutside": 0.84,
-            "color": [1, 1, 1],
-            "absorption": 0.5,
-            "roughness": 0.0
-        },
-        {
-            "type": "emissive",
-            "name": "green",
-            "color": [0.0, 1.0, 0.0],
-            "intensity": 3.0
+            "name": "mirror0",
+            "throughput": [0.5, 1, 0],
+            "roughness": 0.1
         }
     ],
     "lights": [
         {
             "type": "point",
             "position": [0.0, 4.0, 0.0],
-            "intensity": 20.0,
+            "intensity": 10.0,
             "radius": 1
         }
     ],
     "primitives": [
+        {
+            "type": "sphere",
+            "shader": "mirror0",
+            "center": [0, 0, 0],
+            "radius": 2
+        },
         {
             "type": "plane",
             "shader": "white",
@@ -94,24 +81,6 @@
             "shader": "red",
             "origin": [-5.0, 0.0, 0.0],
             "normal": [1.0, 0.0, 0.0]
-        },
-        {
-            "type": "box",
-            "shader": "glass",
-            "center": [-3.0, -1.999, 0.0],
-            "size": [1.0, 6.0, 1.0]
-        },
-        {
-            "type": "box",
-            "shader": "glass",
-            "center": [0.5, -3.999, -2.0],
-            "size": [2.0, 2.0, 2.0]
-        },
-        {
-            "type": "sphere",
-            "shader": "glass",
-            "center": [-0.5, -2, 2.0],
-            "radius": 2
         }
     ]
 }

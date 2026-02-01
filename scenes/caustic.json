@@ -1,0 +1,150 @@
+{
+    "settings": {
+        "camera": {
+            "position": [6.1546693, 0.88115185, -8.833921],
+            "forward": [-0.6030298, -0.07425487, 0.7942552],
+            "up": [0.0, 1.0, 0.0],
+            "fov": 60.0
+        },
+        "gi": true
+    },
+    "shaders": [
+        {
+            "type": "lambert",
+            "name": "white",
+            "diffuseColor": [1.0, 1.0, 1.0]
+        },
+        {
+            "type": "lambert",
+            "name": "cream",
+            "diffuseColor": [0.95, 0.92, 0.85]
+        },
+        {
+            "type": "lambert",
+            "name": "terracotta",
+            "diffuseColor": [0.85, 0.45, 0.35]
+        },
+        {
+            "type": "refraction",
+            "name": "glass_clear",
+            "indexInside": 1.5,
+            "indexOutside": 1.0,
+            "color": [1.0, 1.0, 1.0],
+            "absorption": 0.0,
+            "roughness": 0.0
+        },
+        {
+            "type": "refraction",
+            "name": "glass_dense",
+            "indexInside": 1.8,
+            "indexOutside": 1.0,
+            "color": [1.0, 1.0, 1.0],
+            "absorption": 0.0,
+            "roughness": 0.0
+        },
+        {
+            "type": "refraction",
+            "name": "glass_crystal",
+            "indexInside": 2.0,
+            "indexOutside": 1.0,
+            "color": [1.0, 1.0, 1.0],
+            "absorption": 0.0,
+            "roughness": 0.0
+        }
+    ],
+    "lights": [
+        {
+            "type": "point",
+            "position": [1.0, 4.5, 1.0],
+            "intensity": 15.0,
+            "radius": 0.3
+        }
+    ],
+    "primitives": [
+        {
+            "type": "plane",
+            "shader": "white",
+            "origin": [0.0, -2.0, 0.0],
+            "normal": [0.0, 1.0, 0.0]
+        },
+        {
+            "type": "plane",
+            "shader": "cream",
+            "origin": [0.0, 6.0, 0.0],
+            "normal": [0.0, -1.0, 0.0]
+        },
+        {
+            "type": "plane",
+            "shader": "cream",
+            "origin": [0.0, 0.0, 8.0],
+            "normal": [0.0, 0.0, -1.0]
+        },
+        {
+            "type": "plane",
+            "shader": "cream",
+            "origin": [0.0, 0.0, -8.0],
+            "normal": [0.0, 0.0, 1.0]
+        },
+        {
+            "type": "plane",
+            "shader": "cream",
+            "origin": [8.0, 0.0, 0.0],
+            "normal": [-1.0, 0.0, 0.0]
+        },
+        {
+            "type": "plane",
+            "shader": "terracotta",
+            "origin": [-8.0, 0.0, 0.0],
+            "normal": [1.0, 0.0, 0.0]
+        },
+
+        {
+            "type": "sphere",
+            "shader": "glass_clear",
+            "center": [0.0, 1.0, 0.0],
+            "radius": 2.0
+        },
+
+        {
+            "type": "box",
+            "shader": "glass_dense",
+            "center": [-3.0, -0.5, 2.0],
+            "size": [1.5, 3.0, 1.5]
+        },
+
+        {
+            "type": "box",
+            "shader": "glass_crystal",
+            "center": [3.0, -1.0, 1.0],
+            "size": [2.0, 2.0, 1.0]
+        },
+
+        {
+            "type": "sphere",
+            "shader": "glass_dense",
+            "center": [2.0, -1.0, 4.0],
+            "radius": 1.0
+        },
+
+        {
+            "type": "box",
+            "shader": "glass_clear",
+            "center": [-1.5, -1.25, 4.0],
+            "size": [1.0, 1.5, 1.0]
+        },
+
+        {
+            "type": "sphere",
+            "shader": "glass_crystal",
+            "center": [0.5, -1.5, -3.0],
+            "radius": 0.5
+        },
+
+        {
+            "type": "box",
+            "shader": "glass_clear",
+            "center": [-2.5, -1.5, -2.0],
+            "size": [1.0, 1.0, 2.0]
+        }
+    ]
+}

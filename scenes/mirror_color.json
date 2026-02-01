@@ -1,0 +1,97 @@
+{
+    "settings": {
+        "camera": {
+            "position": [-3.0984042, 2.7416098, -15],
+            "forward": [0.2, -0.05, 1],
+            "up": [0.0, 1.0, 0.0],
+            "fov": 50.0
+        },
+        "gi": true
+    },
+    "shaders": [
+        {
+            "type": "lambert",
+            "name": "white",
+            "diffuseColor": [1.0, 1.0, 1.0]
+        },
+        {
+            "type": "lambert",
+            "name": "grey",
+            "diffuseColor": [0.5, 0.5, 0.5]
+        },
+        { "type": "mirror", "name": "m_gold", "throughput": [1.0, 0.85, 0.4], "roughness": 0.0 },
+        { "type": "mirror", "name": "m_copper", "throughput": [0.95, 0.6, 0.5], "roughness": 0.0 },
+        { "type": "mirror", "name": "m_teal", "throughput": [0.4, 0.9, 0.85], "roughness": 0.0 },
+        { "type": "mirror", "name": "m_rose", "throughput": [0.95, 0.5, 0.6], "roughness": 0.0 },
+        { "type": "mirror", "name": "m_purple", "throughput": [0.7, 0.4, 0.95], "roughness": 0.0 },
+        { "type": "mirror", "name": "m_lime", "throughput": [0.6, 0.95, 0.4], "roughness": 0.0 },
+        { "type": "mirror", "name": "m_silver", "throughput": [0.9, 0.9, 0.95], "roughness": 0.0 }
+    ],
+    "lights": [
+        {
+            "type": "point",
+            "position": [0.0, 5.0, -2.0],
+            "intensity": 15.0,
+            "radius": 0.5
+        }
+    ],
+    "primitives": [
+        {
+            "type": "plane",
+            "shader": "white",
+            "origin": [0.0, -1.5, 0.0],
+            "normal": [0.0, 1.0, 0.0]
+        },
+        {
+            "type": "plane",
+            "shader": "white",
+            "origin": [0.0, 8.0, 0.0],
+            "normal": [0.0, -1.0, 0.0]
+        },
+        {
+            "type": "plane",
+            "shader": "grey",
+            "origin": [0.0, 0.0, 8.0],
+            "normal": [0.0, 0.0, -1.0]
+        },
+        {
+            "type": "plane",
+            "shader": "white",
+            "origin": [0.0, 0.0, -12.0],
+            "normal": [0.0, 0.0, 1.0]
+        },
+        {
+            "type": "plane",
+            "shader": "white",
+            "origin": [8.0, 0.0, 0.0],
+            "normal": [-1.0, 0.0, 0.0]
+        },
+        {
+            "type": "plane",
+            "shader": "white",
+            "origin": [-8.0, 0.0, 0.0],
+            "normal": [1.0, 0.0, 0.0]
+        },
+
+        { "type": "sphere", "shader": "m_gold", "center": [-3.0, 1.0, 1.0], "radius": 1.3 },
+        { "type": "sphere", "shader": "m_copper", "center": [2.5, 0.5, 2.5], "radius": 1.1 },
+        { "type": "sphere", "shader": "m_teal", "center": [0.0, 2.0, -0.5], "radius": 1.5 },
+        { "type": "sphere", "shader": "m_rose", "center": [-1.0, 4.0, 3.0], "radius": 0.9 },
+        { "type": "sphere", "shader": "m_purple", "center": [4.0, 2.5, 0.0], "radius": 1.0 },
+        { "type": "sphere", "shader": "m_lime", "center": [-4.5, 3.5, 4.0], "radius": 0.8 },
+        { "type": "sphere", "shader": "m_silver", "center": [1.5, 5.5, 1.5], "radius": 0.7 },
+
+        { "type": "box", "shader": "m_gold", "center": [3.5, -0.5, 4.5], "size": [1.0, 2.0, 1.0] },
+        { "type": "box", "shader": "m_copper", "center": [-5.0, 0.5, 0.0], "size": [1.2, 1.8, 0.8] },
+        { "type": "box", "shader": "m_teal", "center": [0.5, 0.0, 5.0], "size": [1.5, 1.5, 1.5] },
+        { "type": "box", "shader": "m_rose", "center": [-2.5, 5.0, -0.5], "size": [0.8, 1.2, 1.4] },
+        { "type": "box", "shader": "m_purple", "center": [5.5, 3.0, 2.5], "size": [1.0, 1.0, 2.0] },
+        { "type": "box", "shader": "m_lime", "center": [-0.5, -0.5, 2.0], "size": [1.4, 2.0, 0.6] },
+        { "type": "box", "shader": "m_silver", "center": [2.0, 6.0, 5.0], "size": [0.9, 0.9, 0.9] },
+
+        { "type": "sphere", "shader": "m_gold", "center": [5.0, -0.5, -1.0], "radius": 1.2 },
+        { "type": "sphere", "shader": "m_teal", "center": [-5.5, 5.5, 2.0], "radius": 0.6 },
+        { "type": "box", "shader": "m_copper", "center": [-3.5, 2.5, 5.5], "size": [1.1, 1.1, 1.1] },
+        { "type": "box", "shader": "m_rose", "center": [4.0, 4.5, 3.5], "size": [0.7, 1.5, 0.7] }
+    ]
+}

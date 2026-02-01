@@ -6,6 +6,7 @@
             "up": [0.0, -1.0, 0.0],
             "fov": 90.0
         },
+        "gi": false,
         "env_map": "data/TychoSkymapII.t5_04096x02048.png"
     },
     "shaders": [

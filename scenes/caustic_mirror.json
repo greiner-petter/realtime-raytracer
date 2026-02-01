@@ -1,0 +1,99 @@
+{
+    "settings": {
+        "camera": {
+            "position": [0.0, 8.0, -12.0],
+            "forward": [0.0, -0.4, 1.0],
+            "up": [0.0, 1.0, 0.0],
+            "fov": 50.0
+        },
+        "gi": true
+    },
+    "shaders": [
+        {
+            "type": "lambert",
+            "name": "white",
+            "diffuseColor": [1.0, 1.0, 1.0]
+        },
+        {
+            "type": "lambert",
+            "name": "grey",
+            "diffuseColor": [0.4, 0.4, 0.45]
+        },
+        {
+            "type": "mirror",
+            "name": "mirror",
+            "throughput": [0.95, 0.95, 0.95],
+            "roughness": 0.0
+        }
+    ],
+    "lights": [
+        {
+            "type": "point",
+            "position": [0.0, 3.0, 0.0],
+            "intensity": 15.0,
+            "radius": 0.1
+        }
+    ],
+    "primitives": [
+        {
+            "type": "plane",
+            "shader": "white",
+            "origin": [0.0, -1.0, 0.0],
+            "normal": [0.0, 1.0, 0.0]
+        },
+        {
+            "type": "plane",
+            "shader": "grey",
+            "origin": [0.0, 10.0, 0.0],
+            "normal": [0.0, -1.0, 0.0]
+        },
+        {
+            "type": "plane",
+            "shader": "grey",
+            "origin": [0.0, 0.0, 15.0],
+            "normal": [0.0, 0.0, -1.0]
+        },
+        {
+            "type": "plane",
+            "shader": "grey",
+            "origin": [0.0, 0.0, -15.0],
+            "normal": [0.0, 0.0, 1.0]
+        },
+        {
+            "type": "plane",
+            "shader": "grey",
+            "origin": [15.0, 0.0, 0.0],
+            "normal": [-1.0, 0.0, 0.0]
+        },
+        {
+            "type": "plane",
+            "shader": "grey",
+            "origin": [-15.0, 0.0, 0.0],
+            "normal": [1.0, 0.0, 0.0]
+        },
+
+        { "type": "triangle", "shader": "mirror", "vertices": [[4.0, -1.0, 0.0], [4.0, 4.0, 0.0], [2.83, -1.0, 2.83]] },
+        { "type": "triangle", "shader": "mirror", "vertices": [[4.0, 4.0, 0.0], [2.83, 4.0, 2.83], [2.83, -1.0, 2.83]] },
+
+        { "type": "triangle", "shader": "mirror", "vertices": [[2.83, -1.0, 2.83], [2.83, 4.0, 2.83], [0.0, -1.0, 4.0]] },
+        { "type": "triangle", "shader": "mirror", "vertices": [[2.83, 4.0, 2.83], [0.0, 4.0, 4.0], [0.0, -1.0, 4.0]] },
+
+        { "type": "triangle", "shader": "mirror", "vertices": [[0.0, -1.0, 4.0], [0.0, 4.0, 4.0], [-2.83, -1.0, 2.83]] },
+        { "type": "triangle", "shader": "mirror", "vertices": [[0.0, 4.0, 4.0], [-2.83, 4.0, 2.83], [-2.83, -1.0, 2.83]] },
+
+        { "type": "triangle", "shader": "mirror", "vertices": [[-2.83, -1.0, 2.83], [-2.83, 4.0, 2.83], [-4.0, -1.0, 0.0]] },
+        { "type": "triangle", "shader": "mirror", "vertices": [[-2.83, 4.0, 2.83], [-4.0, 4.0, 0.0], [-4.0, -1.0, 0.0]] },
+
+        { "type": "triangle", "shader": "mirror", "vertices": [[-4.0, -1.0, 0.0], [-4.0, 4.0, 0.0], [-2.83, -1.0, -2.83]] },
+        { "type": "triangle", "shader": "mirror", "vertices": [[-4.0, 4.0, 0.0], [-2.83, 4.0, -2.83], [-2.83, -1.0, -2.83]] },
+
+        { "type": "triangle", "shader": "mirror", "vertices": [[-2.83, -1.0, -2.83], [-2.83, 4.0, -2.83], [0.0, -1.0, -4.0]] },
+        { "type": "triangle", "shader": "mirror", "vertices": [[-2.83, 4.0, -2.83], [0.0, 4.0, -4.0], [0.0, -1.0, -4.0]] },
+
+        { "type": "triangle", "shader": "mirror", "vertices": [[0.0, -1.0, -4.0], [0.0, 4.0, -4.0], [2.83, -1.0, -2.83]] },
+        { "type": "triangle", "shader": "mirror", "vertices": [[0.0, 4.0, -4.0], [2.83, 4.0, -2.83], [2.83, -1.0, -2.83]] },
+
+        { "type": "triangle", "shader": "mirror", "vertices": [[2.83, -1.0, -2.83], [2.83, 4.0, -2.83], [4.0, -1.0, 0.0]] },
+        { "type": "triangle", "shader": "mirror", "vertices": [[2.83, 4.0, -2.83], [4.0, 4.0, 0.0], [4.0, -1.0, 0.0]] }
+    ]
+}
