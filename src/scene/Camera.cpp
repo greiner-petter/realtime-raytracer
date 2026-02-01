@@ -79,9 +79,10 @@ void UpdateCameraDirection(float deltaX, float deltaY, float deltaRoll) {
         cameraUp = glm::normalize(rollRotation * cameraUp);
     }
 
-    RT_INFO("Forward: ({0}, {1}, {2}), Position: ({3}, {4}, {5})", 
+    RT_INFO("Forward: ({0}, {1}, {2}), Position: ({3}, {4}, {5}), Up: ({6}, {7}, {8})",
         cameraForward.x, cameraForward.y, cameraForward.z,
-        uniformBufferData.u_CameraPosition.x, uniformBufferData.u_CameraPosition.y, uniformBufferData.u_CameraPosition.z);
+        uniformBufferData.u_CameraPosition.x, uniformBufferData.u_CameraPosition.y, uniformBufferData.u_CameraPosition.z,
+        cameraUp.x, cameraUp.y, cameraUp.z);
 
     SetCameraOrientation(cameraForward, cameraUp);
 }
