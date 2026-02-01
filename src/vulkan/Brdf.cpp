@@ -20,6 +20,11 @@ void Brdf::CreateGPUBuffers() {
     s_BrdfDataSSBO = SSBO::Create(53, SSBO_BRDF_DATA_SIZE);
 }
 
+void Brdf::ClearAll() {
+    s_AllBrdfs.clear();
+    Brdf::UploadToGPU();
+}
+
 uint32_t Brdf::GetDataOffset(BrdfID brdfId) {
     if (brdfId < 0 || brdfId >= static_cast<BrdfID>(s_AllBrdfs.size())) {
         return 0;

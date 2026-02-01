@@ -61,6 +61,11 @@ void Texture::CreateGPUBuffers() {
     s_DataSSBO = SSBO::Create(52, SSBO_TEXTURE_DATA_SIZE);
 }
 
+void Texture::ClearAll() {
+    s_AllTextures.clear();
+    Texture::UploadToGPU();
+}
+
 Texture::Texture(const std::string& filepath) {
     id = s_AllTextures.size();
     s_AllTextures.push_back(this);
@@ -102,6 +107,10 @@ Texture::~Texture() {
 
 void Texture::UploadToGPU() {
     if (VulkanContext::GetDevice() == VK_NULL_HANDLE) {
+        return;
+    }
+
+    if (s_AllTextures.empty()) {
         return;
     }
 

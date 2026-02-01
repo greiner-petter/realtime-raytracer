@@ -356,6 +356,8 @@ bool SceneLoader::LoadScene(class Scene& scene, const std::string& filename) {
     s_LastSceneWriteTime = GetFileModificationTime(filename);
     scene.ClearScene();
     OffscreenResources::Clear();
+    Texture::ClearAll();
+    Brdf::ClearAll();
     s_Shaders.clear();
 
     std::ifstream f(filename);

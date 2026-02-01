@@ -22,6 +22,7 @@ public:
     static uint32_t GetDataOffset(BrdfID brdfId);
 
     static void CreateGPUBuffers();
+    static void ClearAll();
 
 private:
     static void UploadToGPU();

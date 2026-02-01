@@ -17,6 +17,7 @@ public:
     TextureID GetId() const { return id; }
 
     static void CreateGPUBuffers();
+    static void ClearAll();
 
 private:
     static void UploadToGPU();
