@@ -62,6 +62,8 @@ void InitScene() {
     if (Params::GetInputSceneFilename() != "") {
         SceneLoader::LoadScene(*s_Scene, Params::GetInputSceneFilename());
     }
+
+    SceneLoader::s_LoadCameraSettings = false;
 }
 
 void InitVulkan() {
