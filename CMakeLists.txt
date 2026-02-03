@@ -61,8 +61,6 @@ if (APPLE)
         "-framework IOSurface" 
         "-framework CoreGraphics"
         "-framework AppKit"
-        "/usr/local/lib/libMoltenVK.dylib"
-        "/usr/local/lib/libvulkan.dylib"
     )
 elseif (UNIX)
     # Linux specific settings

@@ -1,1 +1,1 @@
-brew install glfw glm spdlog
+brew install glfw glm spdlog vulkan-tools
