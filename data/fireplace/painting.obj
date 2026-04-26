@@ -1,0 +1,28 @@
+# 3ds Max Wavefront OBJ Exporter v0.99 - (c)2007 guruware
+# File Created: 26.01.2021 17:06:18
+
+#
+# object fireplace_painting
+#
+
+v  2.2212 1.3235 -3.6172
+v  2.2212 1.7695 -3.6076
+v  1.5872 1.7695 -3.6076
+v  1.5872 1.3235 -3.6172
+# 4 vertices
+
+vn 0.0000 -0.0216 0.9998
+# 1 vertex normals
+
+vt 0.9999 0.9965 0.0000
+vt 0.0001 0.9965 0.0000
+vt 0.0001 0.0001 0.0000
+vt 0.9999 0.0001 0.0000
+# 4 texture coords
+
+o fireplace_painting
+g fireplace_painting
+f 1/1/1 2/2/1 3/3/1 
+f 1/1/1 3/3/1 4/4/1 
+# 2 faces
+
